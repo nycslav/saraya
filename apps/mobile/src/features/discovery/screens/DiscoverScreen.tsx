@@ -1,158 +1,158 @@
 import type { DestinationSummary, IslandGroup } from '@saraya/contracts';
-import { Map, Rows3 } from 'lucide-react-native';
-import { useCallback, useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  AccessibilityInfo,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Chip, LoadingState, Mascot, Screen, SearchField, SectionTitle, StatusPanel } from '@/ui/components';
-import { colors, radius, spacing, type } from '@/ui/theme';
+import { Button, LoadingState, Mascot, SearchField, StatusPanel } from '@/ui/components';
+import { colors, spacing, type } from '@/ui/theme';
 
 import { DestinationCard } from '../components/DestinationCard';
+import { PhilippinesHeroMap } from '../components/PhilippinesHeroMap';
 import { destinationGateway } from '../gateways';
 
-const islandGroups: (IslandGroup | 'All')[] = ['All', 'Luzon', 'Visayas', 'Mindanao'];
+export const islandGroups: IslandGroup[] = ['Luzon', 'Visayas', 'Mindanao'];
+
+export function groupDestinations(destinations: DestinationSummary[]) {
+  return Object.fromEntries(islandGroups.map((group) => [
+    group,
+    destinations
+      .filter((destination) => destination.islandGroup === group)
+      .sort((left, right) => right.rating - left.rating || left.name.localeCompare(right.name)),
+  ])) as Record<IslandGroup, DestinationSummary[]>;
+}
 
 export function DiscoverScreen() {
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [sectionY, setSectionY] = useState<Partial<Record<IslandGroup, number>>>({});
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [search, setSearch] = useState('');
-  const [islandGroup, setIslandGroup] = useState<IslandGroup | undefined>();
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      setDestinations(await destinationGateway.list({ search, islandGroup }));
+      setDestinations(await destinationGateway.list({ search }));
     } catch {
-      setError('Destinations could not be loaded. Check your connection and try again.');
+      setError('Destinations could not be loaded. Check the API address and your connection, then try again.');
     } finally {
       setLoading(false);
     }
-  }, [islandGroup, search]);
+  }, [search]);
 
   useEffect(() => {
     const timer = setTimeout(() => void load(), 180);
     return () => clearTimeout(timer);
   }, [load]);
 
+  useEffect(() => {
+    void AccessibilityInfo.isReduceMotionEnabled().then(setReducedMotion);
+    const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReducedMotion);
+    return () => subscription.remove();
+  }, []);
+
+  const grouped = groupDestinations(destinations);
+  const enabled = Object.fromEntries(islandGroups.map((group) => [
+    group,
+    sectionY[group] !== undefined,
+  ])) as Record<IslandGroup, boolean>;
+
+  const saveSectionPosition = (region: IslandGroup) => (event: LayoutChangeEvent) => {
+    const y = event.nativeEvent.layout.y;
+    setSectionY((current) => current[region] === y ? current : { ...current, [region]: y });
+  };
+
+  const scrollToRegion = (region: IslandGroup) => {
+    const y = sectionY[region];
+    if (y === undefined) return;
+    scrollViewRef.current?.scrollTo({ y: Math.max(0, y - spacing.lg), animated: !reducedMotion });
+  };
+
   return (
-    <Screen>
-      <View style={styles.brandRow}>
-        <View style={styles.brandCopy}>
-          <Text style={styles.brand}>Saraya</Text>
-          <Text style={styles.greeting}>Mabuhay, traveler!</Text>
-          <Text style={styles.subtitle}>Find your next Philippine story.</Text>
-        </View>
-        <Mascot mood="wave" size={88} />
-      </View>
-
-      <SearchField
-        onChangeText={setSearch}
-        placeholder="Search places, food, culture…"
-        value={search}
-      />
-
-      <View style={styles.chipRow}>
-        {islandGroups.map((group) => (
-          <Chip
-            key={group}
-            label={group}
-            onPress={() => setIslandGroup(group === 'All' ? undefined : group)}
-            selected={group === 'All' ? !islandGroup : islandGroup === group}
-          />
-        ))}
-      </View>
-
-      <StatusPanel
-        message="Suggestions span Luzon, Visayas, and Mindanao—Cebu is just one possible adventure."
-        title="Explore the whole Philippines"
-      />
-
-      <SectionTitle
-        action={
-          <View style={styles.modeToggle}>
-            {(['list', 'map'] as const).map((mode) => {
-              const Icon = mode === 'list' ? Rows3 : Map;
-              return (
-                <Pressable
-                  accessibilityLabel={`${mode} view`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: viewMode === mode }}
-                  key={mode}
-                  onPress={() => setViewMode(mode)}
-                  style={[styles.modeButton, viewMode === mode && styles.modeButtonActive]}
-                >
-                  <Icon color={viewMode === mode ? colors.navy : colors.muted} size={19} />
-                </Pressable>
-              );
-            })}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.brandRow}>
+          <View style={styles.brandCopy}>
+            <Text style={styles.brand}>Saraya</Text>
+            <Text accessibilityRole="header" style={styles.greeting}>Mabuhay, traveler!</Text>
+            <Text style={styles.subtitle}>Find your next Philippine story.</Text>
           </View>
-        }
-        title="Discover destinations"
-      />
-
-      {loading ? <LoadingState label="Finding meaningful places…" /> : null}
-      {error ? (
-        <StatusPanel
-          action={<Button label="Try again" onPress={() => void load()} variant="secondary" />}
-          message={error}
-          title="We hit a detour"
-          tone="error"
-        />
-      ) : null}
-      {!loading && !error && destinations.length === 0 ? (
-        <StatusPanel
-          message="Try another place, activity, or island group."
-          title="No destinations found"
-          tone="warning"
-        />
-      ) : null}
-
-      {!loading && !error && viewMode === 'map' ? (
-        <View style={styles.mapPanel}>
-          <Text style={styles.mapTitle}>Philippines overview</Text>
-          {islandGroups.slice(1).map((group) => {
-            const count = destinations.filter((destination) => destination.islandGroup === group).length;
-            return (
-              <View key={group} style={styles.mapRegion}>
-                <View style={styles.mapDot} />
-                <View style={styles.mapLine}>
-                  <Text style={styles.mapRegionName}>{group}</Text>
-                  <Text style={styles.mapCount}>{count} places</Text>
-                </View>
-              </View>
-            );
-          })}
-          <Text style={styles.mapNote}>Interactive provider maps connect through Member 2’s destination data later.</Text>
+          <Mascot mood="wave" size={88} />
         </View>
-      ) : null}
 
-      {!loading && !error && viewMode === 'list'
-        ? destinations.map((destination) => (
-            <DestinationCard destination={destination} key={destination.id} />
-          ))
-        : null}
-    </Screen>
+        <PhilippinesHeroMap enabled={enabled} onSelect={scrollToRegion} />
+        <Text style={styles.mapHint}>Tap a labeled island group to jump to its destinations.</Text>
+
+        <SearchField onChangeText={setSearch} placeholder="Search places, food, culture…" value={search} />
+
+        {loading ? <LoadingState label="Loading destinations from the Saraya API…" /> : null}
+        {error ? (
+          <StatusPanel
+            action={<Button label="Try again" onPress={() => void load()} variant="secondary" />}
+            message={error}
+            title="Destination service unavailable"
+            tone="error"
+          />
+        ) : null}
+
+        {islandGroups.map((region) => (
+          <View key={region} onLayout={saveSectionPosition(region)} style={styles.section}>
+            <View style={styles.sectionHeading}>
+              <View style={[styles.regionBar, styles[region.toLowerCase() as Lowercase<IslandGroup>]]} />
+              <View style={styles.sectionCopy}>
+                <Text accessibilityRole="header" style={styles.sectionTitle}>{region} Destinations</Text>
+                <Text style={styles.sectionSubtitle}>Highest rated first</Text>
+              </View>
+            </View>
+
+            {!loading && !error && grouped[region].length === 0 ? (
+              <StatusPanel
+                message={search ? `No ${region} destinations match “${search}”.` : `The API returned no ${region} destinations.`}
+                title={`No ${region} results`}
+                tone="warning"
+              />
+            ) : null}
+
+            {!loading && !error
+              ? grouped[region].map((destination) => <DestinationCard destination={destination} key={destination.id} />)
+              : null}
+          </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.xl, paddingBottom: 120, gap: spacing.lg },
   brandRow: { minHeight: 104, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brandCopy: { flex: 1, gap: 2 },
   brand: { color: colors.blue, fontFamily: type.black, fontSize: 28 },
   greeting: { color: colors.navy, fontFamily: type.black, fontSize: 20 },
   subtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 14 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  modeToggle: { flexDirection: 'row', borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, overflow: 'hidden' },
-  modeButton: { minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface },
-  modeButtonActive: { backgroundColor: colors.blueSoft },
-  mapPanel: { backgroundColor: colors.blueSoft, borderRadius: radius.lg, padding: spacing.xl, gap: spacing.lg, minHeight: 310 },
-  mapTitle: { color: colors.navy, fontFamily: type.black, fontSize: 18 },
-  mapRegion: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  mapDot: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.coral, borderWidth: 4, borderColor: colors.white },
-  mapLine: { flex: 1, minHeight: 52, borderBottomWidth: 1, borderBottomColor: colors.border, justifyContent: 'center' },
-  mapRegionName: { color: colors.navy, fontFamily: type.black, fontSize: 16 },
-  mapCount: { color: colors.muted, fontFamily: type.medium, fontSize: 13 },
-  mapNote: { color: colors.muted, fontFamily: type.medium, fontSize: 12, lineHeight: 18 },
+  mapHint: { color: colors.muted, fontFamily: type.medium, fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  section: { gap: spacing.lg, paddingTop: spacing.lg },
+  sectionHeading: { flexDirection: 'row', alignItems: 'stretch', gap: spacing.md },
+  regionBar: { width: 6, borderRadius: 3 },
+  luzon: { backgroundColor: '#00AEEF' },
+  visayas: { backgroundColor: '#FDB813' },
+  mindanao: { backgroundColor: '#FF5A5F' },
+  sectionCopy: { gap: 2 },
+  sectionTitle: { color: colors.navy, fontFamily: type.black, fontSize: 22 },
+  sectionSubtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 12 },
 });

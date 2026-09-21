@@ -12,14 +12,28 @@ export function DestinationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [destination, setDestination] = useState<DestinationDetail | null>();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    void destinationGateway.getById(id).then((result) => {
-      if (active) setDestination(result);
-    });
+    void destinationGateway.getById(id)
+      .then((result) => {
+        if (active) setDestination(result);
+      })
+      .catch(() => {
+        if (active) setError('The destination service is unavailable. Check the API connection and try again.');
+      });
     return () => { active = false; };
   }, [id]);
+
+  if (error) {
+    return (
+      <Screen>
+        <StatusPanel message={error} title="Unable to load destination" tone="error" />
+        <Button label="Back to Discover" onPress={() => router.replace('/(tabs)/discover')} />
+      </Screen>
+    );
+  }
 
   if (destination === undefined) return <Screen><LoadingState label="Opening destination…" /></Screen>;
   if (destination === null) {

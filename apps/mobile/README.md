@@ -10,17 +10,17 @@ This directory hosts the Expo Router application. Its implementation preserves t
 
 Do not commit provider secrets to the mobile bundle. All OpenAI and privileged integration calls must go through the API.
 
-## Member 1 Shipathon slice
+## Current mobile integration
 
-The current mobile implementation provides the Saraya Discover, destination-detail, trip-preference,
-premium-handoff, generation, and itinerary-result flow. It follows the existing route/feature/UI
-boundaries and leaves replaceable tab shells for teammate-owned features.
+The mobile application uses the Saraya API for destination discovery, destination details, itinerary
+generation, and itinerary persistence. It follows the existing route, feature, gateway, and shared UI
+boundaries while leaving teammate-owned features in their assigned modules.
 
-The app defaults to deterministic nationwide fixtures. To connect Member 2's API later, set:
+Set the reachable API URL before starting the mobile application:
 
 ```text
-EXPO_PUBLIC_DATA_MODE=api
 EXPO_PUBLIC_API_BASE_URL=http://<reachable-host>:3000
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<google-web-oauth-client-id>
 ```
 
 The current demo uses RevenueCat for purchase state and a provider-neutral local quota adapter.
@@ -44,10 +44,24 @@ quota behavior.
 Android delivery profiles, EAS environment setup, APK/AAB commands, signing, and the Google Play
 internal-testing checklist are documented in [`docs/android-delivery.md`](../../docs/android-delivery.md).
 
+Email and Google authentication use the real Saraya API endpoints. Google sign-in uses Android
+Credential Manager and requires an Android development build; it does not run in Expo Go. The
+Google Cloud project must contain an Android OAuth client for the final application ID and signing
+certificate. The mobile app sends the returned Google ID token to `POST /auth/google`; the backend
+must verify that token before creating a Saraya session.
+
+Expo Go can still be used to review discovery, the signed-out profile, and email-form UI. It reports
+Google sign-in as unavailable instead of simulating a successful login.
+
+The application does not fall back to fabricated destination or itinerary data. Premium access uses
+the RevenueCat gateway, while generation and persistence use the Saraya API. If either provider is
+unavailable, the app reports the failure instead of simulating success.
+
 Commands:
 
 ```text
 npm run start --workspace=@saraya/mobile
+npm run start:dev --workspace=@saraya/mobile
 npm run lint --workspace=@saraya/mobile
 npm run typecheck --workspace=@saraya/mobile
 npm run test --workspace=@saraya/mobile
@@ -55,3 +69,5 @@ npm run android:check
 npm run android:build:preview
 ```
 
+Use `start` with Expo Go for ordinary UI review. Use `start:dev` after installing the Android
+development build when testing Google sign-in.

@@ -99,10 +99,7 @@ saraya/
 │   │   │   │   └── [id].tsx
 │   │   │   └── premium/
 │   │   │       ├── paywall.tsx
-│   │   │       ├── itinerary.tsx
-│   │   │       └── group-trips/
-│   │   │           ├── index.tsx
-│   │   │           └── [id].tsx
+│   │   │       └── itinerary.tsx
 │   │   │
 │   │   ├── src/
 │   │   │   ├── features/
@@ -119,8 +116,7 @@ saraya/
 │   │   │   │   ├── safety-alerts/
 │   │   │   │   ├── notifications/
 │   │   │   │   ├── subscriptions/
-│   │   │   │   ├── itineraries/
-│   │   │   │   └── group-trips/
+│   │   │   │   └── itineraries/
 │   │   │   ├── core/
 │   │   │   ├── ui/
 │   │   │   └── test/
@@ -148,8 +144,7 @@ saraya/
 │       │   │   ├── safety-alerts/
 │       │   │   ├── notifications/
 │       │   │   ├── subscriptions/
-│       │   │   ├── itineraries/
-│       │   │   └── group-trips/
+│       │   │   └── itineraries/
 │       │   ├── integrations/
 │       │   │   ├── maps/
 │       │   │   ├── pagasa/
@@ -179,7 +174,6 @@ saraya/
 │   │   ├── achievements.json
 │   │   ├── festivals.json
 │   │   ├── safety-alerts.json
-│   │   ├── group-trips.json
 │   │   └── itineraries.json
 │   ├── scripts/
 │   ├── README.md
@@ -217,31 +211,15 @@ saraya/
 5. Database migrations must be reviewed by another member before merging.
 6. Shared files still have one primary owner to prevent conflicting edits.
 
-## 3. Current Shipathon Team Roles
+## 3. Current Product Ownership
 
-The following roles define the team's current Shipathon responsibilities. They focus the three members on one complete and polished demonstration without removing any features from the long-term product plan.
-
-| Member | Current role | Main responsibilities |
-| --- | --- | --- |
-| **Member 1** | Mobile Experience | Navigation, visual design, destination discovery, destination details, the trip-preference form, and the itinerary-results screen |
-| **Member 2** | Backend and AI | API foundation, destination data, OpenAI itinerary generation, itinerary storage, and backend tests |
-| **Member 3** | RevenueCat and Delivery | Paywall, purchases, premium access, Android builds, GitHub setup, documentation, testing, and demo preparation |
-
-All three members share responsibility for testing the complete Shipathon demonstration flow:
-
-`Destination discovery -> trip preferences -> RevenueCat paywall -> test purchase -> AI itinerary`
-
-These current Shipathon roles take priority when an assignment below overlaps with them. The detailed feature and file ownership in Sections 4 through 13 and Section 15 remains the long-term plan for building the complete application. The Git workflow in Section 14 applies during both the Shipathon and long-term development.
-
-### 3.1 Long-Term Product Ownership
-
-The original balanced feature assignment below remains the ownership plan for completing the full Saraya product after the focused Shipathon build.
+The balanced feature assignment below is the current ownership plan for the Shipathon and continued development of the complete Saraya product. It applies together with the detailed feature and file ownership in Sections 4 through 13 and Section 15. The Git workflow in Section 14 applies throughout development.
 
 | Member | Primary feature area | Main responsibilities |
 | --- | --- | --- |
-| **Member 1** | Accounts, Discovery, and AI Itineraries | Authentication, onboarding, user profile, destinations, recommendations, search, nearby locations, maps, cultural guides, AI itinerary API, and OpenAI integration |
-| **Member 2** | Journey, Gamification, and Group Trips | Bucket list, GPS check-ins, photo journal, journey timeline, achievements, statistics, collaborative trips, voting, expenses, and trip/itinerary persistence |
-| **Member 3** | Events, Safety, and Platform Services | Festivals, calendar reminders, weather, safety alerts, push notifications, subscriptions, background jobs, CI, and deployment |
+| **Member 1** | Accounts, Discovery, and AI Itineraries | Authentication, onboarding, user profile, destinations, preference-based recommendations, search, maps, cultural guides, AI itinerary API, and OpenAI integration |
+| **Member 2** | Journey and Gamification | Bucket list, manual check-ins, photo journal, journey timeline, achievements, statistics, and itinerary persistence |
+| **Member 3** | Events, Safety, and Platform Services | Festivals, calendar reminders, user-requested weather and safety location, safety alerts, push notifications, subscriptions, background jobs, CI, and deployment |
 
 ## 4. Root Repository Files
 
@@ -305,7 +283,7 @@ The Compose setup is for local development only. Secrets must remain in an untra
 | `apps/mobile/app/(auth)/login.tsx` | Member 1 | Email and social login interface |
 | `apps/mobile/app/(auth)/register.tsx` | Member 1 | Account-registration interface |
 | `apps/mobile/app/(auth)/forgot-password.tsx` | Member 1 | Password-reset request interface |
-| `apps/mobile/app/(auth)/onboarding.tsx` | Member 1 | Profile photo, travel style, budget, interests, regions, and location permission |
+| `apps/mobile/app/(auth)/onboarding.tsx` | Member 1 | Profile photo, travel style, budget, interests, and regions; location permission is not requested during onboarding |
 | `apps/mobile/app/(tabs)/discover.tsx` | Member 1 | Recommendation feed, search, filters, map mode, and weather widget |
 | `apps/mobile/app/(tabs)/profile.tsx` | Member 1 | Profile, preferences, trip summary, settings, and logout |
 | `apps/mobile/app/destinations/[id].tsx` | Member 1 | Destination information, map, cultural guide, and actions |
@@ -318,22 +296,19 @@ The Compose setup is for local development only. Secrets must remain in an untra
 | `apps/mobile/src/features/itineraries/` | Member 1 | AI itinerary request, response parsing, display, and error handling |
 | `apps/mobile/src/features/discovery/components/` | Member 1 | Destination cards, filters, map markers, and recommendation sections |
 
-### 5.3 Member 2 mobile modules: Journey, Gamification, and Group Trips
+### 5.3 Member 2 mobile modules: Journey and Gamification
 
 | File or folder | Owner | Responsibility |
 | --- | --- | --- |
 | `apps/mobile/app/(tabs)/journey.tsx` | Member 2 | Journey timeline, visited map, progress, and statistics |
 | `apps/mobile/app/(tabs)/bucket-list.tsx` | Member 2 | Saved destinations with sorting, filtering, notes, and status changes |
-| `apps/mobile/app/check-ins/create.tsx` | Member 2 | GPS verification, photo selection, journal text, mood, companions, and tags |
+| `apps/mobile/app/check-ins/create.tsx` | Member 2 | Destination and visit-date selection, photo selection, journal text, mood, companions, and tags |
 | `apps/mobile/app/check-ins/[id].tsx` | Member 2 | Saved journal-entry details |
 | `apps/mobile/app/achievements/index.tsx` | Member 2 | Locked and unlocked achievement list |
 | `apps/mobile/src/features/bucket-list/` | Member 2 | Bucket-list state, components, validation, and API calls |
-| `apps/mobile/src/features/check-ins/` | Member 2 | GPS check-in, journal, photo, timeline, and visited-map logic |
+| `apps/mobile/src/features/check-ins/` | Member 2 | Manual check-in, journal, photo, timeline, and visited-destination map logic |
 | `apps/mobile/src/features/achievements/` | Member 2 | Achievement display, unlock messages, and progress logic |
 | `apps/mobile/src/features/statistics/` | Member 2 | Islands, destinations, check-ins, and achievement summaries |
-| `apps/mobile/app/premium/group-trips/index.tsx` | Member 2 | Group-trip list and creation interface |
-| `apps/mobile/app/premium/group-trips/[id].tsx` | Member 2 | Invitations, destinations, voting, shared notes, decisions, and expense splitting |
-| `apps/mobile/src/features/group-trips/` | Member 2 | Collaborative-trip state, voting, invitations, notes, and expense calculations |
 | `apps/mobile/src/features/check-ins/components/` | Member 2 | Timeline entries, journal cards, visited-map elements, and check-in controls |
 
 ### 5.4 Member 3 mobile modules: Events, Safety, and Services
@@ -358,7 +333,7 @@ The Compose setup is for local development only. Secrets must remain in an untra
 | --- | --- | --- | --- |
 | `apps/mobile/src/ui/` | Member 1 | Member 2 | Generic buttons, fields, cards, dialogs, loading states, theme tokens, and reusable styles |
 | `apps/mobile/src/core/api/` | Member 1 | Member 3 | Base URL, transport configuration, JWT attachment, refresh, and API error conversion |
-| `apps/mobile/src/core/location/` | Member 2 | Member 1 | GPS permission, coordinates, distance, and location watcher |
+| `apps/mobile/src/core/location/` | Member 3 | Member 1 | Foreground location permission and one-time coordinates for weather and safety only; no continuous or background tracking |
 | `apps/mobile/src/core/camera/` | Member 2 | Member 3 | Camera and photo-library permissions |
 | `apps/mobile/src/core/storage/` | Member 2 | Member 1 | Secure token storage and local application storage |
 | `apps/mobile/src/core/notifications/` | Member 3 | Member 1 | Push-token registration and notification interaction |
@@ -393,7 +368,7 @@ Each backend module should contain `*.route.ts`, `*.controller.ts`, `*.service.t
 | --- | --- | --- |
 | `apps/api/src/modules/auth/` | Member 1 | Register, login, logout, token refresh, password reset, and password hashing |
 | `apps/api/src/modules/users/` | Member 1 | Profile retrieval, update, preferences, and premium-status response |
-| `apps/api/src/modules/destinations/` | Member 1 | Recommendations, search, nearby queries, filtering, sorting, and destination details |
+| `apps/api/src/modules/destinations/` | Member 1 | Preference-based recommendations, search, filtering, sorting, and destination details |
 | `apps/api/src/modules/cultural-guides/` | Member 1 | Historical and cultural content retrieval |
 | `apps/api/src/modules/itineraries/` | Member 1 | Validate trip constraints, request AI generation, validate structured output, and expose itinerary endpoints |
 | `apps/api/src/integrations/maps/` | Member 1 | Maps, directions, place information, and geocoding adapter |
@@ -402,18 +377,16 @@ Each backend module should contain `*.route.ts`, `*.controller.ts`, `*.service.t
 | `apps/api/tests/discovery/` | Member 1 | Destination, hidden-gem authorization, and cultural-guide integration tests |
 | `apps/api/tests/itineraries/` | Member 1 | Itinerary endpoints and mocked OpenAI-response tests |
 
-### 6.3 Member 2 backend modules: Journey, Gamification, and Group Trips
+### 6.3 Member 2 backend modules: Journey and Gamification
 
 | Module or folder | Owner | Responsibility |
 | --- | --- | --- |
 | `apps/api/src/modules/bucket-list/` | Member 2 | Read, add, update, and delete bucket-list items |
-| `apps/api/src/modules/check-ins/` | Member 2 | GPS proximity validation, check-in creation, history, timeline, and map data |
+| `apps/api/src/modules/check-ins/` | Member 2 | Manual check-in creation, history, timeline, and visited-destination map data |
 | `apps/api/src/modules/achievements/` | Member 2 | Achievement rules, evaluation, unlocking, and user achievements |
 | `apps/api/src/modules/statistics/` | Member 2 | Travel totals, progress, regions, islands, and other user statistics |
-| `apps/api/src/modules/group-trips/` | Member 2 | Group-trip creation, invitations, membership, voting, shared notes, decision history, and expense splitting |
 | `apps/api/src/integrations/photo-storage/` | Member 2 | Journal-photo upload, deletion, validation, and storage adapter |
 | `apps/api/tests/journey/` | Member 2 | Bucket-list, check-in, achievement, photo, and statistics integration tests |
-| `apps/api/tests/group-trips/` | Member 2 | Membership authorization, invitations, votes, notes, and expense-split tests |
 
 ### 6.4 Member 3 backend modules: Events, Safety, and Services
 
@@ -444,16 +417,16 @@ Hidden gems must be protected by backend authorization, not merely hidden in the
 
 The `destinations` module must depend on a narrow entitlement interface rather than importing RevenueCat-specific code directly. This keeps destination rules testable and prevents the external subscription provider from leaking into discovery logic.
 
-### 6.6 AI itinerary and group-trip boundary
+### 6.6 AI itinerary and persistence boundary
 
 | Part | Primary owner | Required coordination |
 | --- | --- | --- |
-| `POST /group-trips/:id/generate-itinerary` route and AI orchestration | Member 1 | Confirms that the requester is a premium group member, calls the OpenAI adapter, and validates the returned JSON |
+| `POST /itineraries/generate` route and AI orchestration | Member 1 | Confirms premium access, calls the OpenAI adapter, and validates the returned JSON |
 | `itineraries` repository and persistence contract | Member 2 | Provides transactional replacement or versioning of day-by-day itinerary rows |
-| Group-trip membership and authorization | Member 2 | Exposes a reusable membership check consumed by Member 1's itinerary route |
+| Saved-itinerary ownership and authorization | Member 2 | Ensures users can read and update only their own saved itineraries |
 | OpenAI credentials and requests | Member 1 | Runs only on the backend; the API key must never be bundled into the mobile application |
 
-Member 1 owns itinerary generation behavior, while Member 2 owns collaboration and persistence. Their runtime schema and inferred TypeScript contract must be defined in `packages/contracts/` before implementation.
+Member 1 owns itinerary generation behavior, while Member 2 owns user-scoped persistence. Their runtime schema and inferred TypeScript contract must be defined in `packages/contracts/` before implementation.
 
 ## 7. Shared Package Ownership
 
@@ -469,7 +442,7 @@ Feature-specific files inside shared packages remain assigned as follows:
 | Shared package file group | Owner |
 | --- | --- |
 | Authentication, user, destination, cultural-guide, and AI-itinerary contracts | Member 1 |
-| Bucket-list, check-in, achievement, statistics, group-trip, expense, and persisted-itinerary contracts | Member 2 |
+| Bucket-list, check-in, achievement, statistics, and persisted-itinerary contracts | Member 2 |
 | Festival, safety-alert, notification, and subscription contracts | Member 3 |
 
 Define each runtime schema once in `packages/contracts/` and infer its TypeScript type from that schema where possible. Do not maintain a separate hand-written type for the same payload.
@@ -493,18 +466,13 @@ Define each runtime schema once in `packages/contracts/` and infer its TypeScrip
 | `refresh_tokens` | Member 1 |
 | `destinations` | Member 1 |
 | `cultural_guides` | Member 1 |
-| Destination location indexes and PostGIS queries | Member 1 |
+| Destination coordinates and map indexes | Member 1 |
 | `bucket_list_items` | Member 2 |
 | `check_ins` | Member 2 |
 | `achievements` | Member 2 |
 | `user_achievements` | Member 2 |
-| Check-in location indexes and distance queries | Member 2 |
-| `group_trips` | Member 2 |
 | `itineraries` | Member 2 |
-| `group_trip_members` | Member 2 |
-| `group_trip_votes` | Member 2 |
-| `group_trip_expenses` | Member 2 |
-| Group-trip membership, itinerary-order, and date indexes | Member 2 |
+| Itinerary ownership, order, and date indexes | Member 2 |
 | `festivals` | Member 3 |
 | `festival_reminders` | Member 3 |
 | `safety_alerts` | Member 3 |
@@ -522,8 +490,7 @@ Define each runtime schema once in `packages/contracts/` and infer its TypeScrip
 | `database/seeds/bucket-list-items.json` | Member 2 | Sample planned and visited entries |
 | `database/seeds/check-ins.json` | Member 2 | Sample check-ins and journal entries |
 | `database/seeds/achievements.json` | Member 2 | Five to ten achievements with explicit criteria |
-| `database/seeds/group-trips.json` | Member 2 | Sample collaborative trip, members, destinations, votes, notes, and expenses |
-| `database/seeds/itineraries.json` | Member 2 | Structured sample day-by-day itinerary linked to a group trip |
+| `database/seeds/itineraries.json` | Member 2 | Structured sample day-by-day itinerary linked to a user and destination |
 | `database/seeds/festivals.json` | Member 3 | Major festivals from multiple regions and months |
 | `database/seeds/safety-alerts.json` | Member 3 | Clearly labeled demonstration alerts of different severity levels |
 
@@ -560,7 +527,7 @@ Define each runtime schema once in `packages/contracts/` and infer its TypeScrip
 | --- | --- | --- |
 | Authentication, onboarding, profile, and discovery | Member 1 | Member 3 |
 | AI itinerary generation and validated structured output | Member 1 | Member 2 |
-| Bucket list, check-in, journal, achievements, statistics, and group trips | Member 2 | Member 1 |
+| Bucket list, manual check-in, journal, achievements, statistics, and saved itineraries | Member 2 | Member 1 |
 | Festivals, alerts, notifications, subscriptions, and deployment | Member 3 | Member 2 |
 | Hidden-gem premium authorization | Members 1 and 3 | Member 2 |
 | Complete onboarding-to-discovery workflow | Member 1 | Member 2 |
@@ -592,9 +559,9 @@ Each member completes features in this order:
 
 - Member 1 connects authentication to all protected tabs and requests.
 - Member 2 connects destination details to bucket-list and check-in actions.
-- Member 3 connects location data to festivals, weather, safety alerts, and notifications.
+- Member 3 connects user-requested foreground location to weather and safety alerts, with manual region or destination selection as the fallback.
 - Members 1 and 3 jointly integrate destination visibility with the server-side premium-entitlement check.
-- Members 1 and 2 connect generated itineraries to Member 2's persisted `itineraries` schema and group-trip workspace.
+- Members 1 and 2 connect generated itineraries to Member 2's user-owned persisted `itineraries` schema.
 - All members resolve contract mismatches and perform cross-feature testing.
 
 ### Phase 4: Testing and presentation
@@ -608,7 +575,7 @@ Each member completes features in this order:
 
 ## 13. Full Product MVP and Stretch-Goal Boundary
 
-This section describes the MVP for the complete Saraya product, not the smaller current Shipathon demonstration. During the Shipathon, the current roles and shared demonstration flow in Section 3 take priority. All features below remain part of the long-term product plan.
+This section defines the current MVP boundary for the complete Saraya product. The ownership assignments in Section 3 and the detailed responsibilities throughout this document apply to this work.
 
 ### Required MVP
 
@@ -616,7 +583,7 @@ This section describes the MVP for the complete Saraya product, not the smaller 
 - Destination discovery and search — Member 1
 - Destination and cultural-guide details — Member 1
 - Bucket-list CRUD — Member 2
-- GPS-based check-in and travel journal — Member 2
+- Manual check-in and travel journal — Member 2
 - Achievements and statistics — Member 2
 - Festival list and details — Member 3
 - Weather and location-based safety alerts — Member 3
@@ -631,8 +598,6 @@ This section describes the MVP for the complete Saraya product, not the smaller 
 | Offline journal queue and later synchronization | Member 2 | Member 1 |
 | AI itinerary generator | Member 1 | Member 2 |
 | Hidden-gem premium access | Member 1 | Member 3 |
-| Collaborative group trips and voting | Member 2 | Member 1 |
-| Expense splitting | Member 2 | Member 3 |
 | Offline maps | Member 3 | Member 1 |
 | WebSocket live alerts | Member 3 | Member 2 |
 
@@ -654,7 +619,7 @@ Stretch features must not delay the required MVP.
 | Member | Mobile scope | Backend scope | Database scope | Additional ownership |
 | --- | --- | --- | --- | --- |
 | Member 1 | Accounts, discovery, and AI-itinerary screens | 5 feature modules plus maps and OpenAI | 4 core tables plus destination geospatial work | Navigation, design system, shared types, API documentation, demo flow |
-| Member 2 | Journey, gamification, and group-trip screens | 5 feature modules and photo storage | 9 core/supporting tables plus check-in, trip, and itinerary persistence | Validation, database documentation, testing plan, test evidence |
+| Member 2 | Journey and gamification screens | 4 feature modules and photo storage | 5 core/supporting tables plus manual check-in and itinerary persistence | Validation, database documentation, testing plan, test evidence |
 | Member 3 | 5 major screens and events/safety modules | 4 feature modules, 3 integrations, and 2 jobs | 5 core tables plus alert geospatial work | Deployment, CI, environment configuration, README, security documentation |
 
 The counts are not identical because task difficulty differs. Member 3 has fewer ordinary content screens but owns more external integrations, premium entitlement infrastructure, and deployment work. Member 2 owns the most stateful workflows and their normalized persistence. Member 1 owns authentication, the broadest browsing workflow, and the OpenAI integration. This keeps the expected development effort approximately balanced.

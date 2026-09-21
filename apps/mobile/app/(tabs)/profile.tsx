@@ -1,3 +1,3 @@
-import { ComingSoonScreen } from '@/ui/components';
+import { ProfileScreen } from '@/features/profile/screens/ProfileScreen';
 
-export default function ProfileRoute() { return <ComingSoonScreen owner="Member 1 — later milestone" title="Profile" />; }
+export default ProfileScreen;

@@ -13,6 +13,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { initializeRevenueCat } from '@/features/subscriptions';
 import { colors } from '@/ui/theme';
+import { AuthProvider } from '@/features/auth/AuthProvider';
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -32,8 +33,10 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+      <AuthProvider>
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

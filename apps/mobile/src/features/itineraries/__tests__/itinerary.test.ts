@@ -1,6 +1,6 @@
-import { tripPreferencesSchema } from '@saraya/contracts';
+import { tripPreferencesSchema, type GeneratedItinerary } from '@saraya/contracts';
 
-import { createMockItinerary } from '../services/mockAdapters';
+import { ApiItineraryGateway } from '../services/adapters';
 
 const preferences = tripPreferencesSchema.parse({
   destinationId: 'siargao',
@@ -12,16 +12,69 @@ const preferences = tripPreferencesSchema.parse({
   accessibilityNeeds: 'Step-free options where possible',
 });
 
-describe('itinerary adapters', () => {
-  it('creates the requested number of structured days without Cebu assumptions', () => {
-    const itinerary = createMockItinerary(preferences);
-    expect(itinerary.days).toHaveLength(5);
-    expect(itinerary.title).toContain('Siargao');
-    expect(itinerary.title).not.toContain('Cebu');
-    expect(itinerary.days.every((day) => day.stops.length === 4)).toBe(true);
+const itinerary: GeneratedItinerary = {
+  id: 'itinerary-1',
+  destinationId: 'siargao',
+  title: 'Five days in Siargao',
+  subtitle: 'A balanced island itinerary',
+  preferences,
+  days: [
+    {
+      dayNumber: 1,
+      title: 'Arrival and local orientation',
+      stops: [
+        {
+          id: 'arrival',
+          time: '9:00 AM',
+          title: 'Arrival',
+          detail: 'Transfer from the airport.',
+          kind: 'transport',
+        },
+      ],
+    },
+  ],
+  generatedAt: '2026-09-19T00:00:00.000Z',
+};
+
+describe('itinerary API gateway', () => {
+  beforeEach(() => {
+    process.env.EXPO_PUBLIC_API_BASE_URL = 'https://api.saraya.test';
+    globalThis.fetch = jest.fn();
   });
 
-  it('rejects missing interests before generation', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+    delete process.env.EXPO_PUBLIC_API_BASE_URL;
+  });
+
+  it('generates an itinerary through the API', async () => {
+    jest.mocked(globalThis.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => itinerary,
+    } as Response);
+
+    await expect(new ApiItineraryGateway().generate(preferences)).resolves.toEqual(itinerary);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.saraya.test/itineraries/generate',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(preferences) }),
+    );
+  });
+
+  it('saves an itinerary through the API', async () => {
+    jest.mocked(globalThis.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({}),
+    } as Response);
+
+    await expect(new ApiItineraryGateway().save(itinerary)).resolves.toBeUndefined();
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      'https://api.saraya.test/itineraries',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(itinerary) }),
+    );
+  });
+
+  it('rejects invalid preferences before an API call is made', () => {
     expect(() => tripPreferencesSchema.parse({ ...preferences, interests: [] })).toThrow();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 });

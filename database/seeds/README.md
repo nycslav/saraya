@@ -1,6 +1,6 @@
 # Seed data
 
-Keep reproducible demo datasets here for users, destinations, cultural guides, bucket-list items, check-ins, achievements, group trips, itineraries, festivals, and clearly labeled demonstration safety alerts.
+Keep reproducible demo datasets here for users, destinations, cultural guides, bucket-list items, check-ins, achievements, saved itineraries, festivals, and clearly labeled demonstration safety alerts.
 
 `festivals.json` is the canonical hackathon festival dataset. Every record must pass the shared
 festival contract, retain direct provenance URLs, distinguish recurring timing from verified annual

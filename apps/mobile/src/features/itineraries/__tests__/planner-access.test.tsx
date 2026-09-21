@@ -64,7 +64,7 @@ jest.mock('@/features/subscriptions', () => ({
   },
 }));
 
-jest.mock('../services/mockAdapters', () => ({
+jest.mock('../services/adapters', () => ({
   itineraryGateway: {
     generate: (...args: unknown[]) => mockGenerate(...args),
     save: (...args: unknown[]) => mockSaveItinerary(...args),
