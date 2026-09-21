@@ -22,8 +22,8 @@ npm run lint --workspace=@saraya/api
 npm run build --workspace=@saraya/api
 ```
 
-When `DATABASE_URL` is configured outside tests, the destination module reads from PostgreSQL and
-uses PostGIS for nearby searches. Without database configuration, it falls back to the validated
+When `DATABASE_URL` is configured outside tests, the destination module reads from PostgreSQL.
+Without database configuration, it falls back to the validated
 records in `database/seeds/destinations.json` so API development can continue independently.
 
 Initialize a configured database with `npm run db:migrate`, then load the catalog with

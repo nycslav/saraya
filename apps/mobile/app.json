@@ -6,7 +6,16 @@
     "orientation": "portrait",
     "scheme": "saraya",
     "userInterfaceStyle": "light",
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Saraya to add a travel photo to your Journey.",
+          "cameraPermission": "Allow Saraya to take a travel photo for your Journey."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

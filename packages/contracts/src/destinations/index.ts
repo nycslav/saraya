@@ -46,22 +46,8 @@ export const discoveryQuerySchema = z.object({
   interest: z.string().trim().optional(),
 });
 
-export const nearbyDestinationQuerySchema = z.object({
-  latitude: z.coerce.number().min(-90).max(90),
-  longitude: z.coerce.number().min(-180).max(180),
-  radiusKm: z.coerce.number().positive().max(500).default(25),
-  limit: z.coerce.number().int().positive().max(100).default(20),
-});
-
-export const nearbyDestinationSummarySchema = destinationSummarySchema.extend({
-  distanceKm: z.number().nonnegative(),
-});
-
 export type IslandGroup = z.infer<typeof islandGroupSchema>;
 export type DestinationCategory = z.infer<typeof destinationCategorySchema>;
 export type DestinationSummary = z.infer<typeof destinationSummarySchema>;
 export type DestinationDetail = z.infer<typeof destinationDetailSchema>;
 export type DiscoveryQuery = z.infer<typeof discoveryQuerySchema>;
-export type NearbyDestinationQuery = z.infer<typeof nearbyDestinationQuerySchema>;
-export type NearbyDestinationQueryInput = z.input<typeof nearbyDestinationQuerySchema>;
-export type NearbyDestinationSummary = z.infer<typeof nearbyDestinationSummarySchema>;

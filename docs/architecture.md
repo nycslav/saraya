@@ -10,5 +10,5 @@ Expo mobile -> typed API client -> Express modules -> PostgreSQL/PostGIS
 
 External providers are accessed through backend adapters. Provider secrets and privileged calls must never be bundled into the mobile application.
 
-The required MVP is implemented before offline mode, AI itineraries, hidden gems, collaborative trips, expenses, or WebSocket live alerts.
+The required MVP is implemented before offline mode, AI itineraries, hidden gems, or WebSocket live alerts.
 

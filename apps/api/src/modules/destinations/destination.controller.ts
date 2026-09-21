@@ -12,18 +12,6 @@ export async function listDestinations(request: Request, response: Response, nex
   }
 }
 
-export async function listNearbyDestinations(
-  request: Request,
-  response: Response,
-  next: NextFunction,
-) {
-  try {
-    response.json(await destinationService.listNearby(request.query));
-  } catch (error) {
-    next(error);
-  }
-}
-
 export async function getDestination(request: Request, response: Response, next: NextFunction) {
   try {
     const rawId = request.params.id;

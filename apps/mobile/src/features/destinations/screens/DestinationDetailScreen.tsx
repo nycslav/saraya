@@ -1,6 +1,6 @@
 import type { DestinationDetail } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Heart, MapPin, Sparkles, Star } from 'lucide-react-native';
+import { ArrowLeft, Heart, MapPin, NotebookPen, Sparkles, Star } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -99,6 +99,13 @@ export function DestinationDetailScreen() {
           loading={bucketSaving}
           onPress={() => void saveToBucket()}
           style={styles.action}
+        />
+        <Button
+          icon={NotebookPen}
+          label="Record a visit"
+          onPress={() => router.push({ pathname: '/check-ins/create', params: { destinationId: destination.id } } as never)}
+          style={styles.action}
+          variant="secondary"
         />
         <Button
           icon={Sparkles}

@@ -30,13 +30,13 @@ Saraya is a comprehensive travel companion application designed specifically for
 
 The MVP (Minimum Viable Product) focuses on five core features that address the key pain points of Philippines travel:
 
-- Location-based personalized discovery and bucket list curation
+- Preference-based destination discovery and bucket list curation
 - Interactive travel journal with gamified check-ins and culturally-relevant achievements
 - Comprehensive cultural and historical guides with practical etiquette
 - Real-time safety and weather alerts integrated with PAGASA
-- Festival and event tracker with location-based notifications
+- Festival and event tracker with itinerary-based notifications
 
-Premium features unlock advanced capabilities including offline functionality, AI-powered multi-destination itinerary generation, hidden gem discovery, collaborative group trip planning, and priority notifications.
+Premium features unlock advanced capabilities including offline functionality, AI-powered multi-destination itinerary generation, hidden gem discovery, and priority notifications.
 
 ---
 
@@ -49,7 +49,7 @@ Premium features unlock advanced capabilities including offline functionality, A
 - **Backend:** Node.js with Express and TypeScript using a RESTful API
 - **Database:** PostgreSQL with PostGIS for geospatial queries
 - **Real-time:** Push notifications for the MVP; WebSockets are a post-MVP enhancement
-- **Caching:** Redis for location-based queries and session management
+- **Caching:** Redis for frequently requested content and session management
 - **Maps:** Google Maps behind a backend adapter; an alternative provider may be substituted
 - **Notifications:** Firebase Cloud Messaging
 - **Subscriptions:** RevenueCat
@@ -70,7 +70,7 @@ Browse basic destination information and view public events with limited functio
 Full access to MVP features including personalized discovery, bucket lists, travel journal, check-ins, cultural guides, and safety alerts. Limited to single-destination itinerary recommendations.
 
 **Premium Users:**
-Access to all features including offline mode, AI itinerary generation, hidden gems database, collaborative group trips, and ad-free experience.
+Access to all features including offline mode, AI itinerary generation, hidden gems database, and ad-free experience.
 
 ### Authentication Methods:
 
@@ -88,7 +88,6 @@ Access to all features including offline mode, AI itinerary generation, hidden g
 **Description:**
 Dynamic recommendation engine that suggests establishments, activities, and tourist spots based on:
 
-- User's current GPS location
 - User profile preferences (travel style, budget, interests)
 - Time available (day trip vs week-long)
 - Season and weather conditions
@@ -98,7 +97,7 @@ Dynamic recommendation engine that suggests establishments, activities, and tour
 - Browse recommendations in a feed or map view
 - Add items to personal bucket list with note-taking capability
 - Filter by category (beaches, mountains, food, culture, adventure)
-- Sort by distance, rating, or popularity
+- Sort by rating or popularity
 
 ### 4.2 Interactive Tracking & Localized Gamification
 
@@ -107,7 +106,7 @@ Transform travel into an engaging game by tracking visited locations and rewardi
 
 **Key Features:**
 
-- GPS-based check-in system (requires GPS proximity confirmation)
+- Manual destination check-ins with optional visit dates
 - Travel journal with photo upload and location tagging
 - Achievements unlocked at thresholds (e.g., Island Hopper after 5 islands)
 - Culturally-themed badges: Lechon Connoisseur, Beach Collector, Heritage Explorer
@@ -143,7 +142,7 @@ Integration with PAGASA (Philippine Atmospheric, Geophysical and Astronomical Se
 ### 4.5 Festival & Event Tracker
 
 **Description:**
-Comprehensive database of Philippine festivals with location-based recommendations and event survival guides.
+Comprehensive database of Philippine festivals with regional recommendations and event survival guides.
 
 **Key Features:**
 
@@ -195,17 +194,7 @@ Access to off-the-beaten-path locations including:
 - Underground arts and cultural venues
 - Sustainable tourism experiences
 
-### 5.4 Collaborative Group Trips
-
-Shared workspace for group travel planning (barkada trips):
-
-- Invite friends to collaborative itineraries
-- Democratic voting on bucket list items
-- Expense splitting calculator
-- Shared notes and decision history
-- Group chat and calendar coordination
-
-### 5.5 Ad-Free & Priority Booking Notifications
+### 5.4 Ad-Free & Priority Booking Notifications
 
 - Remove all advertisements from the app
 - Early push notifications when festival hotels availability drops
@@ -242,10 +231,10 @@ Shared workspace for group travel planning (barkada trips):
 **Bottom Tab Navigation with 5 main sections:**
 
 **Tab 1: Discover (Home)**
-Landing screen showing personalized recommendations in feed or map view. Quick filters for category and distance. Search bar for specific destinations. Weather widget for current location.
+Landing screen showing personalized recommendations in feed or map view. Quick filters for category and region. Search bar for specific destinations. Local weather is requested explicitly by the user.
 
 **Tab 2: My Journey (Travel Journal)**
-Travel timeline showing check-ins and journal entries with photos. Map view of visited locations. Statistics dashboard (islands visited, places checked in, achievements). Check-in button for GPS-based check-ins.
+Travel timeline showing manual check-ins and journal entries with photos. Map view of visited destinations using their catalog coordinates. Statistics dashboard (islands visited, places checked in, achievements). Add-visit button for manual check-ins.
 
 **Tab 3: Bucket List**
 Curated list of saved destinations and activities. Organizable by region, priority, or type. Filtering and sorting options. Quick add/remove functionality.
@@ -267,12 +256,12 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - Location map with directions
 - Reviews and visitor comments
 - Add to bucket list button
-- Check-in button (if nearby)
+- Record visit button
 
 **Check-In & Journal Entry Screen**
 
 - Photo upload interface
-- Location verification (GPS confirmation)
+- Destination and optional visit-date selection
 - Journal entry text field
 - Mood/experience emoji selector
 - Tag selection (companions, activities)
@@ -312,11 +301,11 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 1. User arrives at destination
 2. Open app → navigate to My Journey or destination detail
-3. Tap 'Check In' button
-4. App verifies GPS location (within 100-200m)
-5. User captures photo and writes journal entry
-6. System checks for new achievements and displays badge
-7. Check-in saved to journey timeline
+3. Tap 'Record Visit'
+4. User confirms the destination and visit date
+5. User optionally captures a photo and writes a journal entry
+6. System checks for new achievements and displays a badge
+7. Visit is saved to the journey timeline
 
 ### 7.4 Safety Alert Flow
 
@@ -335,16 +324,6 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 5. Add to calendar → system sets notification reminders
 6. View accommodation suggestions
 
-### 7.6 Premium Feature: Group Trip Planning
-
-1. Premium user creates group trip workspace
-2. Invites friends via share link or contact selection
-3. Friends accept and join workspace
-4. All members vote on bucket list items to include
-5. Premium AI itinerary generator creates multi-destination itinerary
-6. Members discuss and finalize via shared notes
-7. Expense calculator splits costs among members
-
 ---
 
 ## 8. TECHNICAL REQUIREMENTS
@@ -352,7 +331,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Frontend Requirements:
 
 - Responsive design for iOS and Android
-- GPS location services integration
+- GPS location services only when the user requests local weather or safety information
 - Camera and photo library access
 - Push notification handling
 - Offline storage with SQLite or Realm
@@ -403,7 +382,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - id, name, category, description, historical_context, location (PostGIS Point), region, latitude, longitude, thumbnail_image, photos[], rating, review_count, is_hidden_gem (premium), created_at
 
 **CheckIn**
-- id, user_id, destination_id, timestamp, location (PostGIS Point), photo_url, journal_entry, mood, companions[], tags[], achievement_unlocked
+- id, user_id, destination_id, visited_at, photo_url, journal_entry, mood, companions[], tags[], created_at, updated_at
 
 **BucketListItem**
 - id, user_id, destination_id, added_at, priority, personal_notes, status (planned/visited/skipped)
@@ -419,9 +398,6 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 **SafetyAlert**
 - id, alert_type (weather/travel_advisory/cancellation), region, severity, message, location (PostGIS geometry), start_time, end_time, created_at
-
-**GroupTrip**
-- id, trip_name, creator_id, members[], destination_ids[], start_date, end_date, budget, created_at, is_draft
 
 **Itinerary**
 - id, trip_id, day_number, destination_id, time_slot, notes, accommodation, dining, created_at
@@ -443,10 +419,9 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 ### Discovery Endpoints:
 
-- `GET /destinations` - Get personalized recommendations (location-based)
+- `GET /destinations` - Get preference-based destination recommendations
 - `GET /destinations/:id` - Get destination detail with cultural guides
 - `GET /destinations/search` - Search destinations by keyword
-- `GET /destinations/nearby` - Get nearby destinations within radius
 
 ### Bucket List Endpoints:
 
@@ -481,15 +456,6 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - `GET /weather` - Get current weather for user's location or destination
 - `GET /alerts/:region` - Get alerts for specific region
 
-### Group Trip Endpoints (Premium):
-
-- `POST /group-trips` - Create new group trip
-- `GET /group-trips/:id` - Get group trip details
-- `POST /group-trips/:id/invite` - Invite member to group trip
-- `POST /group-trips/:id/vote` - Vote on bucket list item
-- `POST /group-trips/:id/generate-itinerary` - Generate AI itinerary
-- `PATCH /group-trips/:id/expense-split` - Calculate shared expenses
-
 ---
 
 ## 11. INTEGRATION POINTS
@@ -503,7 +469,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Maps & Location Services
 
 - Google Maps API for mapping, directions, and place details
-- Distance calculations for location-based filtering
+- Destination coordinates for maps, directions, requested local weather, and itinerary planning
 - Offline maps for premium users (downloaded tile data)
 
 ### Payment & Subscription
@@ -523,7 +489,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Push Notifications
 
 - Firebase Cloud Messaging or OneSignal
-- Segmented targeting based on user preferences and location
+- Segmented targeting based on user preferences and explicitly requested local context
 - Templates for alerts, events, and promotional messages
 
 ---
@@ -558,7 +524,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 **Hours 24-36 (if extended hackathon):**
 
-- Begin one premium feature (group trips or AI itinerary)
+- Continue the premium AI itinerary flow
 - Integrate RevenueCat SDK, configure Google Play/App Store sandbox environments, and implement a paywall screen to unlock Entitlements.
 - Performance optimization
 - Prepare demo and presentation materials
@@ -589,7 +555,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Team Responsibilities:
 
 **Backend Lead (1-2 people):**
-API development, database design, authentication, location-based queries
+API development, database design, authentication, and destination queries
 
 **Frontend Lead (1-2 people):**
 Mobile/web app UI/UX, integration with APIs, photo upload, maps

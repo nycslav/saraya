@@ -11,7 +11,7 @@ describe('PostgresDestinationRepository', () => {
     mockQuery.mockReset();
   });
 
-  it('uses PostGIS longitude-latitude ordering and maps nearby results', async () => {
+  it('maps complete destination details and keeps canonical coordinates', async () => {
     mockQuery.mockResolvedValue({
       rows: [
         {
@@ -25,25 +25,28 @@ describe('PostgresDestinationRepository', () => {
           summary: 'First sentence. Second sentence.',
           hero_tone: 'forest',
           tags: ['Arts', 'Food', 'Mountains'],
-          distance_km: '0.125',
+          latitude: '16.4023',
+          longitude: '120.596',
+          description: 'A mountain city.',
+          highlights: ['Burnham Park'],
+          best_for: ['Food'],
+          historical_context: 'A highland city with a layered history.',
+          etiquette: ['Respect local communities.'],
+          local_phrase: 'Naimbag nga aldaw.',
         },
       ],
     });
 
     const repository = new PostgresDestinationRepository();
-    const result = await repository.findNearby({
-      latitude: 16.4023,
-      longitude: 120.596,
-      radiusKm: 25,
-      limit: 5,
-    });
+    const result = await repository.findById('baguio');
 
-    expect(result).toEqual([
-      expect.objectContaining({ id: 'baguio', rating: 4.8, distanceKm: 0.125 }),
-    ]);
+    expect(result).toEqual(expect.objectContaining({
+      id: 'baguio', rating: 4.8,
+      coordinates: { latitude: 16.4023, longitude: 120.596 },
+    }));
     expect(mockQuery).toHaveBeenCalledWith(
-      expect.stringContaining('ST_DWithin'),
-      [120.596, 16.4023, 25, 5],
+      expect.stringContaining('ST_Y(location::geometry)'),
+      ['baguio'],
     );
   });
 });

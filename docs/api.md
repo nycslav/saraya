@@ -8,7 +8,7 @@ The team must agree on these contracts before parallel feature development:
 - authentication and token-refresh behavior
 - pagination format
 - date/time and coordinate representation
-- idempotency rules for check-ins, invitations, webhooks, and job processing
+- idempotency rules for check-ins, webhooks, and job processing
 
 Use plural resource names consistently, such as `/check-ins`, `/destinations`, and `/festivals`.
 
@@ -37,12 +37,6 @@ exceeding the product specification's requirement of at least 50 sample destinat
 
 Returns complete destination details, including coordinates, highlights, best-for tags, and the
 cultural guide. An unknown ID returns `404` with the `DESTINATION_NOT_FOUND` error code.
-
-### `GET /destinations/nearby`
-
-Returns destinations ordered from nearest to farthest. It requires `latitude` and `longitude` and
-accepts `radiusKm` (default `25`, maximum `500`) and `limit` (default `20`, maximum `100`). Each
-summary includes `distanceKm`. PostgreSQL deployments use indexed PostGIS distance queries.
 
 Invalid query parameters return `400` with the `VALIDATION_ERROR` error code. Unknown routes
 return `404` with `ROUTE_NOT_FOUND`.
@@ -101,6 +95,36 @@ Updates one or more of `priority`, `personalNotes`, and `status`. Status values 
 ### `DELETE /bucket-list/:id`
 
 Deletes the current user's item and returns `204`. Unknown items return `404`.
+
+## Journey and Achievement API
+
+Journey routes use the backend-controlled `demo-user` identity until shared JWT middleware is
+available. Check-ins are manual travel records and do not accept or validate device GPS data.
+
+### `POST /check-ins`
+
+Records a selected destination, visit date, journal entry, mood, companions, tags, and optional
+photo URL. It returns the check-in and any achievements unlocked by the new travel history.
+Future dates return `400`, unknown destinations return `404`, and repeated submissions for the
+same destination within five minutes return `409`.
+
+### `GET /check-ins`, `/check-ins/timeline`, `/check-ins/map`, `/check-ins/statistics`
+
+Returns raw history, destination-enriched chronological entries, catalog-coordinate map markers,
+and aggregate visit/badge statistics respectively.
+
+### `POST /check-ins/photos`
+
+Accepts one `photo` multipart field. JPEG, PNG, and WebP images up to 5 MB are stored with a
+server-generated filename. The storage adapter currently uses local development storage.
+
+### `PATCH /check-ins/:id` and `DELETE /check-ins/:id`
+
+Updates editable journal fields or removes a check-in. Unknown records return `404`.
+
+### `GET /achievements` and `GET /user/achievements`
+
+Returns all badge definitions with progress or only the current user's unlocked badges.
 
 ## Local development
 

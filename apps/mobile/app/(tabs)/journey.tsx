@@ -1,3 +1,3 @@
-import { ComingSoonScreen } from '@/ui/components';
+import { JourneyScreen } from '@/features/journey/screens/JourneyScreen';
 
-export default function JourneyRoute() { return <ComingSoonScreen owner="Member 2" title="My Journey" />; }
+export default function JourneyRoute() { return <JourneyScreen />; }

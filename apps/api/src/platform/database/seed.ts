@@ -1,3 +1,4 @@
+import { seedAchievements } from '../../modules/achievements/achievement.seed';
 import { seedDestinations } from '../../modules/destinations/destination.seed';
 import { closePool, getPool } from './pool';
 
@@ -58,8 +59,29 @@ async function seed() {
         ],
       );
     }
+    for (const achievement of seedAchievements) {
+      await client.query(
+        `INSERT INTO achievements (
+          id, title, description, icon, category, rule_type, threshold,
+          destination_category, island_group
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT (id) DO UPDATE SET
+          title = EXCLUDED.title,
+          description = EXCLUDED.description,
+          icon = EXCLUDED.icon,
+          category = EXCLUDED.category,
+          rule_type = EXCLUDED.rule_type,
+          threshold = EXCLUDED.threshold,
+          destination_category = EXCLUDED.destination_category,
+          island_group = EXCLUDED.island_group,
+          updated_at = now()`,
+        [achievement.id, achievement.title, achievement.description, achievement.icon,
+          achievement.category, achievement.ruleType, achievement.threshold,
+          achievement.destinationCategory, achievement.islandGroup],
+      );
+    }
     await client.query('COMMIT');
-    console.log(`Seeded ${seedDestinations.length} destinations.`);
+    console.log(`Seeded ${seedDestinations.length} destinations and ${seedAchievements.length} achievements.`);
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

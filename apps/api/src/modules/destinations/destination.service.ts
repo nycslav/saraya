@@ -1,4 +1,4 @@
-import { discoveryQuerySchema, nearbyDestinationQuerySchema } from '@saraya/contracts';
+import { discoveryQuerySchema } from '@saraya/contracts';
 
 import {
   createDestinationRepository,
@@ -11,11 +11,6 @@ export class DestinationService {
   list(rawQuery: unknown) {
     const query = discoveryQuerySchema.parse(rawQuery);
     return this.repository.findAll(query);
-  }
-
-  listNearby(rawQuery: unknown) {
-    const query = nearbyDestinationQuerySchema.parse(rawQuery);
-    return this.repository.findNearby(query);
   }
 
   getById(id: string) {

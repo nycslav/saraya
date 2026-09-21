@@ -94,3 +94,64 @@ CREATE INDEX itineraries_user_idx ON itineraries (user_id) WHERE user_id IS NOT 
 CREATE INDEX itinerary_stops_place_idx
   ON itinerary_stops (place_provider, place_id)
   WHERE place_id IS NOT NULL;
+
+CREATE TABLE bucket_list_items (
+  id text PRIMARY KEY,
+  user_id text NOT NULL,
+  destination_id text NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
+  added_at timestamptz NOT NULL DEFAULT now(),
+  priority text NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+  personal_notes text NOT NULL DEFAULT '' CHECK (char_length(personal_notes) <= 500),
+  status text NOT NULL DEFAULT 'planned' CHECK (status IN ('planned', 'visited', 'skipped')),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT bucket_list_items_user_destination_unique UNIQUE (user_id, destination_id)
+);
+
+CREATE INDEX bucket_list_items_user_added_idx ON bucket_list_items (user_id, added_at DESC);
+
+CREATE TABLE check_ins (
+  id text PRIMARY KEY,
+  user_id text NOT NULL,
+  destination_id text NOT NULL REFERENCES destinations(id) ON DELETE RESTRICT,
+  visited_at timestamptz NOT NULL,
+  journal_entry text NOT NULL DEFAULT '' CHECK (char_length(journal_entry) <= 2000),
+  mood text CHECK (mood IN ('calm', 'happy', 'brave', 'amazed', 'reflective')),
+  companions text[] NOT NULL DEFAULT '{}',
+  tags text[] NOT NULL DEFAULT '{}',
+  photo_url text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX check_ins_user_visited_idx ON check_ins (user_id, visited_at DESC);
+CREATE INDEX check_ins_user_destination_idx ON check_ins (user_id, destination_id);
+
+CREATE TABLE achievements (
+  id text PRIMARY KEY,
+  title text NOT NULL,
+  description text NOT NULL,
+  icon text NOT NULL,
+  category text NOT NULL CHECK (category IN ('exploration', 'food', 'culture', 'nature')),
+  rule_type text NOT NULL CHECK (rule_type IN ('total_visits', 'destination_category', 'island_group', 'distinct_island_groups')),
+  threshold integer NOT NULL CHECK (threshold > 0),
+  destination_category text,
+  island_group text CHECK (island_group IN ('Luzon', 'Visayas', 'Mindanao')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT achievements_rule_parameters_check CHECK (
+    (rule_type = 'destination_category' AND destination_category IS NOT NULL AND island_group IS NULL)
+    OR (rule_type = 'island_group' AND island_group IS NOT NULL AND destination_category IS NULL)
+    OR (rule_type IN ('total_visits', 'distinct_island_groups') AND destination_category IS NULL AND island_group IS NULL)
+  )
+);
+
+CREATE TABLE user_achievements (
+  id text PRIMARY KEY,
+  user_id text NOT NULL,
+  achievement_id text NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
+  check_in_id text REFERENCES check_ins(id) ON DELETE SET NULL,
+  unlocked_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT user_achievements_user_badge_unique UNIQUE (user_id, achievement_id)
+);
+
+CREATE INDEX user_achievements_user_unlocked_idx ON user_achievements (user_id, unlocked_at DESC);

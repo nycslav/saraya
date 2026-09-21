@@ -51,7 +51,6 @@ describe('ItineraryService place resolution', () => {
   it('replaces AI labels with the verified candidate and exposes its reference', async () => {
     const destinations: DestinationRepository = {
       findAll: jest.fn(),
-      findNearby: jest.fn(),
       findById: jest.fn().mockResolvedValue(destination),
     };
     const generator: ItineraryGenerator = {

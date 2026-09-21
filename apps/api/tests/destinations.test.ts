@@ -50,37 +50,6 @@ describe('destination API', () => {
     ]);
   });
 
-  it('returns nearby destinations ordered by distance', async () => {
-    const response = await request(app).get('/destinations/nearby').query({
-      latitude: 16.4023,
-      longitude: 120.596,
-      radiusKm: 25,
-      limit: 5,
-    });
-
-    expect(response.status).toBe(200);
-    expect(response.body[0]).toEqual(
-      expect.objectContaining({ id: 'baguio', distanceKm: expect.any(Number) }),
-    );
-    expect(response.body[0].distanceKm).toBeCloseTo(0, 5);
-    for (let index = 1; index < response.body.length; index += 1) {
-      expect(response.body[index].distanceKm).toBeGreaterThanOrEqual(
-        response.body[index - 1].distanceKm,
-      );
-    }
-  });
-
-  it('rejects invalid nearby search values', async () => {
-    const response = await request(app).get('/destinations/nearby').query({
-      latitude: 91,
-      longitude: 120.596,
-      radiusKm: 0,
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error.code).toBe('VALIDATION_ERROR');
-  });
-
   it('returns destination details', async () => {
     const response = await request(app).get('/destinations/batanes');
 

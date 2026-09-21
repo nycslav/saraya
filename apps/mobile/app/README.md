@@ -7,5 +7,5 @@ Planned route groups:
 - `(auth)` — login, registration, password reset, onboarding
 - `(tabs)` — discover, journey, bucket list, events, profile
 - `destinations`, `check-ins`, `achievements`, `festivals`, `alerts`
-- `premium` — paywall, itineraries, and group trips
+- `premium` — paywall, itineraries, offline downloads, and hidden gems
 

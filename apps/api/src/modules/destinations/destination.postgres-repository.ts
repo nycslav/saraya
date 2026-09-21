@@ -1,12 +1,9 @@
 import {
   destinationDetailSchema,
   destinationSummarySchema,
-  nearbyDestinationSummarySchema,
   type DestinationDetail,
   type DestinationSummary,
   type DiscoveryQuery,
-  type NearbyDestinationQuery,
-  type NearbyDestinationSummary,
 } from '@saraya/contracts';
 import type { QueryResultRow } from 'pg';
 
@@ -32,7 +29,6 @@ interface DestinationRow extends QueryResultRow {
   historical_context?: string;
   etiquette?: string[];
   local_phrase?: string;
-  distance_km?: string | number;
 }
 
 const summaryColumns = `
@@ -54,32 +50,6 @@ export class PostgresDestinationRepository implements DestinationRepository {
     );
 
     return result.rows.map((row) => destinationSummarySchema.parse(mapSummary(row)));
-  }
-
-  async findNearby(query: NearbyDestinationQuery): Promise<NearbyDestinationSummary[]> {
-    const result = await getPool().query<DestinationRow>(
-      `SELECT ${summaryColumns},
-              ST_Distance(
-                location,
-                ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
-              ) / 1000.0 AS distance_km
-       FROM destinations
-       WHERE ST_DWithin(
-         location,
-         ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
-         $3 * 1000.0
-       )
-       ORDER BY distance_km ASC, rating DESC
-       LIMIT $4`,
-      [query.longitude, query.latitude, query.radiusKm, query.limit],
-    );
-
-    return result.rows.map((row) =>
-      nearbyDestinationSummarySchema.parse({
-        ...mapSummary(row),
-        distanceKm: Number(row.distance_km),
-      }),
-    );
   }
 
   async findById(id: string): Promise<DestinationDetail | null> {
