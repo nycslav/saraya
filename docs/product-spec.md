@@ -3,6 +3,7 @@
 ## A Personalized Guide for Planning and Travelling to the Philippines
 
 ### Product Documentation & Workflow Specification
+
 ### Hackathon Project
 
 ---
@@ -156,13 +157,15 @@ Integration with PAGASA (Philippine Atmospheric, Geophysical and Astronomical Se
 ### 4.5 Festival & Event Tracker
 
 **Description:**
-Comprehensive database of Philippine festivals with location-based recommendations and event survival guides.
+Curated database of Philippine festivals with source-backed cultural information, explicitly
+verified annual schedules, location-based recommendations, and Saraya-authored survival guides.
 
 **Key Features:**
 
-- Calendar view of festivals by region and date
+- Calendar view by region and typical month, with exact dates only for verified occurrences
 - Filter by region, month, or interest
-- Detailed event information (dates, location, traditions)
+- Detailed event information with recurring, confirmed, estimated, cancelled, or unknown schedule status
+- Direct provenance links and a visible last-verification date on festival details
 - Survival guides for major events (Sinulog, Ati-Atihan, Panagbenga)
 - Push notifications for upcoming events within user's itinerary
 - Accommodation and dining tips during peak festival periods
@@ -343,7 +346,8 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 2. Filter by region or date range
 3. Tap festival for detail screen
 4. Read survival guide and traditions
-5. Add to calendar → system sets notification reminders
+5. Add a confirmed occurrence to the calendar; unconfirmed recurring or estimated periods cannot
+   silently become exact calendar events
 6. View accommodation suggestions
 
 ### 7.6 Premium Feature: Group Trip Planning
@@ -407,36 +411,50 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Core Data Models:
 
 **User**
+
 - id, email, password_hash, phone, first_name, last_name, profile_photo_url, travel_style, budget_range, favorite_regions, created_at, updated_at, last_login, is_premium, premium_acquired_at, revenuecat_app_user_id
 
 **Destination**
+
 - id, name, category, description, historical_context, location (PostGIS Point), region, latitude, longitude, thumbnail_image, photos[], rating, review_count, is_hidden_gem (premium), created_at
 
 **CheckIn**
+
 - id, user_id, destination_id, timestamp, location (PostGIS Point), photo_url, journal_entry, mood, companions[], tags[], achievement_unlocked
 
 **BucketListItem**
+
 - id, user_id, destination_id, added_at, priority, personal_notes, status (planned/visited/skipped)
 
 **Festival**
-- id, name, region, start_date, end_date, description, traditions, location (PostGIS Point), survival_guide, accommodation_tips[], dining_tips[], thumbnail_image
+
+- Stable identity: id, name, region, typical_month, recurrence_description, description, traditions, and location
+- Annual occurrence: schedule_year, status, confirmed dates when applicable, official schedule,
+  verification timestamp, and source references
+- Editorial guidance: explicitly Saraya-curated survival, accommodation, dining, and travel advice
 
 **Achievement**
+
 - id, title, description, icon, unlock_criteria, category (islands, food, culture, etc.)
 
 **UserAchievement**
+
 - id, user_id, achievement_id, unlocked_at, check_in_id (which check-in unlocked it)
 
 **SafetyAlert**
+
 - id, alert_type (weather/travel_advisory/cancellation), region, severity, message, location (PostGIS geometry), start_time, end_time, created_at
 
 **GroupTrip**
+
 - id, trip_name, creator_id, members[], destination_ids[], start_date, end_date, budget, created_at, is_draft
 
 **Itinerary**
+
 - id, trip_id, day_number, destination_id, time_slot, notes, accommodation, dining, created_at
 
 **CulturalGuide**
+
 - id, destination_id, category (etiquette/tipping/traditions/photography), content, images[], created_at, updated_at
 
 ---
