@@ -14,3 +14,13 @@ export function getApiBaseUrl() {
   }
   return baseUrl;
 }
+
+export function getGoogleWebClientId() {
+  const clientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID?.trim();
+  if (!clientId) {
+    throw new MobileConfigurationError(
+      'EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is required for Google sign-in.',
+    );
+  }
+  return clientId;
+}

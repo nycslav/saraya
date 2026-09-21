@@ -1,6 +1,7 @@
 import type { DestinationDetail, DestinationSummary } from '@saraya/contracts';
 
 import { ApiDestinationGateway } from '../gateways';
+import { groupDestinations } from '../screens/DiscoverScreen';
 
 const summary: DestinationSummary = {
   id: 'batanes',
@@ -74,5 +75,21 @@ describe('destination API gateway', () => {
       'EXPO_PUBLIC_API_BASE_URL is required',
     );
     expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('destination region feed', () => {
+  it('keeps the island-group order and sorts each section by rating then name', () => {
+    const results = groupDestinations([
+      { ...summary, id: 'cebu', name: 'Cebu', province: 'Cebu', region: 'Central Visayas', islandGroup: 'Visayas', rating: 4.7 },
+      { ...summary, id: 'sagada', name: 'Sagada', province: 'Mountain Province', region: 'Cordillera', rating: 4.9 },
+      { ...summary, id: 'siargao', name: 'Siargao', province: 'Surigao del Norte', region: 'Caraga', islandGroup: 'Mindanao', rating: 4.8 },
+      summary,
+    ]);
+
+    expect(Object.keys(results)).toEqual(['Luzon', 'Visayas', 'Mindanao']);
+    expect(results.Luzon.map((destination) => destination.name)).toEqual(['Batanes', 'Sagada']);
+    expect(results.Visayas.map((destination) => destination.name)).toEqual(['Cebu']);
+    expect(results.Mindanao.map((destination) => destination.name)).toEqual(['Siargao']);
   });
 });
