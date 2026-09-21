@@ -4,11 +4,50 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "db:migrate": "tsx src/platform/database/migrate.ts",
+    "db:seed": "tsx src/platform/database/seed.ts",
+    "build": "npm run typecheck && esbuild ./src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.js",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "jest"
+    "test": "jest --runInBand"
+  },
+  "dependencies": {
+    "@google/genai": "^2.23.0",
+    "@saraya/contracts": "0.1.0",
+    "@types/multer": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^18.0.0",
+    "express": "^5.1.0",
+    "multer": "^2.4.0",
+    "openai": "^7.18.0",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jest": "29.5.14",
+    "@types/node": "^24.3.0",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/parser": "^8.44.0",
+    "esbuild": "^0.28.2",
+    "eslint": "^9.39.5",
+    "jest": "~29.7.0",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.1",
+    "tsx": "^4.20.5",
+    "typescript": "~6.0.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/tests"
+    ],
+    "moduleNameMapper": {
+      "^@saraya/contracts$": "<rootDir>/../../packages/contracts/src/index.ts"
+    }
   }
 }
-

@@ -2,6 +2,19 @@ import { z } from 'zod';
 
 export const budgetSchema = z.enum(['Budget', 'Comfort', 'Premium']);
 export const travelPaceSchema = z.enum(['Relaxed', 'Balanced', 'Full days']);
+export const itineraryGenerationSourceSchema = z.enum(['gemini', 'openai', 'deterministic']);
+
+export const itineraryPlaceSchema = z.object({
+  provider: z.enum(['geoapify']),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().min(1),
+  address: z.string().min(1),
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }),
+});
 
 export const tripPreferencesSchema = z.object({
   destinationId: z.string().min(1),
@@ -19,6 +32,7 @@ export const itineraryStopSchema = z.object({
   title: z.string().min(1),
   detail: z.string().min(1),
   kind: z.enum(['transport', 'activity', 'meal', 'stay']),
+  place: itineraryPlaceSchema.optional(),
 });
 
 export const itineraryDaySchema = z.object({
@@ -30,6 +44,7 @@ export const itineraryDaySchema = z.object({
 export const generatedItinerarySchema = z.object({
   id: z.string().min(1),
   destinationId: z.string().min(1),
+  generationSource: itineraryGenerationSourceSchema,
   title: z.string().min(1),
   subtitle: z.string().min(1),
   preferences: tripPreferencesSchema,
@@ -49,6 +64,8 @@ export const itineraryStatusSchema = z.enum([
 
 export type Budget = z.infer<typeof budgetSchema>;
 export type TravelPace = z.infer<typeof travelPaceSchema>;
+export type ItineraryGenerationSource = z.infer<typeof itineraryGenerationSourceSchema>;
+export type ItineraryPlace = z.infer<typeof itineraryPlaceSchema>;
 export type TripPreferences = z.infer<typeof tripPreferencesSchema>;
 export type ItineraryStop = z.infer<typeof itineraryStopSchema>;
 export type ItineraryDay = z.infer<typeof itineraryDaySchema>;

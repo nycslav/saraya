@@ -8,4 +8,3 @@ Route groups:
 - `(tabs)` — discover, journey, bucket list, events, profile
 - `destinations`, `check-ins`, `achievements`, `festivals`, `alerts`
 - `premium` — paywall and itineraries
-

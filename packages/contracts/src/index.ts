@@ -1,4 +1,7 @@
 export * from './auth';
+export * from './achievements';
+export * from './bucket-list';
+export * from './check-ins';
 export * from './destinations';
 export * from './festivals';
 export * from './itineraries';

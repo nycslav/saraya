@@ -1,30 +1,69 @@
 import type { DestinationDetail } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, MapPin, Sparkles, Star } from 'lucide-react-native';
+import { ArrowLeft, Heart, MapPin, NotebookPen, Sparkles, Star } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Button, DestinationArtwork, LoadingState, Screen, SectionTitle, StatusPanel } from '@/ui/components';
+import {
+  Button,
+  DestinationArtwork,
+  LoadingState,
+  Screen,
+  SectionTitle,
+  StatusPanel,
+} from '@/ui/components';
 import { colors, radius, spacing, type } from '@/ui/theme';
 import { destinationGateway } from '@/features/discovery/gateways';
+import { bucketListGateway } from '@/features/bucket-list/gateways';
 
 export function DestinationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const [destination, setDestination] = useState<DestinationDetail | null>();
   const [error, setError] = useState<string | null>(null);
+  const [bucketSaved, setBucketSaved] = useState(false);
+  const [bucketSaving, setBucketSaving] = useState(false);
+  const [bucketError, setBucketError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    void destinationGateway.getById(id)
+    void destinationGateway
+      .getById(id)
       .then((result) => {
         if (active) setDestination(result);
       })
       .catch(() => {
-        if (active) setError('The destination service is unavailable. Check the API connection and try again.');
+        if (active)
+          setError(
+            'The destination service is unavailable. Check the API connection and try again.',
+          );
       });
-    return () => { active = false; };
+    void bucketListGateway
+      .list()
+      .then((bucketItems) => {
+        if (active) setBucketSaved(bucketItems.some((item) => item.destinationId === id));
+      })
+      .catch(() => {
+        if (active) setBucketError('Your bucket-list status could not be loaded.');
+      });
+    return () => {
+      active = false;
+    };
   }, [id]);
+
+  const saveToBucket = async () => {
+    if (!destination || bucketSaved) return;
+    setBucketSaving(true);
+    setBucketError(null);
+    try {
+      await bucketListGateway.create({ destinationId: destination.id });
+      setBucketSaved(true);
+    } catch {
+      setBucketError('This destination could not be saved. It may already be in your list.');
+    } finally {
+      setBucketSaving(false);
+    }
+  };
 
   if (error) {
     return (
@@ -35,11 +74,20 @@ export function DestinationDetailScreen() {
     );
   }
 
-  if (destination === undefined) return <Screen><LoadingState label="Opening destination…" /></Screen>;
+  if (destination === undefined)
+    return (
+      <Screen>
+        <LoadingState label="Opening destination…" />
+      </Screen>
+    );
   if (destination === null) {
     return (
       <Screen>
-        <StatusPanel message="This destination is unavailable or may have moved." title="Destination not found" tone="error" />
+        <StatusPanel
+          message="This destination is unavailable or may have moved."
+          title="Destination not found"
+          tone="error"
+        />
         <Button label="Back to Discover" onPress={() => router.replace('/(tabs)/discover')} />
       </Screen>
     );
@@ -47,24 +95,37 @@ export function DestinationDetailScreen() {
 
   return (
     <Screen contentContainerStyle={styles.screen}>
-      <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.back()} style={styles.back}>
+      <Pressable
+        accessibilityLabel="Go back"
+        accessibilityRole="button"
+        onPress={() => router.back()}
+        style={styles.back}
+      >
         <ArrowLeft color={colors.navy} size={24} />
       </Pressable>
       <DestinationArtwork label={destination.name} tone={destination.heroTone} />
       <View style={styles.titleBlock}>
         <View style={styles.eyebrowRow}>
           <MapPin color={colors.blue} size={17} />
-          <Text style={styles.eyebrow}>{destination.province} · {destination.islandGroup}</Text>
+          <Text style={styles.eyebrow}>
+            {destination.province} · {destination.islandGroup}
+          </Text>
           <Star color={colors.yellow} fill={colors.yellow} size={17} />
           <Text style={styles.rating}>{destination.rating.toFixed(1)}</Text>
         </View>
-        <Text accessibilityRole="header" style={styles.title}>{destination.name}</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          {destination.name}
+        </Text>
         <Text style={styles.description}>{destination.description}</Text>
       </View>
 
       <SectionTitle title="Trip highlights" />
       <View style={styles.tagWrap}>
-        {destination.highlights.map((highlight) => <Text key={highlight} style={styles.tag}>{highlight}</Text>)}
+        {destination.highlights.map((highlight) => (
+          <Text key={highlight} style={styles.tag}>
+            {highlight}
+          </Text>
+        ))}
       </View>
 
       <View style={styles.guide}>
@@ -74,23 +135,70 @@ export function DestinationDetailScreen() {
         </View>
         <Text style={styles.guideBody}>{destination.culturalGuide.historicalContext}</Text>
         {destination.culturalGuide.etiquette.map((tip) => (
-          <View key={tip} style={styles.tipRow}><View style={styles.tipDot} /><Text style={styles.tip}>{tip}</Text></View>
+          <View key={tip} style={styles.tipRow}>
+            <View style={styles.tipDot} />
+            <Text style={styles.tip}>{tip}</Text>
+          </View>
         ))}
-        <View style={styles.phrase}><Text style={styles.phraseLabel}>LOCAL PHRASE</Text><Text style={styles.phraseText}>{destination.culturalGuide.localPhrase}</Text></View>
+        <View style={styles.phrase}>
+          <Text style={styles.phraseLabel}>LOCAL PHRASE</Text>
+          <Text style={styles.phraseText}>{destination.culturalGuide.localPhrase}</Text>
+        </View>
       </View>
 
-      <Button
-        icon={Sparkles}
-        label={`Plan a ${destination.name} trip`}
-        onPress={() => router.push({ pathname: '/premium/itinerary', params: { destinationId: destination.id } })}
-      />
+      {bucketError ? (
+        <StatusPanel message={bucketError} title="Bucket list unavailable" tone="error" />
+      ) : null}
+      <View style={styles.actions}>
+        <Button
+          disabled={bucketSaved}
+          icon={Heart}
+          label={bucketSaved ? 'Saved to Bucket' : 'Save to Bucket'}
+          loading={bucketSaving}
+          onPress={() => void saveToBucket()}
+          style={styles.action}
+        />
+        <Button
+          icon={NotebookPen}
+          label="Record a visit"
+          onPress={() =>
+            router.push({
+              pathname: '/check-ins/create',
+              params: { destinationId: destination.id },
+            } as never)
+          }
+          style={styles.action}
+          variant="secondary"
+        />
+        <Button
+          icon={Sparkles}
+          label={`Plan a ${destination.name} trip`}
+          onPress={() =>
+            router.push({
+              pathname: '/premium/itinerary',
+              params: { destinationId: destination.id },
+            })
+          }
+          style={styles.action}
+          variant="quiet"
+        />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { paddingTop: spacing.md },
-  back: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  back: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   titleBlock: { gap: spacing.sm },
   eyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   eyebrow: { color: colors.blue, fontFamily: type.black, fontSize: 12, flex: 1 },
@@ -98,8 +206,21 @@ const styles = StyleSheet.create({
   title: { color: colors.navy, fontFamily: type.black, fontSize: 30 },
   description: { color: colors.muted, fontFamily: type.medium, fontSize: 16, lineHeight: 24 },
   tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  tag: { color: colors.navy, fontFamily: type.bold, fontSize: 13, backgroundColor: colors.yellowSoft, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.pill },
-  guide: { backgroundColor: colors.blueSoft, borderRadius: radius.lg, padding: spacing.xl, gap: spacing.md },
+  tag: {
+    color: colors.navy,
+    fontFamily: type.bold,
+    fontSize: 13,
+    backgroundColor: colors.yellowSoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+  },
+  guide: {
+    backgroundColor: colors.blueSoft,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
   guideTitle: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   guideHeading: { color: colors.navy, fontFamily: type.black, fontSize: 19 },
   guideBody: { color: colors.muted, fontFamily: type.medium, fontSize: 15, lineHeight: 23 },
@@ -109,4 +230,6 @@ const styles = StyleSheet.create({
   phrase: { backgroundColor: colors.surface, padding: spacing.lg, borderRadius: radius.md, gap: 3 },
   phraseLabel: { color: colors.blue, fontFamily: type.black, fontSize: 10, letterSpacing: 0.8 },
   phraseText: { color: colors.navy, fontFamily: type.bold, fontSize: 15 },
+  actions: { gap: spacing.sm },
+  action: { width: '100%' },
 });

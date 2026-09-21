@@ -21,6 +21,7 @@ web-build/
 build/
 coverage/
 *.tsbuildinfo
+uploads/
 
 # Logs
 *.log

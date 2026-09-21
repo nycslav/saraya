@@ -19,6 +19,7 @@ import {
   Sparkles,
   Utensils,
   Waves,
+  WifiOff,
   X,
 } from 'lucide-react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -309,10 +310,30 @@ export function ItineraryPlannerScreen() {
 
   if (status === 'ready' && itinerary) {
     const day = itinerary.days.find((item) => item.dayNumber === activeDay) ?? itinerary.days[0];
+    const isDeterministic = itinerary.generationSource === 'deterministic';
+    const SourceIcon = isDeterministic ? WifiOff : Sparkles;
+    const sourceLabel = isDeterministic
+      ? 'Deterministic fallback'
+      : itinerary.generationSource === 'gemini'
+        ? 'Gemini generated'
+        : 'OpenAI generated';
     return (
       <Screen>
         <BackButton onPress={() => setStatus('idle')} />
         <View style={styles.resultHero}>
+          <View
+            accessible
+            accessibilityLabel={`Itinerary source: ${sourceLabel}`}
+            accessibilityRole="text"
+            style={[styles.sourceMarker, isDeterministic && styles.sourceMarkerFallback]}
+          >
+            <SourceIcon color={isDeterministic ? colors.coral : colors.green} size={14} />
+            <Text
+              style={[styles.sourceMarkerText, isDeterministic && styles.sourceMarkerTextFallback]}
+            >
+              {sourceLabel}
+            </Text>
+          </View>
           <Text style={styles.resultEyebrow}>
             {itinerary.preferences.durationDays} DAYS · {destinationName.toUpperCase()}
           </Text>
@@ -543,6 +564,19 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     gap: spacing.xs,
   },
+  sourceMarker: {
+    alignSelf: 'flex-start',
+    minHeight: 28,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.greenSoft,
+  },
+  sourceMarkerFallback: { backgroundColor: colors.coralSoft },
+  sourceMarkerText: { color: colors.green, fontFamily: type.bold, fontSize: 11 },
+  sourceMarkerTextFallback: { color: colors.coral },
   resultEyebrow: { color: colors.blue, fontFamily: type.black, fontSize: 11, letterSpacing: 0.6 },
   resultTitle: { color: colors.navy, fontFamily: type.black, fontSize: 22, paddingRight: 38 },
   resultSubtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 13 },

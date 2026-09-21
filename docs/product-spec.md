@@ -199,6 +199,8 @@ Generates optimized multi-destination itineraries based on:
 - Ferry/flight schedules and travel times
 
 Output includes daily breakdown with recommended accommodations, dining, and activities.
+Generated results identify whether the configured AI provider or the deterministic fallback
+produced the itinerary so users and demo operators can verify provider availability.
 
 ### 5.3 Hidden Gem Database
 
@@ -250,7 +252,7 @@ Access to off-the-beaten-path locations including:
 Landing screen showing personalized recommendations in feed or map view. Quick filters for category and region. Search bar for specific destinations. Weather widget can request the user's current location or accept a manually selected destination.
 
 **Tab 2: My Journey (Travel Journal)**
-Travel timeline showing manual check-ins and journal entries with photos. Map view of visited destinations. Statistics dashboard (islands visited, places checked in, achievements). Check-ins are manually recorded and linked to a selected destination.
+Travel timeline showing manual check-ins and journal entries with photos. Map view of visited destinations using their catalog coordinates. Statistics dashboard (islands visited, places checked in, achievements). Add-visit button for manual check-ins.
 
 **Tab 3: Bucket List**
 Curated list of saved destinations and activities. Organizable by region, priority, or type. Filtering and sorting options. Quick add/remove functionality.
@@ -272,12 +274,12 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - Location map with directions
 - Reviews and visitor comments
 - Add to bucket list button
-- Add visit to journal button
+- Record visit button
 
 **Check-In & Journal Entry Screen**
 
 - Photo upload interface
-- Destination and visit-date selection
+- Destination and optional visit-date selection
 - Journal entry text field
 - Mood/experience emoji selector
 - Tag selection (companions, activities)
@@ -316,11 +318,11 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 1. User arrives at destination
 2. Open app → navigate to My Journey or destination detail
-3. Tap 'Check In' button
-4. User selects the destination and visit date
-5. User captures photo and writes journal entry
-6. System checks for new achievements and displays badge
-7. Manual check-in is saved to the journey timeline as a user-recorded visit
+3. Tap 'Record Visit'
+4. User confirms the destination and visit date
+5. User optionally captures a photo and writes a journal entry
+6. System checks for new achievements and displays a badge
+7. Visit is saved to the journey timeline
 
 ### 7.4 Safety Alert Flow
 
@@ -370,10 +372,11 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 - PAGASA API (weather and safety alerts)
 - Google Maps API (mapping and directions)
+- Geoapify Places API behind a backend adapter for nearby itinerary establishments
 - Google/Facebook OAuth (authentication)
 - RevenueCat SDK (lifetime and consumable in-app purchases through Google Play Billing and Apple App Store)
 - Firebase Cloud Messaging (push notifications)
-- OpenAI API (AI itinerary generation - premium)
+- Google Gemini API behind a backend adapter (AI itinerary generation - premium)
 
 ### Performance & Security:
 
@@ -400,7 +403,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 **CheckIn**
 
-- id, user_id, destination_id, visited_at, photo_url, journal_entry, mood, companions[], tags[], achievement_unlocked
+- id, user_id, destination_id, visited_at, photo_url, journal_entry, mood, companions[], tags[], created_at, updated_at
 
 **BucketListItem**
 
@@ -505,6 +508,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Maps & Location Services
 
 - Google Maps API for mapping, directions, and place details
+- Destination coordinates for maps, directions, requested local weather, and itinerary planning
 - Offline maps for premium users (downloaded tile data)
 
 ### Payment, Premium, and generation quota
@@ -519,14 +523,16 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 ### AI Itinerary Generation
 
-- OpenAI GPT API for natural language generation
+- Google Gemini API for natural language generation, isolated behind a backend provider adapter
+- Geoapify Places API supplies nearby establishment candidates; the AI may select only candidate IDs, and the backend validates and resolves those IDs before returning or storing an itinerary
+- Deterministic backend generation when credentials are absent or the provider is unavailable
 - Input: duration, budget, style, accessibility needs
 - Output: structured day-by-day itinerary JSON
 
 ### Push Notifications
 
 - Firebase Cloud Messaging or OneSignal
-- Segmented targeting based on user preferences and location
+- Segmented targeting based on user preferences and explicitly requested local context
 - Templates for alerts, events, and promotional messages
 
 ---
@@ -561,8 +567,8 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 **Hours 24-36 (if extended hackathon):**
 
-- Begin the AI itinerary premium feature
-- Integrate RevenueCat SDK, configure store sandbox environments, and implement lifetime Premium and generation top-up purchases.
+- Continue the premium AI itinerary flow
+- Integrate RevenueCat SDK, configure Google Play/App Store sandbox environments, and implement lifetime Premium and generation top-up purchases.
 - Performance optimization
 - Prepare demo and presentation materials
 
@@ -592,7 +598,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Team Responsibilities:
 
 **Backend Lead (1-2 people):**
-API development, database design, authentication, and weather/safety geospatial queries
+API development, database design, authentication, destination queries, and weather/safety geospatial queries
 
 **Frontend Lead (1-2 people):**
 Mobile/web app UI/UX, integration with APIs, photo upload, maps

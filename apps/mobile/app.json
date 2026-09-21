@@ -19,7 +19,14 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Saraya to add a travel photo to your Journey.",
+          "cameraPermission": "Allow Saraya to take a travel photo for your Journey."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

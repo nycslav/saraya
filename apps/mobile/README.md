@@ -8,7 +8,7 @@ This directory hosts the Expo Router application. Its implementation preserves t
 - `src/ui/` contains generic design-system components.
 - `src/test/` contains shared test setup and helpers.
 
-Do not commit provider secrets to the mobile bundle. All OpenAI and privileged integration calls must go through the API.
+Do not commit provider secrets to the mobile bundle. All AI and privileged integration calls must go through the API.
 
 ## Current mobile integration
 

@@ -1,3 +1,3 @@
-import { ComingSoonScreen } from '@/ui/components';
+import { BucketListScreen } from '@/features/bucket-list/screens/BucketListScreen';
 
-export default function BucketListRoute() { return <ComingSoonScreen owner="Member 2" title="Bucket List" />; }
+export default BucketListScreen;

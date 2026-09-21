@@ -20,9 +20,10 @@
     "android:build:production": "npm run build:android:production --workspace=@saraya/mobile",
     "android:submit:production": "npm run submit:android:production --workspace=@saraya/mobile",
     "dev:api": "npm run dev --workspace=@saraya/api",
+    "db:migrate": "npm run db:migrate --workspace=@saraya/api",
+    "db:seed": "npm run db:seed --workspace=@saraya/api",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   }
 }
-

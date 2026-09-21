@@ -1,2 +1,102 @@
-[]
+[
+  {
+    "id": "first-story",
+    "title": "First Story",
+    "description": "Record your first Philippine travel memory.",
+    "icon": "book-open",
+    "category": "exploration",
+    "ruleType": "total_visits",
+    "threshold": 1,
+    "destinationCategory": null,
+    "islandGroup": null
+  },
+  {
+    "id": "trailblazer",
+    "title": "Trailblazer",
+    "description": "Record five destination visits.",
+    "icon": "route",
+    "category": "exploration",
+    "ruleType": "total_visits",
+    "threshold": 5,
+    "destinationCategory": null,
+    "islandGroup": null
+  },
+  {
+    "id": "beach-collector",
+    "title": "Beach Collector",
+    "description": "Visit three beach destinations.",
+    "icon": "waves",
+    "category": "nature",
+    "ruleType": "destination_category",
+    "threshold": 3,
+    "destinationCategory": "Beach",
+    "islandGroup": null
+  },
+  {
+    "id": "heritage-explorer",
+    "title": "Heritage Explorer",
+    "description": "Visit three heritage destinations.",
+    "icon": "landmark",
+    "category": "culture",
+    "ruleType": "destination_category",
+    "threshold": 3,
+    "destinationCategory": "Heritage",
+    "islandGroup": null
+  },
+  {
+    "id": "food-trailblazer",
+    "title": "Lechon Connoisseur",
+    "description": "Record three food-focused destination visits.",
+    "icon": "utensils",
+    "category": "food",
+    "ruleType": "destination_category",
+    "threshold": 3,
+    "destinationCategory": "Food",
+    "islandGroup": null
+  },
+  {
+    "id": "luzon-explorer",
+    "title": "Luzon Explorer",
+    "description": "Visit three destinations across Luzon.",
+    "icon": "mountain",
+    "category": "exploration",
+    "ruleType": "island_group",
+    "threshold": 3,
+    "destinationCategory": null,
+    "islandGroup": "Luzon"
+  },
+  {
+    "id": "visayas-voyager",
+    "title": "Visayas Voyager",
+    "description": "Visit three destinations across the Visayas.",
+    "icon": "ship-wheel",
+    "category": "exploration",
+    "ruleType": "island_group",
+    "threshold": 3,
+    "destinationCategory": null,
+    "islandGroup": "Visayas"
+  },
+  {
+    "id": "mindanao-explorer",
+    "title": "Mindanao Explorer",
+    "description": "Visit three destinations across Mindanao.",
+    "icon": "compass",
+    "category": "exploration",
+    "ruleType": "island_group",
+    "threshold": 3,
+    "destinationCategory": null,
+    "islandGroup": "Mindanao"
+  },
+  {
+    "id": "island-hopper",
+    "title": "Island Hopper",
+    "description": "Record visits in Luzon, Visayas, and Mindanao.",
+    "icon": "map",
+    "category": "exploration",
+    "ruleType": "distinct_island_groups",
+    "threshold": 3,
+    "destinationCategory": null,
+    "islandGroup": null
+  }
+]
 
