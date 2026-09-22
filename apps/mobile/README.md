@@ -50,8 +50,9 @@ Google Cloud project must contain an Android OAuth client for the final applicat
 certificate. The mobile app sends the returned Google ID token to `POST /auth/google`; the backend
 must verify that token before creating a Saraya session.
 
-Expo Go can still be used to review discovery, the signed-out profile, and email-form UI. It reports
-Google sign-in as unavailable instead of simulating a successful login.
+Use the Android development build for the combined application. It contains the native modules used
+by secure authentication storage, Journey photo selection, RevenueCat, and Google sign-in. Expo Go
+is suitable only for limited UI work and is not the supported client for the complete flow.
 
 The application does not fall back to fabricated destination or itinerary data. Premium access uses
 the RevenueCat gateway, while generation and persistence use the Saraya API. If either provider is
@@ -60,8 +61,8 @@ unavailable, the app reports the failure instead of simulating success.
 Commands:
 
 ```text
-npm run start --workspace=@saraya/mobile
-npm run start:dev --workspace=@saraya/mobile
+npm run dev:mobile
+npm run dev:mobile:go
 npm run lint --workspace=@saraya/mobile
 npm run typecheck --workspace=@saraya/mobile
 npm run test --workspace=@saraya/mobile
@@ -69,5 +70,16 @@ npm run android:check
 npm run android:build:preview
 ```
 
-Use `start` with Expo Go for ordinary UI review. Use `start:dev` after installing the Android
-development build when testing Google sign-in.
+`npm run dev:mobile` starts Metro for the development client. `npm run dev:mobile:go` explicitly
+starts Expo Go for limited UI review.
+
+Rebuild and reinstall the development APK whenever a native dependency or Expo config plugin is
+added or changed. Restarting Metro or clearing its cache cannot add native modules to an existing
+APK. Missing-module errors such as `ExpoSecureStore` or `ExponentImagePicker` mean the installed
+development build is stale:
+
+```powershell
+npm.cmd run android:build:development
+# Install the newly downloaded APK, replacing the old Saraya development build.
+npm.cmd run dev:mobile:client -- --clear
+```

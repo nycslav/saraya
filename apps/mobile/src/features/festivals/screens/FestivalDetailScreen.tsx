@@ -1,4 +1,8 @@
-import type { FestivalDetail } from '@saraya/contracts';
+import type {
+  CulturalGuideCategory,
+  CulturalGuideVerificationStatus,
+  FestivalDetailWithCulture,
+} from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ArrowLeft,
@@ -34,6 +38,22 @@ const monthNames = [
   'December',
 ];
 
+const culturalSections: { category: CulturalGuideCategory; title: string }[] = [
+  { category: 'history', title: 'Historical timeline and significance' },
+  { category: 'customs', title: 'Local customs and traditions' },
+  { category: 'payment', title: 'Payment and tipping' },
+  { category: 'pasalubong', title: 'Pasalubong' },
+  { category: 'dining', title: 'Dining and kamayan etiquette' },
+  { category: 'photography-social', title: 'Photography and social interaction' },
+];
+
+const culturalStatusLabels: Record<CulturalGuideVerificationStatus, string> = {
+  verified: 'Verified',
+  'partially-verified': 'Partially verified',
+  'general-guidance': 'Traveler guidance',
+  'insufficient-evidence': 'Evidence still needed',
+};
+
 function BulletList({ items }: { items: string[] }) {
   return (
     <View style={styles.bulletList}>
@@ -50,7 +70,7 @@ function BulletList({ items }: { items: string[] }) {
 export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: FestivalGateway }) {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const [festival, setFestival] = useState<FestivalDetail | null>();
+  const [festival, setFestival] = useState<FestivalDetailWithCulture | null>();
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
@@ -124,6 +144,12 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
     month: 'long',
     day: 'numeric',
   });
+  const cultureLastReviewed = new Date(
+    `${festival.culturalGuide.lastReviewedAt}T00:00:00+08:00`,
+  ).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+  const sourceBackedCategories = Object.values(festival.culturalGuide.categories).filter(
+    (category) => category.sourceIds.length > 0,
+  ).length;
 
   return (
     <Screen contentContainerStyle={styles.screen}>
@@ -212,6 +238,62 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
           </View>
         ))}
       </Card>
+
+      <SectionTitle title="Cultural guide" />
+      <Text style={styles.sourceIntro}>
+        {sourceBackedCategories} of 6 categories currently have reviewed external evidence · Last
+        reviewed {cultureLastReviewed}
+      </Text>
+      <View style={styles.culturalList}>
+        {culturalSections.map(({ category, title }) => {
+          const guide = festival.culturalGuide.categories[category];
+          return (
+            <Card key={category} style={styles.culturalCard}>
+              <View style={styles.culturalHeading}>
+                <Text style={styles.culturalTitle}>{title}</Text>
+                <Text
+                  style={[
+                    styles.culturalStatus,
+                    guide.verificationStatus === 'general-guidance' &&
+                      styles.culturalStatusGuidance,
+                    guide.verificationStatus === 'insufficient-evidence' &&
+                      styles.culturalStatusInsufficient,
+                  ]}
+                >
+                  {culturalStatusLabels[guide.verificationStatus]}
+                </Text>
+              </View>
+              <Text style={styles.body}>{guide.text}</Text>
+            </Card>
+          );
+        })}
+      </View>
+
+      {festival.culturalGuide.sources.length > 0 ? (
+        <>
+          <SectionTitle title="Cultural sources" />
+          <View style={styles.sourceList}>
+            {festival.culturalGuide.sources.map((source) => (
+              <Pressable
+                accessibilityHint="Opens the direct cultural source website"
+                accessibilityLabel={`Open cultural source: ${source.title}`}
+                accessibilityRole="link"
+                key={source.id}
+                onPress={() => void Linking.openURL(source.url)}
+                style={({ pressed }) => [styles.sourceCard, pressed && styles.sourcePressed]}
+              >
+                <Text style={styles.sourceType}>
+                  {source.sourceType.replaceAll('-', ' ')} · {source.supports.join(', ')}
+                </Text>
+                <Text style={styles.sourceTitle}>{source.title}</Text>
+                <Text style={styles.sourcePublisher}>
+                  {source.publisher} · accessed {source.accessedAt}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      ) : null}
 
       <StatusPanel
         message="The practical recommendations below are written by Saraya for trip planning. They are not statements from the government or festival organizers."
@@ -318,6 +400,22 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
+  culturalList: { gap: spacing.md },
+  culturalCard: { padding: spacing.lg, gap: spacing.sm },
+  culturalHeading: { gap: spacing.sm, alignItems: 'flex-start' },
+  culturalTitle: { color: colors.navy, fontFamily: type.black, fontSize: 16 },
+  culturalStatus: {
+    color: colors.green,
+    backgroundColor: colors.greenSoft,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    fontFamily: type.black,
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  culturalStatusGuidance: { color: colors.blue, backgroundColor: colors.blueSoft },
+  culturalStatusInsufficient: { color: colors.coral, backgroundColor: colors.coralSoft },
   guideHeading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   bulletList: { gap: spacing.md },
   bulletRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },

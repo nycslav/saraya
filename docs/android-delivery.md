@@ -30,16 +30,16 @@ from Expo or Google.
 Each build profile reads the EAS environment with the same name: `development`, `preview`, or
 `production`. Configure these client-visible variables in the Expo dashboard or with `eas env:set`:
 
-| Variable | Development | Preview | Production |
-| --- | --- | --- | --- |
-| `EXPO_PUBLIC_APP_ENV` | `development` | `preview` | `production` |
-| `EXPO_PUBLIC_DATA_MODE` | `mock` or `api` | `mock` or `api` | `api` |
-| `EXPO_PUBLIC_API_BASE_URL` | Reachable development API | Staging/demo API | Production HTTPS API |
-| `EXPO_PUBLIC_REVENUECAT_API_KEY` | RevenueCat Test Store key | RevenueCat Test Store key | Android public SDK key (`goog_...`) |
-| `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID` | `saraya_premium` | `saraya_premium` | `saraya_premium` |
-| `EXPO_PUBLIC_REVENUECAT_OFFERING_ID` | `default` | `default` | `default` |
-| `EXPO_PUBLIC_REVENUECAT_LIFETIME_PACKAGE_ID` | Lifetime package ID | Lifetime package ID | Matching Play package ID |
-| `EXPO_PUBLIC_REVENUECAT_TOP_UP_PACKAGE_ID` | Top-up package ID | Top-up package ID | Matching Play package ID |
+| Variable                                     | Development               | Preview                   | Production                          |
+| -------------------------------------------- | ------------------------- | ------------------------- | ----------------------------------- |
+| `EXPO_PUBLIC_APP_ENV`                        | `development`             | `preview`                 | `production`                        |
+| `EXPO_PUBLIC_DATA_MODE`                      | `mock` or `api`           | `mock` or `api`           | `api`                               |
+| `EXPO_PUBLIC_API_BASE_URL`                   | Reachable development API | Staging/demo API          | Production HTTPS API                |
+| `EXPO_PUBLIC_REVENUECAT_API_KEY`             | RevenueCat Test Store key | RevenueCat Test Store key | Android public SDK key (`goog_...`) |
+| `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID`      | `saraya_premium`          | `saraya_premium`          | `saraya_premium`                    |
+| `EXPO_PUBLIC_REVENUECAT_OFFERING_ID`         | `default`                 | `default`                 | `default`                           |
+| `EXPO_PUBLIC_REVENUECAT_LIFETIME_PACKAGE_ID` | Lifetime package ID       | Lifetime package ID       | Matching Play package ID            |
+| `EXPO_PUBLIC_REVENUECAT_TOP_UP_PACKAGE_ID`   | Top-up package ID         | Top-up package ID         | Matching Play package ID            |
 
 Example for a non-secret, client-visible value:
 
@@ -79,6 +79,12 @@ npm.cmd run android:build:production
 Install the downloaded development or preview APK on a device. A development build connects to
 Metro with `npm.cmd run dev:mobile:client`; a preview build contains its JavaScript bundle and does
 not require Metro.
+
+Create and reinstall a new development APK after adding or changing a native dependency or Expo
+config plugin. Metro updates JavaScript only; it cannot add modules such as `ExpoSecureStore` or
+`ExponentImagePicker` to a previously built APK. The Expo Router "missing default export" warnings
+that follow one of these native-module errors are cascading import failures, not missing route
+exports.
 
 Before sharing a preview APK, exercise lifetime and consumable purchase success, cancellation,
 failure, lifetime restore, application restart, quota exhaustion, UTC month rollover, and duplicate

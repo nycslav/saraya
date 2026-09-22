@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { islandGroupSchema } from '../destinations';
 
-const directWebUrlSchema = z
+export const directWebUrlSchema = z
   .url()
   .refine((value) => /^https?:\/\//i.test(value), 'Source URL must use HTTP or HTTPS.')
   .refine(
@@ -27,6 +27,9 @@ export const festivalSourceTypeSchema = z.enum([
   'official-government',
   'regional-tourism',
   'secondary',
+  'nhcp',
+  'official-cultural-institution',
+  'academic',
 ]);
 export const festivalSourcePurposeSchema = z.enum([
   'general',
@@ -36,15 +39,107 @@ export const festivalSourcePurposeSchema = z.enum([
   'travel',
 ]);
 
-export const festivalSourceSchema = z.object({
+export const provenanceSourceCoreSchema = z.object({
   id: z.string().min(1),
   publisher: z.string().min(1),
   title: z.string().min(1),
   url: directWebUrlSchema,
   sourceType: festivalSourceTypeSchema,
-  purpose: festivalSourcePurposeSchema,
   accessedAt: z.iso.date(),
 });
+
+export const festivalSourceSchema = provenanceSourceCoreSchema.extend({
+  purpose: festivalSourcePurposeSchema,
+});
+
+export const culturalGuideCategorySchema = z.enum([
+  'history',
+  'customs',
+  'payment',
+  'pasalubong',
+  'dining',
+  'photography-social',
+]);
+
+export const culturalGuideVerificationStatusSchema = z.enum([
+  'verified',
+  'partially-verified',
+  'general-guidance',
+  'insufficient-evidence',
+]);
+
+export const culturalGuideSourceSchema = provenanceSourceCoreSchema.extend({
+  supports: z.array(culturalGuideCategorySchema).min(1),
+});
+
+export const culturalGuideSectionSchema = z.object({
+  text: z.string().trim().min(1),
+  verificationStatus: culturalGuideVerificationStatusSchema,
+  sourceIds: z.array(z.string().min(1)),
+});
+
+export const festivalCulturalGuideSchema = z
+  .object({
+    festivalId: z.string().min(1),
+    lastReviewedAt: z.iso.date(),
+    categories: z.object({
+      history: culturalGuideSectionSchema,
+      customs: culturalGuideSectionSchema,
+      payment: culturalGuideSectionSchema,
+      pasalubong: culturalGuideSectionSchema,
+      dining: culturalGuideSectionSchema,
+      'photography-social': culturalGuideSectionSchema,
+    }),
+    sources: z.array(culturalGuideSourceSchema),
+  })
+  .superRefine((guide, context) => {
+    const sourceIds = guide.sources.map((source) => source.id);
+    if (new Set(sourceIds).size !== sourceIds.length) {
+      context.addIssue({ code: 'custom', message: 'Cultural source IDs must be unique.' });
+    }
+
+    for (const [category, section] of Object.entries(guide.categories)) {
+      const requiresEvidence =
+        section.verificationStatus === 'verified' ||
+        section.verificationStatus === 'partially-verified';
+      if (requiresEvidence && section.sourceIds.length === 0) {
+        context.addIssue({
+          code: 'custom',
+          message: `${section.verificationStatus} cultural content requires a source.`,
+          path: ['categories', category, 'sourceIds'],
+        });
+      }
+
+      if (
+        (section.verificationStatus === 'general-guidance' ||
+          section.verificationStatus === 'insufficient-evidence') &&
+        section.sourceIds.length > 0
+      ) {
+        context.addIssue({
+          code: 'custom',
+          message: `${section.verificationStatus} content must not imply external verification.`,
+          path: ['categories', category, 'sourceIds'],
+        });
+      }
+
+      for (const sourceId of section.sourceIds) {
+        const source = guide.sources.find((candidate) => candidate.id === sourceId);
+        if (!source) {
+          context.addIssue({
+            code: 'custom',
+            message: `Cultural section references unknown source ID: ${sourceId}.`,
+            path: ['categories', category, 'sourceIds'],
+          });
+        } else if (!source.supports.includes(category as CulturalGuideCategory)) {
+          context.addIssue({
+            code: 'custom',
+            message: `Source ${sourceId} does not support ${category}.`,
+            path: ['categories', category, 'sourceIds'],
+          });
+        }
+      }
+    }
+  });
 
 export const festivalScheduleItemSchema = z.object({
   time: z.string().min(1),
@@ -185,6 +280,10 @@ export const festivalDetailSchema = festivalSummarySchema
     }
   });
 
+export const festivalDetailWithCultureSchema = festivalDetailSchema.safeExtend({
+  culturalGuide: festivalCulturalGuideSchema,
+});
+
 export const festivalQuerySchema = z.object({
   search: z.string().trim().optional(),
   region: z.string().trim().min(1).optional(),
@@ -195,6 +294,11 @@ export type FestivalCategory = z.infer<typeof festivalCategorySchema>;
 export type FestivalScheduleStatus = z.infer<typeof festivalScheduleStatusSchema>;
 export type FestivalSourceType = z.infer<typeof festivalSourceTypeSchema>;
 export type FestivalSourcePurpose = z.infer<typeof festivalSourcePurposeSchema>;
+export type CulturalGuideCategory = z.infer<typeof culturalGuideCategorySchema>;
+export type CulturalGuideVerificationStatus = z.infer<typeof culturalGuideVerificationStatusSchema>;
+export type CulturalGuideSource = z.infer<typeof culturalGuideSourceSchema>;
+export type CulturalGuideSection = z.infer<typeof culturalGuideSectionSchema>;
+export type FestivalCulturalGuide = z.infer<typeof festivalCulturalGuideSchema>;
 export type FestivalSource = z.infer<typeof festivalSourceSchema>;
 export type FestivalScheduleItem = z.infer<typeof festivalScheduleItemSchema>;
 export type FestivalOccurrenceEvent = z.infer<typeof festivalOccurrenceEventSchema>;
@@ -202,4 +306,5 @@ export type FestivalOccurrence = z.infer<typeof festivalOccurrenceSchema>;
 export type SarayaFestivalEditorial = z.infer<typeof sarayaFestivalEditorialSchema>;
 export type FestivalSummary = z.infer<typeof festivalSummarySchema>;
 export type FestivalDetail = z.infer<typeof festivalDetailSchema>;
+export type FestivalDetailWithCulture = z.infer<typeof festivalDetailWithCultureSchema>;
 export type FestivalQuery = z.infer<typeof festivalQuerySchema>;

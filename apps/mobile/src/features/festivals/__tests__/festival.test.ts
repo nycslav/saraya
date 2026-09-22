@@ -1,11 +1,14 @@
 import {
+  festivalCulturalGuideSchema,
   festivalDetailSchema,
+  festivalDetailWithCultureSchema,
   festivalOccurrenceSchema,
   festivalSourceSchema,
 } from '@saraya/contracts';
 
+import culturalGuideSeeds from '../../../../../../database/seeds/festival-cultural-guides.json';
 import festivalSeeds from '../../../../../../database/seeds/festivals.json';
-import { mockFestivals } from '../data/mockFestivals';
+import { mockCulturalGuides, mockFestivals } from '../data/mockFestivals';
 import { MockFestivalGateway } from '../gateways';
 import {
   canCreateExactFestivalCalendarEvent,
@@ -17,12 +20,117 @@ describe('festival fixtures and gateway', () => {
     expect(mockFestivals).toHaveLength(151);
     expect(() => festivalDetailSchema.array().parse(mockFestivals)).not.toThrow();
     expect(() => festivalDetailSchema.array().parse(festivalSeeds)).not.toThrow();
+    expect(() => festivalCulturalGuideSchema.array().parse(culturalGuideSeeds)).not.toThrow();
+    expect(() => festivalDetailWithCultureSchema.array().parse(mockFestivals)).not.toThrow();
     expect(
       new Set(mockFestivals.map((festival) => festival.typicalMonth)).size,
     ).toBeGreaterThanOrEqual(10);
     expect(new Set(mockFestivals.map((festival) => festival.region)).size).toBeGreaterThanOrEqual(
       7,
     );
+  });
+
+  it('keeps exactly one cultural guide for every canonical festival', () => {
+    const festivalIds = festivalSeeds.map((festival) => festival.id);
+    const culturalFestivalIds = culturalGuideSeeds.map((guide) => guide.festivalId);
+
+    expect(festivalIds).toHaveLength(151);
+    expect(culturalFestivalIds).toHaveLength(151);
+    expect(new Set(festivalIds).size).toBe(151);
+    expect(new Set(culturalFestivalIds).size).toBe(151);
+    expect([...festivalIds].sort()).toEqual([...culturalFestivalIds].sort());
+  });
+
+  it('rejects invalid cultural verification, URLs, and provenance references', () => {
+    const atiAtihan = mockCulturalGuides.find((guide) => guide.festivalId === 'ati-atihan')!;
+
+    expect(() =>
+      festivalCulturalGuideSchema.parse({
+        ...atiAtihan,
+        categories: {
+          ...atiAtihan.categories,
+          history: { ...atiAtihan.categories.history, verificationStatus: 'probably-verified' },
+        },
+      }),
+    ).toThrow();
+    expect(() =>
+      festivalCulturalGuideSchema.parse({
+        ...atiAtihan,
+        sources: [{ ...atiAtihan.sources[0], url: 'https://www.google.com/search?q=ati-atihan' }],
+      }),
+    ).toThrow();
+    expect(() =>
+      festivalCulturalGuideSchema.parse({
+        ...atiAtihan,
+        categories: {
+          ...atiAtihan.categories,
+          history: { ...atiAtihan.categories.history, sourceIds: ['missing-source'] },
+        },
+      }),
+    ).toThrow();
+    expect(() =>
+      festivalCulturalGuideSchema.parse({
+        ...atiAtihan,
+        sources: [{ ...atiAtihan.sources[0], supports: ['customs'] }],
+      }),
+    ).toThrow();
+  });
+
+  it('contains no opaque citations, search URLs, or unsupported exact tipping claims', () => {
+    const serialized = JSON.stringify(culturalGuideSeeds);
+    expect(serialized).not.toMatch(/\[cite:\s*\d+\]/i);
+    expect(serialized).not.toMatch(/https?:\/\/(?:www\.)?(?:google\.|bing\.com)/i);
+    expect(serialized).not.toMatch(/\b\d{1,2}\s*%\s+(?:tip|tipping)/i);
+
+    for (const guide of mockCulturalGuides) {
+      for (const category of Object.values(guide.categories)) {
+        if (category.verificationStatus === 'general-guidance') {
+          expect(category.sourceIds).toEqual([]);
+        }
+      }
+    }
+  });
+
+  it('uses visitor-facing, festival-specific copy when evidence is still missing', () => {
+    const festival = mockFestivals.find((item) => item.id === 'diyandi-balingasag')!;
+    const guide = festival.culturalGuide;
+
+    expect(guide.categories.history.text).toContain(festival.name);
+    expect(guide.categories.history.text).toMatch(/not yet found a reliable source/i);
+    expect(guide.categories.customs.text).toContain(festival.name);
+    expect(guide.categories.customs.text).toMatch(/follow posted organizer guidance/i);
+    expect(guide.categories.pasalubong.text).toContain(festival.name);
+    expect(guide.categories.pasalubong.text).toMatch(/local tourism office/i);
+  });
+
+  it('adds source-backed visitor guidance for the newly researched festivals', () => {
+    const researchedIds = [
+      'masskara',
+      'higantes',
+      'kaamulan',
+      'lanzones',
+      'kadaugan-sa-mactan',
+      'sandugo',
+      'zamboanga-hermosa',
+      'paraw-regatta',
+      'international-bamboo-organ',
+      'pulilan-carabao',
+      'pista-y-dayat',
+      'ibalong',
+      'parada-ng-lechon',
+      'magayon',
+      'naliyagan',
+      'tinagba',
+    ];
+
+    for (const id of researchedIds) {
+      const guide = mockCulturalGuides.find((item) => item.festivalId === id)!;
+      expect(guide.categories.history.verificationStatus).toBe('verified');
+      expect(guide.categories.history.sourceIds.length).toBeGreaterThan(0);
+      expect(guide.categories.customs.verificationStatus).toBe('verified');
+      expect(guide.categories.customs.sourceIds.length).toBeGreaterThan(0);
+      expect(guide.sources.length).toBeGreaterThan(0);
+    }
   });
 
   it('keeps IDs and normalized name/locality pairs unique', () => {
@@ -101,6 +209,7 @@ describe('festival fixtures and gateway', () => {
           travelAdvice: expect.any(Array),
           survivalGuide: expect.any(Array),
         }),
+        culturalGuide: expect.objectContaining({ festivalId: 'kadayawan' }),
       }),
     );
     await expect(gateway.getById('not-a-festival')).resolves.toBeNull();

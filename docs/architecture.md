@@ -25,16 +25,20 @@ TPB / DOT / NCCA + LGU / official organizer
           human review and normalization
                     |
        database/seeds/festivals.json
+                    +
+ database/seeds/festival-cultural-guides.json
                     |
         FixtureFestivalGateway (demo)
                     |
           Events and Festival Detail UI
 ```
 
-`database/seeds/festivals.json` is the canonical hackathon dataset. The fixture adapter parses that
-file through the shared Zod contract, so the mobile demo has no independent festival-data copy. The
-backend is still scaffolding; an `ApiFestivalGateway` is deferred until the shared Express, database,
-and typed-client foundations exist.
+`database/seeds/festivals.json` owns stable festival and occurrence data.
+`database/seeds/festival-cultural-guides.json` owns one cultural guide per festival ID, with six
+independently classified categories and category-level source references. The fixture adapter parses
+and joins both files through shared Zod contracts, so the mobile demo has no independent data copy.
+The general Express foundation now exists, but a festival API module is still deferred; a future
+`ApiFestivalGateway` can replace the fixture without changing the screens.
 
 Production ingestion will replace the fixture boundary, not the screens: researched source records
 are normalized, provenance is stored, a human approves schedule changes, PostgreSQL is updated, and

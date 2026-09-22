@@ -7,6 +7,12 @@ festival contract, retain direct provenance URLs, distinguish recurring timing f
 occurrences, and label Saraya-authored travel guidance separately. The mobile fixture parses this
 seed directly; do not maintain a second festival record set in the app.
 
+`festival-cultural-guides.json` is the canonical one-to-one cultural companion to `festivals.json`. Each
+record joins through `festivalId`, contains six independently verified cultural categories, and
+distinguishes externally supported facts from Saraya traveler guidance and insufficient evidence.
+Run `npm run culture:audit` after changing either dataset; use `npm run culture:audit:full` for the
+per-festival verification inventory.
+
 The September 2026 catalog contains 151 festivals. It was expanded by reviewing all 177 entries in
 the twelve month filters of the TPB calendar: 149 entries were accepted as distinct supported
 festival identities, 18 were rejected as non-festivals, duplicates, or conflicting listings, and 10

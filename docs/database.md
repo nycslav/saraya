@@ -30,16 +30,18 @@ history and destination catalog metadata.
 ## Festival normalization direction
 
 The hackathon keeps stable identity and the represented annual occurrence together in the curated
-festival seed. The contract nevertheless separates `typicalMonth` and `recurrenceDescription` from
-the nested occurrence status, year, verified dates, events, source references, and verification time.
+festival seed. A separate `festival-cultural-guides.json` maintains exactly one guide per festival
+ID. Its history, customs, payment, pasalubong, dining, and photography/social categories each carry
+their own verification status and source references.
 
 When the festival backend is implemented, normalize this into at least:
 
-- `festivals`: stable identity, location, recurring timing, cultural copy, and editorial guidance;
+- `festivals`: stable identity, location, recurring timing, and editorial guidance;
 - `festival_occurrences`: festival ID, year, status, confirmed dates, verification timestamp, and
   cancellation/rescheduling notes;
 - `festival_sources`: publisher, direct URL, type, purpose, and access date;
-- an occurrence-to-source relation so schedule claims retain their supporting evidence.
+- `festival_cultural_guides` and category records keyed to a festival;
+- provenance-source records and relations for occurrence and cultural-category claims.
 
 Only a `confirmed` occurrence may persist exact confirmed dates. Estimated or recurring records must
 not be converted into calendar timestamps. Migration and indexes remain deferred until the team

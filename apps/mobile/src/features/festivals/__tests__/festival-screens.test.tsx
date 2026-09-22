@@ -9,14 +9,18 @@ import { FestivalListScreen } from '../screens/FestivalListScreen';
 const mockBack = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+let mockFestivalId = 'kadayawan';
 
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({ id: 'kadayawan' }),
+  useLocalSearchParams: () => ({ id: mockFestivalId }),
   useRouter: () => ({ back: mockBack, push: mockPush, replace: mockReplace }),
 }));
 
 describe('festival mobile screens', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFestivalId = 'kadayawan';
+  });
 
   it('loads upcoming cards and opens details', async () => {
     await render(<FestivalListScreen gateway={new MockFestivalGateway(mockFestivals, 9, 0)} />);
@@ -72,6 +76,32 @@ describe('festival mobile screens', () => {
     expect(screen.getByText('2026 schedule confirmed')).toBeTruthy();
     expect(screen.getByText('Saraya-curated guidance')).toBeTruthy();
     expect(screen.getByText('Sources')).toBeTruthy();
+    expect(screen.getByText('Cultural guide')).toBeTruthy();
+    expect(screen.getByText('Cultural sources')).toBeTruthy();
+    expect(screen.getByText(/thanksgiving for nature, harvest/i)).toBeTruthy();
+    expect(screen.getAllByText('Verified').length).toBeGreaterThan(0);
+  });
+
+  it('joins famous and smaller festivals to their own cultural guides', async () => {
+    mockFestivalId = 'ati-atihan';
+    const ati = await render(
+      <FestivalDetailScreen gateway={new MockFestivalGateway(mockFestivals, 1, 0)} />,
+    );
+    expect(await screen.findByText(/official visitor page describes Ati-Atihan/i)).toBeTruthy();
+    await ati.unmount();
+
+    mockFestivalId = 'sinulog';
+    const sinulog = await render(
+      <FestivalDetailScreen gateway={new MockFestivalGateway(mockFestivals, 1, 0)} />,
+    );
+    expect(await screen.findByText(/exemplify the city’s heritage/i)).toBeTruthy();
+    expect(screen.getByText('Partially verified')).toBeTruthy();
+    await sinulog.unmount();
+
+    mockFestivalId = 'diyandi-balingasag';
+    await render(<FestivalDetailScreen gateway={new MockFestivalGateway(mockFestivals, 1, 0)} />);
+    expect(await screen.findAllByText('Evidence still needed')).toHaveLength(3);
+    expect(screen.queryByText('Cultural sources')).toBeNull();
   });
 
   it('shows not-found and error states for festival details', async () => {

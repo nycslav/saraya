@@ -167,6 +167,9 @@ verified annual schedules, location-based recommendations, and Saraya-authored s
 - Filter by region, month, or interest
 - Detailed event information with recurring, confirmed, estimated, cancelled, or unknown schedule status
 - Direct provenance links and a visible last-verification date on festival details
+- A six-part cultural guide joined one-to-one by festival ID, with category-level verification and
+  source disclosure
+- Clear labeling when content is general Saraya traveler guidance or evidence is still insufficient
 - Survival guides for major events (Sinulog, Ati-Atihan, Panagbenga)
 - Push notifications for upcoming events within user's itinerary
 - Accommodation and dining tips during peak festival periods

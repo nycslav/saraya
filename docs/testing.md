@@ -49,6 +49,15 @@ valid occurrence-to-source references, at least one source per record, absence o
 non-confirmed records, search against newly added records, and filtering across the larger regional
 and monthly result sets.
 
+The cultural-guide suite enforces a 151-to-151 ID mapping, shared-schema parsing, unique IDs,
+category-to-source integrity, direct non-search URLs, valid review dates and verification statuses,
+and zero opaque citation placeholders. Screen tests cover verified, partially verified, general
+guidance, and insufficient-evidence presentation for Ati-Atihan, Sinulog, Kadayawan, and a smaller
+catalog festival. Tests also require each fallback to name its festival and give the reader a useful
+next step, and verify the source links for the September 22 enrichment batch. `npm run culture:audit`
+emits the machine-readable summary;
+`npm run culture:audit:full` adds the per-festival research inventory.
+
 Run the same required checks locally before opening a pull request:
 
 ```powershell

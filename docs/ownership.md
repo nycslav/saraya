@@ -175,6 +175,7 @@ saraya/
 │   │   ├── check-ins.json
 │   │   ├── achievements.json
 │   │   ├── festivals.json
+│   │   ├── festival-cultural-guides.json
 │   │   ├── safety-alerts.json
 │   │   └── itineraries.json
 │   ├── scripts/
@@ -501,17 +502,18 @@ Define each runtime schema once in `packages/contracts/` and infer its TypeScrip
 
 ### 8.3 Seed files
 
-| File                                    | Owner    | Minimum content                                                         |
-| --------------------------------------- | -------- | ----------------------------------------------------------------------- |
-| `database/seeds/users.json`             | Member 1 | Free and premium demo accounts                                          |
-| `database/seeds/destinations.json`      | Member 1 | At least 50 sample Philippine destinations                              |
-| `database/seeds/cultural-guides.json`   | Member 1 | Cultural content for featured destinations                              |
-| `database/seeds/bucket-list-items.json` | Member 2 | Sample planned and visited entries                                      |
-| `database/seeds/check-ins.json`         | Member 2 | Sample check-ins and journal entries                                    |
-| `database/seeds/achievements.json`      | Member 2 | Five to ten achievements with explicit criteria                         |
-| `database/seeds/itineraries.json`       | Member 2 | Structured sample day-by-day itinerary linked to a user and destination |
-| `database/seeds/festivals.json`         | Member 3 | Major festivals from multiple regions and months                        |
-| `database/seeds/safety-alerts.json`     | Member 3 | Clearly labeled demonstration alerts of different severity levels       |
+| File                                           | Owner    | Minimum content                                                         |
+| ---------------------------------------------- | -------- | ----------------------------------------------------------------------- |
+| `database/seeds/users.json`                    | Member 1 | Free and premium demo accounts                                          |
+| `database/seeds/destinations.json`             | Member 1 | At least 50 sample Philippine destinations                              |
+| `database/seeds/cultural-guides.json`          | Member 1 | Cultural content for featured destinations                              |
+| `database/seeds/bucket-list-items.json`        | Member 2 | Sample planned and visited entries                                      |
+| `database/seeds/check-ins.json`                | Member 2 | Sample check-ins and journal entries                                    |
+| `database/seeds/achievements.json`             | Member 2 | Five to ten achievements with explicit criteria                         |
+| `database/seeds/itineraries.json`              | Member 2 | Structured sample day-by-day itinerary linked to a user and destination |
+| `database/seeds/festivals.json`                | Member 3 | Major festivals from multiple regions and months                        |
+| `database/seeds/festival-cultural-guides.json` | Member 3 | Festival-specific culture with category-level provenance                |
+| `database/seeds/safety-alerts.json`            | Member 3 | Clearly labeled demonstration alerts of different severity levels       |
 
 ## 9. Documentation Ownership
 

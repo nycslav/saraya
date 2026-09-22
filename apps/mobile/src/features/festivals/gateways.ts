@@ -1,10 +1,10 @@
-import type { FestivalDetail, FestivalQuery, FestivalSummary } from '@saraya/contracts';
+import type { FestivalDetailWithCulture, FestivalQuery, FestivalSummary } from '@saraya/contracts';
 
 import { mockFestivals } from './data/mockFestivals';
 
 export interface FestivalGateway {
   list(query: FestivalQuery): Promise<FestivalSummary[]>;
-  getById(id: string): Promise<FestivalDetail | null>;
+  getById(id: string): Promise<FestivalDetailWithCulture | null>;
 }
 
 const wait = (milliseconds: number) =>
@@ -12,7 +12,7 @@ const wait = (milliseconds: number) =>
 
 export class FixtureFestivalGateway implements FestivalGateway {
   constructor(
-    private readonly festivals: FestivalDetail[] = mockFestivals,
+    private readonly festivals: FestivalDetailWithCulture[] = mockFestivals,
     private readonly currentMonth = new Date().getMonth() + 1,
     private readonly delay = 100,
   ) {}
@@ -47,7 +47,7 @@ export class FixtureFestivalGateway implements FestivalGateway {
       });
   }
 
-  async getById(id: string): Promise<FestivalDetail | null> {
+  async getById(id: string): Promise<FestivalDetailWithCulture | null> {
     if (this.delay > 0) await wait(this.delay);
     return this.festivals.find((festival) => festival.id === id) ?? null;
   }

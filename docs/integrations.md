@@ -34,6 +34,35 @@ Travel advice, survival guidance, and accommodation and dining warnings are stor
 `Saraya-curated` attribution. They are editorial planning guidance and are never attributed to a
 government or organizer source.
 
+### Cultural-guide verification
+
+The canonical `festival-cultural-guides.json` file contains one record for every canonical festival
+ID. Each guide separates history, customs, payment, pasalubong, dining, and photography/social
+content. Each category is classified as `verified`, `partially-verified`, `general-guidance`, or
+`insufficient-evidence`; a source may support only the categories named in its `supports` list.
+
+Cultural research prioritizes DOT, TPB, NCCA, NHCP, official LGUs and organizers, and official
+cultural institutions. Academic or reputable secondary material is used only where stronger sources
+are unavailable. Researchers must inspect the direct page, record its access date, paraphrase rather
+than copy, and remove unsupported absolutes, percentages, origin stories, restrictions, and opaque
+citation markers. Festival existence alone is not evidence for a cultural claim.
+
+Generic payment, dining, and respectful-photography recommendations are labeled as Saraya traveler
+guidance and carry no external source IDs. Categories without adequate evidence remain visible as
+`insufficient-evidence`; they are never filled with generated claims. Their reader-facing copy names
+the festival, explains what has not yet been verified, and suggests a safe next step such as checking
+the organizer or local tourism office. Run `npm run culture:audit`
+after editing either canonical dataset, or `npm run culture:audit:full` for the per-festival research
+inventory. Re-review sources periodically, when a source disappears, and before strengthening any
+category's verification status.
+
+The September 22 research pass added direct government support for MassKara, Higantes, Kaamulan,
+Lanzones, Kadaugan sa Mactan, Sandugo, Zamboanga Hermosa, Paraw Regatta, the International Bamboo
+Organ Festival, Pulilan Carabao Festival, Pista’y Dayat, and Ibalong. Copy derived from these sources
+is written for visitors and keeps event-specific cautions separate from general Saraya guidance. A
+second pass added Parada ng Lechon, Magayon, Naliyagan, and Tinagba from DOT, TPB, and Iriga City
+sources.
+
 For the hackathon, updates are manual and reviewed. A production process should verify general facts
 periodically, review next-year schedules in Q4, recheck near major dates, and accept urgent
 cancellation/rescheduling updates. External ingestion may assist research, but a person must validate
