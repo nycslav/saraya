@@ -61,6 +61,37 @@ cultural guide. An unknown ID returns `404` with the `DESTINATION_NOT_FOUND` err
 Invalid query parameters return `400` with the `VALIDATION_ERROR` error code. Unknown routes
 return `404` with `ROUTE_NOT_FOUND`.
 
+## Safety alerts and weather API
+
+Safety and weather requests require exactly one location context: a `latitude` and `longitude`
+pair, `region`, or `destinationId`. Mixing contexts, omitting one coordinate, or using coordinates
+outside their valid ranges returns `400 VALIDATION_ERROR`. Coordinates are used only for the
+request and are not persisted.
+
+### `GET /safety-alerts`
+
+Returns `{ location, alerts }` for active persisted alerts plus normalized provider warnings.
+Optional `severity` (`green`, `yellow`, or `red`) and `alertType` filters are available. Results are
+ordered by severity (red first), then most recently updated, then title. Provider failure does not
+discard valid persisted alerts.
+
+### `GET /safety-alerts/:id`
+
+Returns one complete alert, including affected areas, timing, recommendations, alternatives, and
+source metadata. Unknown IDs return `404 SAFETY_ALERT_NOT_FOUND`.
+
+### `GET /alerts/:region`
+
+Returns the same `{ location, alerts }` shape for a URL-encoded region. A region with no active
+records returns an empty `alerts` array rather than an inferred safe status.
+
+### `GET /weather`
+
+Returns normalized traveler-facing weather for one location context. `source.isDemo` identifies
+deterministic mock data. If the configured provider fails, the endpoint returns an explicit
+`providerStatus: "unavailable"` and `warningState: "unavailable"`; it never fabricates a safe
+condition.
+
 ## Itinerary API
 
 ### `POST /itineraries/generate`

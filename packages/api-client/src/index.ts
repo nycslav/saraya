@@ -12,8 +12,13 @@ import {
   journeyEntrySchema,
   journeyStatisticsSchema,
   photoUploadResultSchema,
+  safetyAlertListResponseSchema,
+  safetyAlertQuerySchema,
+  safetyAlertSchema,
   updateBucketListItemSchema,
   updateCheckInSchema,
+  weatherQuerySchema,
+  weatherResponseSchema,
   userProfileSchema,
   type CreateBucketListItemInput,
   type CreateCheckInInput,
@@ -26,6 +31,8 @@ import {
   type UpdateProfileRequest,
   type UpdateBucketListItemInput,
   type UpdateCheckInInput,
+  type SafetyAlertQuery,
+  type WeatherQuery,
 } from '@saraya/contracts';
 import { z } from 'zod';
 
@@ -40,6 +47,14 @@ export class ApiClientError extends Error {
 }
 
 export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<string | null>) {
+  const locationParams = (query: WeatherQuery | SafetyAlertQuery) => {
+    const params = new URLSearchParams();
+    if (query.latitude !== undefined) params.set('latitude', String(query.latitude));
+    if (query.longitude !== undefined) params.set('longitude', String(query.longitude));
+    if (query.region) params.set('region', query.region);
+    if (query.destinationId) params.set('destinationId', query.destinationId);
+    return params;
+  };
   const request = async (path: string, init?: RequestInit) => {
     const token = await getAccessToken?.();
     const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
@@ -149,6 +164,33 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
       async getById(id: string) {
         return destinationDetailSchema.parse(
           await request(`/destinations/${encodeURIComponent(id)}`),
+        );
+      },
+    },
+    safety: {
+      async list(input: SafetyAlertQuery) {
+        const query = safetyAlertQuerySchema.parse(input);
+        const params = locationParams(query);
+        if (query.severity) params.set('severity', query.severity);
+        if (query.alertType) params.set('alertType', query.alertType);
+        return safetyAlertListResponseSchema.parse(
+          await request(`/safety-alerts?${params.toString()}`),
+        );
+      },
+      async getById(id: string) {
+        return safetyAlertSchema.parse(
+          await request(`/safety-alerts/${encodeURIComponent(id)}`),
+        );
+      },
+      async listByRegion(region: string) {
+        return safetyAlertListResponseSchema.parse(
+          await request(`/alerts/${encodeURIComponent(region)}`),
+        );
+      },
+      async getWeather(input: WeatherQuery) {
+        const query = weatherQuerySchema.parse(input);
+        return weatherResponseSchema.parse(
+          await request(`/weather?${locationParams(query).toString()}`),
         );
       },
     },

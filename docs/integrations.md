@@ -12,6 +12,32 @@ Provider configuration and local/mock behavior must be documented for:
 
 Every provider should have an adapter interface so feature tests can use deterministic fakes.
 
+## PAGASA weather and warning boundary
+
+The API exposes a provider-neutral `PagasaProvider` with normalized `getWeather` and
+`getActiveWarnings` operations. The current MVP deliberately implements only
+`MockPagasaProvider`: it is deterministic, requires no credential or internet access, provides
+known weather/warnings and no-warning cases, and can simulate failure. Set `PAGASA_PROVIDER=mock`;
+`PAGASA_MOCK_FAILURE=true` exercises unavailable behavior. Any unsupported provider value fails
+configuration explicitly, so mock output is never silently presented as live data.
+
+No stable supported real PAGASA API was identified in the repository, so a real adapter is
+deferred. The implementation does not scrape PAGASA HTML or invent an endpoint. A future adapter
+must normalize at this boundary and retain provider/source/demo metadata. Persisted alerts remain
+available during provider failure, while weather returns an explicit unavailable status.
+
+There is no job-runner abstraction in the current API, so 30-minute polling is also deferred rather
+than adding an ad-hoc scheduler. The provider and safety-service boundaries are ready for a future
+job. Weather API/client support is ready for Member 1's Discover integration.
+
+For mobile, `EXPO_PUBLIC_DATA_MODE=fixture` uses the clearly labeled offline dataset and
+`EXPO_PUBLIC_DATA_MODE=api` uses the Saraya API. This choice is explicit; there is no silent
+API-to-fixture fallback.
+
+The mobile app uses Expo's supported `expo-location` package for a one-time foreground lookup.
+Because this adds a native module and app permission text, rebuild and reinstall the development
+client before testing it; restarting Metro alone does not update an already-installed native app.
+
 ## Festival research and provenance
 
 Festival research follows this source order:

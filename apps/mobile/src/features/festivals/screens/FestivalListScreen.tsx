@@ -1,5 +1,6 @@
 import type { FestivalSummary } from '@saraya/contracts';
-import { CalendarDays, Rows3 } from 'lucide-react-native';
+import { type Href, useRouter } from 'expo-router';
+import { CalendarDays, Rows3, ShieldCheck } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -35,6 +36,7 @@ const months = [
 ] as const;
 
 export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: FestivalGateway }) {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState<string>();
   const [month, setMonth] = useState<number>();
@@ -167,6 +169,13 @@ export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: Fe
       <StatusPanel
         message="Festival dates and programs can shift. Every guide includes a reminder to verify the official local schedule before booking."
         title="Plan, then confirm"
+      />
+
+      <Button
+        icon={ShieldCheck}
+        label="Check safety alerts"
+        onPress={() => router.push('/alerts' as Href)}
+        variant="secondary"
       />
 
       <SectionTitle

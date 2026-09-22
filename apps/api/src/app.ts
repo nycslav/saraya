@@ -8,6 +8,11 @@ import { achievementRouter, userAchievementRouter } from './modules/achievements
 import { checkInRouter } from './modules/check-ins/check-in.route';
 import { destinationRouter } from './modules/destinations/destination.route';
 import { itineraryRouter } from './modules/itineraries/itinerary.route';
+import {
+  regionalAlertRouter,
+  safetyAlertRouter,
+  weatherRouter,
+} from './modules/safety-alerts/safety-alert.route';
 import { uploadRoot } from './integrations/photo-storage/local-photo-storage';
 
 export const app = express();
@@ -26,6 +31,9 @@ app.use('/bucket-list', bucketListRouter);
 app.use('/check-ins', checkInRouter);
 app.use('/destinations', destinationRouter);
 app.use('/itineraries', itineraryRouter);
+app.use('/safety-alerts', safetyAlertRouter);
+app.use('/alerts', regionalAlertRouter);
+app.use('/weather', weatherRouter);
 app.use('/user/achievements', userAchievementRouter);
 
 app.use((_request, response) => {

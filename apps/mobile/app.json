@@ -21,6 +21,12 @@
       ],
       "expo-secure-store",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Saraya to use your location once to show nearby weather and safety alerts."
+        }
+      ],
+      [
         "expo-image-picker",
         {
           "photosPermission": "Allow Saraya to add a travel photo to your Journey.",

@@ -58,6 +58,23 @@ next step, and verify the source links for the September 22 enrichment batch. `n
 emits the machine-readable summary;
 `npm run culture:audit:full` adds the per-festival research inventory.
 
+## Safety, weather, and foreground-location coverage
+
+Safety tests are offline and deterministic. Shared-contract cases cover valid alerts/weather, each
+exclusive location context, coordinate bounds, invalid filters, timestamps, and context
+combinations. API tests cover coordinate, region, and destination lookup; empty and invalid
+results; detail retrieval; weather metadata; and stable errors. Repository tests cover active and
+expired filtering, affected-area matching, type/severity filters, alert lookup, ordering, destination
+reuse, and generated SQL containing the PostGIS `ST_Covers` boundary. Provider tests cover known
+weather, known/empty warnings, determinism, and failure without network access.
+
+Mobile tests replace the native location provider and cover granted, denied, unavailable, and
+acquisition-error outcomes. Screen tests prove location is not requested on startup, manual region
+and destination fallback remains available, the one-time explicit action works, and alert
+list/detail loading, empty, error, retry, navigation, severity labels, and demo disclosures render.
+Gateway tests cover API success/failure and deterministic fixture mode. No test requires GPS,
+PAGASA, or internet access.
+
 Run the same required checks locally before opening a pull request:
 
 ```powershell

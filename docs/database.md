@@ -27,6 +27,17 @@ with journal metadata and no captured device location. The seventh migration cre
 definitions and uniquely unlocked `user_achievements`; badge progress is derived from check-in
 history and destination catalog metadata.
 
+The eighth migration creates `safety_alerts`. Alert coverage uses nullable
+`geography(MultiPolygon, 4326)` rather than reducing an affected area to one point; manual lookup
+also uses the `affected_regions` array. The API query checks active time, optional severity/type,
+and either `ST_Covers` for an approved coordinate or region membership. No user coordinate is
+written to this table.
+
+Safety indexes correspond to current queries: a B-tree index on the active time window, a GIN index
+on affected regions, a severity/type B-tree index for filters, and a GiST index for geographic
+coverage. Migration `008_create_safety_alerts.sql` requires the normal cross-member migration
+review before shared deployment.
+
 ## Festival normalization direction
 
 The hackathon keeps stable identity and the represented annual occurrence together in the curated

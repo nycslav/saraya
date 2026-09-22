@@ -1,2 +1,132 @@
-[]
+[
+  {
+    "id": "demo-bicol-severe-weather",
+    "alertType": "weather",
+    "severity": "red",
+    "title": "[DEMO] Severe storm conditions affecting Bicol travel",
+    "summary": "Synthetic demonstration alert: severe rain and wind are affecting sample routes in the Bicol Region.",
+    "details": "This record exists only to demonstrate Saraya's red-severity safety flow. It is not a current PAGASA bulletin and must not be used for real travel decisions.",
+    "advice": [
+      "Delay exposed land and sea travel in the demonstration area.",
+      "For real travel, verify current bulletins with PAGASA and local authorities."
+    ],
+    "alternatives": ["Remain at established accommodation until verified local guidance permits travel."],
+    "affectedRegions": ["Bicol Region"],
+    "affectedAreaDescription": "Demonstration area around Albay and nearby Bicol routes",
+    "affectedArea": {
+      "type": "MultiPolygon",
+      "coordinates": [[[[123.2, 12.8], [124.3, 12.8], [124.3, 14.2], [123.2, 14.2], [123.2, 12.8]]]]
+    },
+    "startsAt": "2026-01-01T00:00:00.000Z",
+    "endsAt": "2030-12-31T23:59:59.000Z",
+    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "createdAt": "2026-09-22T00:00:00.000Z",
+    "updatedAt": "2026-09-22T00:00:00.000Z"
+  },
+  {
+    "id": "demo-metro-manila-heavy-rain",
+    "alertType": "weather",
+    "severity": "yellow",
+    "title": "[DEMO] Heavy rain may slow Metro Manila travel",
+    "summary": "Synthetic demonstration alert: persistent rain may cause localized flooding and traffic disruption.",
+    "details": "This is deterministic demo content, not an official warning. It demonstrates how Saraya presents a yellow weather advisory while retaining manual travel choices.",
+    "advice": ["Allow extra travel time.", "Avoid visibly flooded roads and follow local traffic instructions."],
+    "alternatives": ["Use established rail routes where operating normally.", "Delay non-essential road travel."],
+    "affectedRegions": ["National Capital Region"],
+    "affectedAreaDescription": "Demonstration area covering central Metro Manila",
+    "affectedArea": {
+      "type": "MultiPolygon",
+      "coordinates": [[[[120.85, 14.45], [121.15, 14.45], [121.15, 14.82], [120.85, 14.82], [120.85, 14.45]]]]
+    },
+    "startsAt": "2026-01-01T00:00:00.000Z",
+    "endsAt": "2030-12-31T23:59:59.000Z",
+    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "createdAt": "2026-09-22T00:00:00.000Z",
+    "updatedAt": "2026-09-22T00:00:00.000Z"
+  },
+  {
+    "id": "demo-central-visayas-ferry",
+    "alertType": "cancellation",
+    "severity": "yellow",
+    "title": "[DEMO] Selected Central Visayas ferry trips cancelled",
+    "summary": "Synthetic demonstration alert: sample ferry services between Cebu and Bohol are suspended.",
+    "details": "This cancellation is fictional and intended for product demonstration. Confirm actual sailings directly with port authorities and licensed operators.",
+    "advice": ["Do not travel to the port without confirming a replacement sailing.", "Keep accommodation flexible."],
+    "alternatives": ["Ask the operator about the next verified sailing.", "Use an available commercial flight only after confirming its status."],
+    "affectedRegions": ["Central Visayas"],
+    "affectedAreaDescription": "Demonstration marine corridor between Metro Cebu and Bohol",
+    "affectedArea": {
+      "type": "MultiPolygon",
+      "coordinates": [[[[123.65, 9.5], [124.25, 9.5], [124.25, 10.65], [123.65, 10.65], [123.65, 9.5]]]]
+    },
+    "startsAt": "2026-01-01T00:00:00.000Z",
+    "endsAt": "2030-12-31T23:59:59.000Z",
+    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "createdAt": "2026-09-22T00:00:00.000Z",
+    "updatedAt": "2026-09-22T00:00:00.000Z"
+  },
+  {
+    "id": "demo-davao-health-guidance",
+    "alertType": "health_advisory",
+    "severity": "green",
+    "title": "[DEMO] Routine heat-safety guidance for Davao travelers",
+    "summary": "Synthetic demonstration advisory: plan water and shade breaks during outdoor activities.",
+    "details": "This green demo advisory illustrates preventive traveler guidance and does not represent a current Department of Health notice.",
+    "advice": ["Carry drinking water.", "Schedule strenuous outdoor activity outside the hottest part of the day."],
+    "alternatives": ["Choose an indoor museum or shaded attraction during peak heat."],
+    "affectedRegions": ["Davao Region"],
+    "affectedAreaDescription": "Demonstration area around Davao City",
+    "affectedArea": {
+      "type": "MultiPolygon",
+      "coordinates": [[[[125.2, 6.8], [125.75, 6.8], [125.75, 7.45], [125.2, 7.45], [125.2, 6.8]]]]
+    },
+    "startsAt": "2026-01-01T00:00:00.000Z",
+    "endsAt": "2030-12-31T23:59:59.000Z",
+    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "createdAt": "2026-09-22T00:00:00.000Z",
+    "updatedAt": "2026-09-22T00:00:00.000Z"
+  },
+  {
+    "id": "demo-cordillera-road-work",
+    "alertType": "local_disruption",
+    "severity": "green",
+    "title": "[DEMO] Scheduled road work on a sample Cordillera route",
+    "summary": "Synthetic demonstration alert: controlled road work may create short delays near Baguio.",
+    "details": "This fictional disruption demonstrates a low-severity local alert. Consult the relevant LGU and road authority for current conditions.",
+    "advice": ["Allow additional daylight travel time.", "Follow traffic controllers and posted signs."],
+    "alternatives": ["Use the signed diversion when directed by local traffic personnel."],
+    "affectedRegions": ["Cordillera Administrative Region"],
+    "affectedAreaDescription": "Demonstration road area near Baguio",
+    "affectedArea": {
+      "type": "MultiPolygon",
+      "coordinates": [[[[120.45, 16.3], [120.72, 16.3], [120.72, 16.55], [120.45, 16.55], [120.45, 16.3]]]]
+    },
+    "startsAt": "2026-01-01T00:00:00.000Z",
+    "endsAt": "2030-12-31T23:59:59.000Z",
+    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "createdAt": "2026-09-22T00:00:00.000Z",
+    "updatedAt": "2026-09-22T00:00:00.000Z"
+  },
+  {
+    "id": "demo-expired-western-visayas-advisory",
+    "alertType": "travel_advisory",
+    "severity": "yellow",
+    "title": "[DEMO] Expired Western Visayas route advisory",
+    "summary": "Synthetic expired record used to verify that inactive alerts are excluded.",
+    "details": "This deterministic fixture ended before the current demo period and should never appear in active-alert results.",
+    "advice": ["No current action is associated with this expired demonstration record."],
+    "alternatives": [],
+    "affectedRegions": ["Western Visayas"],
+    "affectedAreaDescription": "Expired demonstration area near Iloilo City",
+    "affectedArea": {
+      "type": "MultiPolygon",
+      "coordinates": [[[[122.45, 10.55], [122.75, 10.55], [122.75, 10.85], [122.45, 10.85], [122.45, 10.55]]]]
+    },
+    "startsAt": "2025-01-01T00:00:00.000Z",
+    "endsAt": "2025-01-02T00:00:00.000Z",
+    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  }
+]
 
