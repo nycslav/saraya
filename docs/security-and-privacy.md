@@ -19,4 +19,10 @@
   and destination selection.
 - Demo alerts and weather carry `isDemo` metadata and prominent synthetic-data wording; they must
   not be treated as official PAGASA bulletins.
+- Open-Meteo requests are made only by the backend; no provider endpoint or future commercial API
+  key is embedded in the mobile app. Approved coordinates are forwarded for the requested lookup
+  but are not written to location history.
+- The weather-cache interface uses responsibly rounded coordinate keys and does not cache the
+  response's location object. Runtime currently uses a no-op cache until the shared Redis platform
+  and its retention policy are available.
 

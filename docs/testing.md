@@ -72,8 +72,12 @@ Mobile tests replace the native location provider and cover granted, denied, una
 acquisition-error outcomes. Screen tests prove location is not requested on startup, manual region
 and destination fallback remains available, the one-time explicit action works, and alert
 list/detail loading, empty, error, retry, navigation, severity labels, and demo disclosures render.
-Gateway tests cover API success/failure and deterministic fixture mode. No test requires GPS,
-PAGASA, or internet access.
+Gateway tests cover API success/failure and deterministic fixture mode. Open-Meteo adapter tests use
+mocked `fetch` responses and cover exact current variables and units, normalization, attribution,
+timestamps, WMO groups, malformed payloads, timeout, HTTP 4xx/5xx, network failure, unknown codes,
+fresh caching, stale fallback, and unavailable behavior without a cache. Provider-selection and
+mock-warning regressions are also tested. No test requires GPS, PAGASA, Open-Meteo, or internet
+access.
 
 Run the same required checks locally before opening a pull request:
 

@@ -26,14 +26,21 @@ describe('safety and weather API', () => {
     expect(invalid.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('returns demo weather for coordinates and destinations', async () => {
+  it('returns fresh normalized weather for coordinates, destinations, and manual regions', async () => {
     const coordinates = await request(app).get('/weather').query({ latitude: 14.6, longitude: 121 });
     const destination = await request(app).get('/weather').query({ destinationId: 'cebu-city' });
+    const region = await request(app).get('/weather').query({ region: 'Davao Region' });
 
     expect(coordinates.status).toBe(200);
     expect(coordinates.body.source.isDemo).toBe(true);
+    expect(coordinates.body.providerStatus).toBe('fresh');
     expect(destination.status).toBe(200);
     expect(destination.body.location.destinationId).toBe('cebu-city');
+    expect(destination.body.location.coordinates).toEqual(expect.objectContaining({ latitude: expect.any(Number) }));
+    expect(region.status).toBe(200);
+    expect(region.body.location).toEqual(expect.objectContaining({
+      kind: 'region', region: 'Davao Region', coordinates: expect.any(Object),
+    }));
   });
 
   it('supports regional and detail routes, including empty and not-found results', async () => {

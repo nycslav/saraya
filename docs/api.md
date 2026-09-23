@@ -87,10 +87,17 @@ records returns an empty `alerts` array rather than an inferred safe status.
 
 ### `GET /weather`
 
-Returns normalized traveler-facing weather for one location context. `source.isDemo` identifies
-deterministic mock data. If the configured provider fails, the endpoint returns an explicit
-`providerStatus: "unavailable"` and `warningState: "unavailable"`; it never fabricates a safe
-condition.
+Returns normalized traveler-facing weather for one location context. Open-Meteo responses include
+temperature, relative humidity, apparent temperature, precipitation, WMO-derived condition, and
+10-metre wind speed/direction. `observedAt` is the model-current timestamp and `fetchedAt` is the
+Saraya retrieval time.
+
+`providerStatus` is `fresh`, `stale`, or `unavailable`. Stale data is possible only when an injected
+cache contains a sufficiently recent prior response; no-cache provider failure returns explicit
+unavailable values and never fabricates clear or safe conditions. `source` supplies truthful
+provider attribution: live current conditions are labeled Open-Meteo, while deterministic mock
+weather has `source.isDemo = true`. `warningState` remains `unavailable` for Open-Meteo because
+weather-model conditions are not official government safety warnings.
 
 ## Itinerary API
 

@@ -8,7 +8,8 @@ import {
   type WeatherQuery,
 } from '@saraya/contracts';
 
-import { createPagasaProvider, type PagasaProvider } from '../../integrations/pagasa';
+import { createWarningProvider, type WarningProvider } from '../../integrations/warnings';
+import { createWeatherProvider, type WeatherProvider } from '../../integrations/weather';
 import {
   createSafetyAlertRepository,
   type SafetyAlertRepository,
@@ -34,7 +35,8 @@ function sortAlerts(alerts: SafetyAlert[]) {
 export class SafetyAlertService {
   constructor(
     private readonly repository: SafetyAlertRepository = createSafetyAlertRepository(),
-    private readonly provider: PagasaProvider = createPagasaProvider(),
+    private readonly weatherProvider: WeatherProvider = createWeatherProvider(),
+    private readonly warningProvider: WarningProvider = createWarningProvider(),
     private readonly now: () => Date = () => new Date(),
   ) {}
 
@@ -51,13 +53,18 @@ export class SafetyAlertService {
     });
   }
 
+  private async resolveWeatherLocation(query: WeatherQuery): Promise<ResolvedLocation> {
+    if (query.region) return this.repository.resolveRegion(query.region);
+    return this.resolveLocation(query);
+  }
+
   async list(rawQuery: unknown) {
     const query = safetyAlertQuerySchema.parse(rawQuery);
     const location = await this.resolveLocation(query);
     const persisted = await this.repository.findActive(location, query, this.now());
     let warnings: SafetyAlert[] = [];
     try {
-      warnings = await this.provider.getActiveWarnings(location);
+      warnings = await this.warningProvider.getActiveWarnings(location);
     } catch {
       // Persisted alerts remain useful when a future live provider is unavailable.
     }
@@ -80,25 +87,27 @@ export class SafetyAlertService {
 
   async weather(rawQuery: unknown) {
     const query = weatherQuerySchema.parse(rawQuery);
-    const location = await this.resolveLocation(query);
+    const location = await this.resolveWeatherLocation(query);
     try {
-      return await this.provider.getWeather(location);
+      return await this.weatherProvider.getWeather(location);
     } catch {
       return weatherResponseSchema.parse({
         location,
         condition: null,
         temperatureCelsius: null,
+        relativeHumidityPercent: null,
+        apparentTemperatureCelsius: null,
         precipitationProbability: null,
+        precipitationMillimeters: null,
         rainfallMillimeters: null,
+        windSpeedKilometersPerHour: null,
+        windDirectionDegrees: null,
         warningState: 'unavailable',
         summary: 'Weather data is unavailable. Saraya has not assumed that conditions are safe.',
         observedAt: null,
+        fetchedAt: this.now().toISOString(),
         providerStatus: 'unavailable',
-        source: {
-          provider: 'configured-weather-provider',
-          name: 'Configured weather provider unavailable',
-          isDemo: process.env.PAGASA_PROVIDER !== 'real',
-        },
+        source: this.weatherProvider.source,
       });
     }
   }

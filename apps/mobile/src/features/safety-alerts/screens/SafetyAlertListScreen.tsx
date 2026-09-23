@@ -147,9 +147,14 @@ function WeatherPanel({ weather }: { weather: WeatherResponse }) {
       </View>
       <Text style={styles.weatherCondition}>{weather.condition ?? 'Weather unavailable'}</Text>
       {!unavailable && weather.temperatureCelsius !== null ? (
-        <Text style={styles.weatherMetrics}>{weather.temperatureCelsius}°C · {weather.precipitationProbability ?? '—'}% sample rain probability</Text>
+        <Text style={styles.weatherMetrics}>
+          {weather.temperatureCelsius}°C · {weather.precipitationMillimeters ?? '—'} mm precipitation
+        </Text>
       ) : null}
       <Text style={styles.weatherSummary}>{weather.summary}</Text>
+      <Text style={styles.weatherSource}>
+        Source: {weather.source.name}{weather.providerStatus === 'stale' ? ' · cached' : ''}
+      </Text>
       {weather.source.isDemo ? <Text style={styles.demo}>DEMO WEATHER — VERIFY REAL CONDITIONS BEFORE TRAVEL</Text> : null}
     </View>
   );
@@ -170,5 +175,6 @@ const styles = StyleSheet.create({
   weatherCondition: { color: colors.navy, fontFamily: type.black, fontSize: 20 },
   weatherMetrics: { color: colors.blue, fontFamily: type.bold, fontSize: 14 },
   weatherSummary: { color: colors.muted, fontFamily: type.medium, fontSize: 13, lineHeight: 19 },
+  weatherSource: { color: colors.muted, fontFamily: type.bold, fontSize: 11 },
   demo: { color: colors.danger, fontFamily: type.black, fontSize: 10, lineHeight: 15 },
 });

@@ -3,7 +3,7 @@
 Provider configuration and local/mock behavior must be documented for:
 
 - Maps and geocoding
-- PAGASA weather and warnings
+- Weather conditions and safety warnings
 - Firebase Cloud Messaging
 - Photo storage
 - RevenueCat lifetime/consumable purchases and webhooks
@@ -12,23 +12,49 @@ Provider configuration and local/mock behavior must be documented for:
 
 Every provider should have an adapter interface so feature tests can use deterministic fakes.
 
-## PAGASA weather and warning boundary
+## Weather and warning boundaries
 
-The API exposes a provider-neutral `PagasaProvider` with normalized `getWeather` and
-`getActiveWarnings` operations. The current MVP deliberately implements only
-`MockPagasaProvider`: it is deterministic, requires no credential or internet access, provides
-known weather/warnings and no-warning cases, and can simulate failure. Set `PAGASA_PROVIDER=mock`;
-`PAGASA_MOCK_FAILURE=true` exercises unavailable behavior. Any unsupported provider value fails
-configuration explicitly, so mock output is never silently presented as live data.
+Current weather and safety warnings are deliberately separate:
 
-No stable supported real PAGASA API was identified in the repository, so a real adapter is
-deferred. The implementation does not scrape PAGASA HTML or invent an endpoint. A future adapter
-must normalize at this boundary and retain provider/source/demo metadata. Persisted alerts remain
-available during provider failure, while weather returns an explicit unavailable status.
+- `WeatherProvider` supplies normalized Saraya weather data. `OpenMeteoWeatherProvider` is the
+  normal development/runtime adapter; `MockWeatherProvider` remains available for deterministic
+  tests and demos.
+- `WarningProvider` supplies safety warnings. The MVP retains `MockWarningProvider` because no
+  stable supported machine-readable PAGASA warning API has been identified.
+- Future authoritative government-warning ingestion must be implemented as another warning
+  adapter. Open-Meteo conditions must never be treated as official PAGASA warnings.
 
-There is no job-runner abstraction in the current API, so 30-minute polling is also deferred rather
-than adding an ad-hoc scheduler. The provider and safety-service boundaries are ready for a future
-job. Weather API/client support is ready for Member 1's Discover integration.
+Set `WEATHER_PROVIDER=open_meteo` or `WEATHER_PROVIDER=mock`. Outside tests the default is
+`open_meteo`; Jest defaults to `mock` so automated tests make no network calls. Unsupported values
+fail configuration validation. `OPEN_METEO_BASE_URL` defaults to
+`https://api.open-meteo.com/v1`; the adapter requests `/forecast` using the documented `current=`
+variables for temperature, relative humidity, apparent temperature, precipitation, weather code,
+and 10-metre wind speed/direction. It requests Celsius, millimetres, km/h, and UTC explicitly.
+
+Open-Meteo's `current.time` is exposed as `observedAt` for API compatibility, but it represents the
+time of model-derived current conditions rather than a physical PAGASA station observation.
+`fetchedAt` records when Saraya retrieved it. Runtime data carries `source.name = "Open-Meteo"`, a
+source URL, and `isDemo = false`. WMO codes are mapped only to weather conditions; none maps to a
+typhoon or official-warning state.
+
+The free Open-Meteo endpoint is for non-commercial use and evaluation, requires attribution, and is
+currently limited to 600 calls per minute, 5,000 per hour, 10,000 per day, and 300,000 per month.
+Because Saraya contains paid Premium functionality, a commercial deployment must use an appropriate
+commercial Open-Meteo plan/customer endpoint or another properly licensed provider. Open-Meteo's
+published [terms](https://open-meteo.com/en/terms) and
+[pricing/licensing guidance](https://open-meteo.com/en/pricing) must be reviewed before production.
+The provider accepts an optional backend-only API key for a future customer endpoint; no provider
+key is exposed through `EXPO_PUBLIC_*` configuration.
+
+An injectable weather-cache boundary rounds coordinate keys to two decimal places and omits the
+request location from cached values. Freshness is 30 minutes; a cache entry up to two hours old can
+be returned as `stale` after provider failure. The repository currently has no operational shared
+Redis cache, so runtime composition uses a no-op implementation. Redis integration remains deferred
+platform work rather than introducing a competing cache system.
+
+There is no job-runner abstraction in the current API, so background polling remains deferred.
+Persisted and mock safety warnings continue to work independently of weather-provider availability.
+Weather API/client support remains ready for Member 1's Discover integration.
 
 For mobile, `EXPO_PUBLIC_DATA_MODE=fixture` uses the clearly labeled offline dataset and
 `EXPO_PUBLIC_DATA_MODE=api` uses the Saraya API. This choice is explicit; there is no silent

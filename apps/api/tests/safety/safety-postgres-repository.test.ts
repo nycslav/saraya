@@ -72,4 +72,15 @@ describe('PostgresSafetyAlertRepository', () => {
     );
     expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('WHERE id = $1'), ['demo-row']);
   });
+
+  it('resolves manual regions to representative catalog coordinates for weather', async () => {
+    mockQuery.mockResolvedValue({ rows: [{ latitude: '7.1907', longitude: '125.4553' }] });
+    await expect(new PostgresSafetyAlertRepository().resolveRegion('Davao Region')).resolves.toEqual({
+      kind: 'region',
+      label: 'Davao Region',
+      region: 'Davao Region',
+      coordinates: { latitude: 7.1907, longitude: 125.4553 },
+    });
+    expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('AVG(ST_Y(location::geometry))'), ['Davao Region']);
+  });
 });

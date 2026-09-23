@@ -14,6 +14,7 @@ export interface SafetyAlertRepository {
   findActive(location: ResolvedLocation, filters: Pick<SafetyAlertQuery, 'severity' | 'alertType'>, now: Date): Promise<SafetyAlert[]>;
   findById(id: string): Promise<SafetyAlert | null>;
   resolveDestination(id: string): Promise<ResolvedLocation | null>;
+  resolveRegion(region: string): Promise<ResolvedLocation>;
   resolveCoordinates(coordinates: Coordinates): Promise<ResolvedLocation>;
 }
 
@@ -73,6 +74,20 @@ export class InMemorySafetyAlertRepository implements SafetyAlertRepository {
       destinationId: destination.id,
       coordinates: destination.coordinates,
     } : null;
+  }
+
+  async resolveRegion(region: string): Promise<ResolvedLocation> {
+    const destinations = seedDestinations.filter((item) => item.region === region);
+    const coordinates = destinations.length > 0 ? {
+      latitude: destinations.reduce((sum, item) => sum + item.coordinates.latitude, 0) / destinations.length,
+      longitude: destinations.reduce((sum, item) => sum + item.coordinates.longitude, 0) / destinations.length,
+    } : undefined;
+    return {
+      kind: 'region',
+      label: region,
+      region,
+      ...(coordinates ? { coordinates } : {}),
+    };
   }
 
   async resolveCoordinates(coordinates: Coordinates): Promise<ResolvedLocation> {

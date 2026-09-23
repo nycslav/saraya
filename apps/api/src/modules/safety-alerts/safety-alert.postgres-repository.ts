@@ -41,6 +41,11 @@ interface DestinationLocationRow extends QueryResultRow {
   longitude: string | number;
 }
 
+interface RegionLocationRow extends QueryResultRow {
+  latitude: string | number | null;
+  longitude: string | number | null;
+}
+
 const columns = `id, alert_type, severity, title, summary, details, advice, alternatives,
   affected_regions, affected_area_description,
   CASE WHEN affected_area IS NULL THEN NULL ELSE ST_AsGeoJSON(affected_area::geometry) END AS affected_area,
@@ -133,6 +138,27 @@ export class PostgresSafetyAlertRepository implements SafetyAlertRepository {
       destinationId: row.id,
       coordinates: { latitude: Number(row.latitude), longitude: Number(row.longitude) },
     } : null;
+  }
+
+  async resolveRegion(region: string): Promise<ResolvedLocation> {
+    const result = await getPool().query<RegionLocationRow>(
+      `SELECT AVG(ST_Y(location::geometry)) AS latitude,
+              AVG(ST_X(location::geometry)) AS longitude
+       FROM destinations
+       WHERE region = $1`,
+      [region],
+    );
+    const row = result.rows[0];
+    const hasCoordinates = row?.latitude !== null && row?.latitude !== undefined &&
+      row.longitude !== null && row.longitude !== undefined;
+    return {
+      kind: 'region',
+      label: region,
+      region,
+      ...(hasCoordinates ? {
+        coordinates: { latitude: Number(row.latitude), longitude: Number(row.longitude) },
+      } : {}),
+    };
   }
 
   async resolveCoordinates(coordinates: Coordinates): Promise<ResolvedLocation> {
