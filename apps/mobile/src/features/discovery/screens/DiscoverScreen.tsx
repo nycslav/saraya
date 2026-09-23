@@ -28,6 +28,14 @@ export function groupDestinations(destinations: DestinationSummary[]) {
   ])) as Record<IslandGroup, DestinationSummary[]>;
 }
 
+export function scrollToMeasuredSection(
+  scrollView: Pick<ScrollView, 'scrollTo'> | null,
+  y: number,
+  reducedMotion: boolean,
+) {
+  scrollView?.scrollTo({ y: Math.max(0, y - spacing.lg), animated: !reducedMotion });
+}
+
 export function DiscoverScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const [sectionY, setSectionY] = useState<Partial<Record<IslandGroup, number>>>({});
@@ -74,7 +82,7 @@ export function DiscoverScreen() {
   const scrollToRegion = (region: IslandGroup) => {
     const y = sectionY[region];
     if (y === undefined) return;
-    scrollViewRef.current?.scrollTo({ y: Math.max(0, y - spacing.lg), animated: !reducedMotion });
+    scrollToMeasuredSection(scrollViewRef.current, y, reducedMotion);
   };
 
   return (
