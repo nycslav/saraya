@@ -25,12 +25,14 @@ const destination: DestinationSummary = {
 describe('DestinationCard', () => {
   beforeEach(() => mockPush.mockClear());
 
-  it('keeps destination navigation available in the carousel layout', async () => {
-    await render(<DestinationCard destination={destination} variant="carousel" />);
+  it('keeps full destination details and navigation available in a carousel row', async () => {
+    await render(<DestinationCard destination={destination} />);
 
     fireEvent.press(screen.getByRole('button', { name: /Batanes, Batanes, rated 4.9/ }));
 
     expect(mockPush).toHaveBeenCalledWith('/destinations/batanes');
-    expect(screen.getByText('Nature')).toBeTruthy();
+    expect(screen.getByText('LUZON')).toBeTruthy();
+    expect(screen.getByText('Rolling hills and Ivatan heritage.')).toBeTruthy();
+    expect(screen.getByText('Batanes · Nature')).toBeTruthy();
   });
 });

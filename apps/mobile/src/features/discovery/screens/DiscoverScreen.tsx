@@ -40,7 +40,7 @@ export function scrollToMeasuredSection(
 }
 
 export function getCarouselCardWidth(viewportWidth: number) {
-  return Math.min(360, Math.max(248, viewportWidth - 88));
+  return Math.min(440, Math.round(viewportWidth * 0.8));
 }
 
 export function DiscoverScreen() {
@@ -181,7 +181,6 @@ export function DiscoverScreen() {
                     destination={destination}
                     key={destination.id}
                     style={{ width: carouselCardWidth }}
-                    variant="carousel"
                   />
                 ))}
               </ScrollView>

@@ -26,11 +26,15 @@ describe('DiscoverScreen region scrolling', () => {
 
 describe('DiscoverScreen destination carousel sizing', () => {
   it.each([
-    [320, 248],
-    [375, 287],
-    [430, 342],
-    [768, 360],
-  ])('uses an adaptive card width for a %spx viewport', (viewportWidth, expectedWidth) => {
-    expect(getCarouselCardWidth(viewportWidth)).toBe(expectedWidth);
-  });
+    [320, 256],
+    [375, 300],
+    [430, 344],
+    [768, 440],
+    [812, 440],
+  ])(
+    'uses an 80%% phone width with a wide-screen cap for a %spx viewport',
+    (viewportWidth, expectedWidth) => {
+      expect(getCarouselCardWidth(viewportWidth)).toBe(expectedWidth);
+    },
+  );
 });
