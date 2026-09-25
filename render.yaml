@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: saraya-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build --workspace=@saraya/api
+    startCommand: npm run start --workspace=@saraya/api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL
+        value: "true"
+      - key: PHOTO_STORAGE_PROVIDER
+        value: supabase
+      - key: PHOTO_STORAGE_BUCKET
+        value: journey-photos
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: GEOAPIFY_API_KEY
+        sync: false

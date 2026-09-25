@@ -3,8 +3,10 @@ import express, { type ErrorRequestHandler } from 'express';
 import multer from 'multer';
 import { ZodError } from 'zod';
 
+import { PhotoNotFoundError } from './integrations/photo-storage/photo-storage.types';
 import { bucketListRouter } from './modules/bucket-list/bucket-list.route';
 import { achievementRouter, userAchievementRouter } from './modules/achievements/achievement.route';
+import { serveCheckInPhoto } from './modules/check-ins/check-in.photo';
 import { checkInRouter } from './modules/check-ins/check-in.route';
 import { destinationRouter } from './modules/destinations/destination.route';
 import { itineraryRouter } from './modules/itineraries/itinerary.route';
@@ -21,7 +23,7 @@ export const app = express();
 app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
-app.use('/uploads', express.static(uploadRoot, { fallthrough: false, index: false }));
+app.get('/uploads/check-ins/:fileName', serveCheckInPhoto);
 
 app.get('/health', (_request, response) => {
   response.json({ status: 'ok' });
@@ -45,6 +47,13 @@ app.use((_request, response) => {
 });
 
 const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+  if (error instanceof PhotoNotFoundError) {
+    response.status(404).json({
+      error: { code: 'PHOTO_NOT_FOUND', message: 'The requested travel photo does not exist.' },
+    });
+    return;
+  }
+
   if (error instanceof ZodError) {
     response.status(400).json({
       error: {
