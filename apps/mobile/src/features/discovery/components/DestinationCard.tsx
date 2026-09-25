@@ -27,11 +27,11 @@ export function DestinationCard({ destination, style }: DestinationCardProps) {
         <View style={styles.body}>
           <View style={styles.topline}>
             <View style={styles.location}>
-              <MapPin accessible={false} color={colors.blue} size={16} />
+              <MapPin color={colors.blue} size={16} />
               <Text style={styles.eyebrow}>{destination.islandGroup.toUpperCase()}</Text>
             </View>
             <View style={styles.location}>
-              <Star accessible={false} color={colors.yellow} fill={colors.yellow} size={16} />
+              <Star color={colors.yellow} fill={colors.yellow} size={16} />
               <Text style={styles.rating}>{destination.rating.toFixed(1)}</Text>
             </View>
           </View>
@@ -41,7 +41,7 @@ export function DestinationCard({ destination, style }: DestinationCardProps) {
             <Text style={styles.region}>
               {destination.province} · {destination.category}
             </Text>
-            <ArrowRight accessible={false} color={colors.coral} size={20} />
+            <ArrowRight color={colors.coral} size={20} />
           </View>
         </View>
       </Card>
