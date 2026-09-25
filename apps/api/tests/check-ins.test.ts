@@ -89,6 +89,9 @@ describe('check-ins and achievements API', () => {
 
     expect(image.status).toBe(201);
     expect(image.body.photoUrl).toMatch(/^\/uploads\/check-ins\/.+\.jpg$/);
+    const storedImage = await request(app).get(image.body.photoUrl);
+    expect(storedImage.status).toBe(200);
+    expect(storedImage.headers['content-type']).toMatch(/^image\/jpeg/);
     expect(text.status).toBe(400);
     expect(text.body.error.code).toBe('INVALID_PHOTO');
   });
