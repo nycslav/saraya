@@ -6,7 +6,7 @@
     "dev": "tsx watch src/server.ts",
     "db:migrate": "tsx src/platform/database/migrate.ts",
     "db:seed": "tsx src/platform/database/seed.ts",
-    "build": "npm run typecheck && esbuild ./src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.js",
+    "build": "tsc --noEmit -p tsconfig.build.json && esbuild ./src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.js",
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
