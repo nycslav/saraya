@@ -169,12 +169,28 @@ const gradientMap = {
 export function DestinationArtwork({
   tone,
   label,
+  imageUrl,
   compact = false,
 }: {
   tone: keyof typeof gradientMap;
   label: string;
+  imageUrl?: string;
   compact?: boolean;
 }) {
+  const [failedImageUrl, setFailedImageUrl] = useState<string>();
+
+  if (imageUrl && failedImageUrl !== imageUrl) {
+    return (
+      <Image
+        accessibilityLabel={`${label} destination photograph`}
+        onError={() => setFailedImageUrl(imageUrl)}
+        resizeMode="cover"
+        source={{ uri: imageUrl }}
+        style={[styles.artwork, compact && styles.artworkCompact]}
+      />
+    );
+  }
+
   return (
     <LinearGradient
       accessibilityLabel={`${label} illustrated destination artwork`}

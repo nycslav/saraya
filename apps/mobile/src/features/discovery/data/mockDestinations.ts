@@ -13,6 +13,7 @@ type DestinationSeed = {
   category: DestinationCategory;
   rating: number;
   summary: string;
+  thumbnailImageUrl?: string;
   heroTone: DestinationDetail['heroTone'];
   tags: string[];
   coordinates: [number, number];
@@ -23,6 +24,7 @@ type DestinationSeed = {
 const seeds: DestinationSeed[] = [
   {
     id: 'batanes', name: 'Batanes', province: 'Batanes', region: 'Cagayan Valley', islandGroup: 'Luzon', category: 'Nature', rating: 4.9,
+    thumbnailImageUrl: 'https://wcormjwfrsyqxhoswpza.supabase.co/storage/v1/object/public/destination-images/batanes.webp',
     summary: 'Wind-shaped hills, stone houses, and quiet coastal roads.', heroTone: 'forest', tags: ['Coastlines', 'Culture', 'Slow travel'], coordinates: [20.4485, 121.9708], highlights: ['Rolling hills', 'Ivatan stone houses', 'Coastal viewpoints'], phrase: 'Dios mamajes — thank you.',
   },
   {
@@ -104,6 +106,7 @@ export const mockDestinations: DestinationDetail[] = seeds.map((seed) => ({
   category: seed.category,
   rating: seed.rating,
   summary: seed.summary,
+  thumbnailImageUrl: seed.thumbnailImageUrl,
   heroTone: seed.heroTone,
   tags: seed.tags,
   coordinates: { latitude: seed.coordinates[0], longitude: seed.coordinates[1] },

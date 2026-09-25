@@ -23,6 +23,7 @@ describe('nationwide discovery', () => {
   it('returns a full detail record by id', async () => {
     const detail = await gateway.getById('batanes');
     expect(detail?.name).toBe('Batanes');
+    expect(detail?.thumbnailImageUrl).toContain('/destination-images/batanes.webp');
     expect(detail?.culturalGuide.etiquette).toHaveLength(3);
   });
 });
