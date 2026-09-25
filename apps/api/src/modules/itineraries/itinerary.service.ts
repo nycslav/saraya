@@ -19,6 +19,7 @@ import {
   createItineraryGenerator,
   type ItineraryGenerator,
 } from './itinerary.generator';
+import { addVerifiedPlaces } from './itinerary-place-matcher';
 import {
   createItineraryRepository,
   type ItineraryRepository,
@@ -43,7 +44,15 @@ export class ItineraryService {
     }
 
     const candidates = await this.places.findNearby(destination);
-    const { plan, source } = await this.generator.generate(preferences, destination, candidates);
+    const generated = await this.generator.generate(preferences, destination, candidates);
+    const plan = addVerifiedPlaces(
+      generated.plan,
+      candidates,
+      generated.source === 'deterministic'
+        ? new Set(['activity', 'meal', 'stay'])
+        : new Set(['meal', 'stay']),
+    );
+    const source = generated.source;
     if (!hasExpectedDays(plan.days, preferences.durationDays)) {
       throw new InvalidGeneratedItineraryError(
         'The generated itinerary did not contain the requested sequential days.',
