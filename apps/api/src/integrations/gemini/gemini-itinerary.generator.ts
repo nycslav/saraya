@@ -6,6 +6,7 @@ import type {
   ItineraryGenerationResult,
   ItineraryGenerator,
 } from '../../modules/itineraries/itinerary.generator';
+import { describeCandidateUse } from '../../modules/itineraries/itinerary-place-matcher';
 import { itineraryPlanSchema } from '../../modules/itineraries/itinerary.plan';
 import type { PlaceCandidate } from '../places/places.provider';
 
@@ -42,13 +43,21 @@ export class GeminiItineraryGenerator implements ItineraryGenerator {
           etiquette: destination.culturalGuide.etiquette,
         },
         preferences,
-        placeCandidates: candidates,
+        placeCandidates: candidates.map((candidate) => ({
+          ...candidate,
+          suitableFor: describeCandidateUse(candidate),
+        })),
       }),
       config: {
         systemInstruction: [
           'You create practical, culturally respectful Philippine travel itineraries.',
           'Return exactly the requested number of sequential days, beginning with day 1.',
           'Use realistic daily pacing and include transport, activities, meals, and rest where useful.',
+          'Create four to six chronologically ordered stops per full day; arrival and departure days may contain fewer stops.',
+          'When matching candidates are supplied, include at least one verified meal and one verified stay per applicable day.',
+          'Prefer distinct candidate IDs across the itinerary and repeat a place only when choices are limited.',
+          'Match meal stops only to candidates marked suitableFor meal, stays only to stay, and attractions only to activity.',
+          'Use the traveler budget, pace, interests, accessibility notes, and starting point in concrete stop details.',
           'For a real establishment or attraction, set candidateId to one of the supplied place candidate IDs.',
           'Never create, alter, or guess a candidate ID or establishment name.',
           'Use candidateId null only for generic transfers, rest, or activities with no suitable candidate.',
