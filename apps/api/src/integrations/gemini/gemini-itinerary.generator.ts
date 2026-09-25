@@ -6,7 +6,10 @@ import type {
   ItineraryGenerationResult,
   ItineraryGenerator,
 } from '../../modules/itineraries/itinerary.generator';
-import { describeCandidateUse } from '../../modules/itineraries/itinerary-place-matcher';
+import {
+  aliasPlaceCandidates,
+  resolvePlaceCandidateAliases,
+} from '../../modules/itineraries/itinerary-place-matcher';
 import { itineraryPlanSchema } from '../../modules/itineraries/itinerary.plan';
 import type { PlaceCandidate } from '../places/places.provider';
 
@@ -28,6 +31,8 @@ export class GeminiItineraryGenerator implements ItineraryGenerator {
       throw new Error('No verified place candidates are available for AI itinerary generation.');
     }
 
+    const { aliases, promptCandidates } = aliasPlaceCandidates(candidates);
+
     const { GoogleGenAI } = await import('@google/genai');
     const client = new GoogleGenAI({ apiKey: this.apiKey });
     const response = await client.models.generateContent({
@@ -43,10 +48,7 @@ export class GeminiItineraryGenerator implements ItineraryGenerator {
           etiquette: destination.culturalGuide.etiquette,
         },
         preferences,
-        placeCandidates: candidates.map((candidate) => ({
-          ...candidate,
-          suitableFor: describeCandidateUse(candidate),
-        })),
+        placeCandidates: promptCandidates,
       }),
       config: {
         systemInstruction: [
@@ -57,6 +59,8 @@ export class GeminiItineraryGenerator implements ItineraryGenerator {
           'When matching candidates are supplied, include at least one verified meal and one verified stay per applicable day.',
           'Prefer distinct candidate IDs across the itinerary and repeat a place only when choices are limited.',
           'Match meal stops only to candidates marked suitableFor meal, stays only to stay, and attractions only to activity.',
+          'Copy the short candidateId alias exactly as supplied, such as p1. Never use or construct provider place IDs.',
+          'A destination highlight is allowed without a place candidate: use candidateId null and keep a specific descriptive activity title.',
           'Use the traveler budget, pace, interests, accessibility notes, and starting point in concrete stop details.',
           'For a real establishment or attraction, set candidateId to one of the supplied place candidate IDs.',
           'Never create, alter, or guess a candidate ID or establishment name.',
@@ -75,7 +79,10 @@ export class GeminiItineraryGenerator implements ItineraryGenerator {
     }
 
     return {
-      plan: itineraryPlanSchema.parse(JSON.parse(response.text)),
+      plan: resolvePlaceCandidateAliases(
+        itineraryPlanSchema.parse(JSON.parse(response.text)),
+        aliases,
+      ),
       source: 'gemini',
     };
   }

@@ -1,7 +1,9 @@
 import type { PlaceCandidate } from '../src/integrations/places/places.provider';
 import {
   addVerifiedPlaces,
+  aliasPlaceCandidates,
   removeUnknownCandidateIds,
+  resolvePlaceCandidateAliases,
 } from '../src/modules/itineraries/itinerary-place-matcher';
 import { itineraryPlanSchema } from '../src/modules/itineraries/itinerary.plan';
 
@@ -88,9 +90,35 @@ describe('addVerifiedPlaces', () => {
     expect(result.plan.days[0]?.stops[0]).toEqual({
       time: '1:00 PM',
       candidateId: null,
-      title: 'Local meal',
-      detail: 'Confirm a suitable current local option before visiting.',
+      title: 'Invented Restaurant',
+      detail: 'A claim about an unverified business.',
       kind: 'meal',
     });
+  });
+
+  it('gives Gemini short aliases and resolves them back to verified provider IDs', () => {
+    const { aliases, promptCandidates } = aliasPlaceCandidates(candidates);
+    const aliasedPlan = itineraryPlanSchema.parse({
+      ...plan,
+      days: [{
+        ...plan.days[0],
+        stops: [{
+          time: '1:00 PM',
+          candidateId: 'p1',
+          title: 'Verified lunch',
+          detail: 'Try a local specialty.',
+          kind: 'meal',
+        }],
+      }],
+    });
+
+    expect(promptCandidates[0]).toEqual(expect.objectContaining({
+      candidateId: 'p1',
+      name: 'Island Kitchen',
+      suitableFor: 'meal',
+    }));
+    expect(promptCandidates[0]).not.toHaveProperty('id');
+    expect(resolvePlaceCandidateAliases(aliasedPlan, aliases).days[0]?.stops[0]?.candidateId)
+      .toBe('restaurant-1');
   });
 });

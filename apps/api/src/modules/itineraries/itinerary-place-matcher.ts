@@ -9,6 +9,39 @@ export function describeCandidateUse(candidate: PlaceCandidate): PlaceStopKind {
   return 'activity';
 }
 
+export function aliasPlaceCandidates(candidates: PlaceCandidate[]) {
+  const aliases = new Map<string, string>();
+  const promptCandidates = candidates.map(({ id, ...candidate }, index) => {
+    const candidateId = `p${index + 1}`;
+    aliases.set(candidateId, id);
+    return {
+      ...candidate,
+      candidateId,
+      suitableFor: describeCandidateUse({ id, ...candidate }),
+    };
+  });
+
+  return { aliases, promptCandidates };
+}
+
+export function resolvePlaceCandidateAliases(
+  plan: ItineraryPlan,
+  aliases: ReadonlyMap<string, string>,
+): ItineraryPlan {
+  return {
+    ...plan,
+    days: plan.days.map((day) => ({
+      ...day,
+      stops: day.stops.map((stop) => ({
+        ...stop,
+        candidateId: stop.candidateId
+          ? aliases.get(stop.candidateId) ?? stop.candidateId
+          : null,
+      })),
+    })),
+  };
+}
+
 export function addVerifiedPlaces(
   plan: ItineraryPlan,
   candidates: PlaceCandidate[],
@@ -45,13 +78,6 @@ export function removeUnknownCandidateIds(
 ): { plan: ItineraryPlan; removedIds: string[] } {
   const knownIds = new Set(candidates.map(({ id }) => id));
   const removedIds: string[] = [];
-  const genericTitles = {
-    transport: 'Local transfer',
-    activity: 'Local activity',
-    meal: 'Local meal',
-    stay: 'Accommodation',
-  } as const;
-
   return {
     plan: {
       ...plan,
@@ -64,8 +90,6 @@ export function removeUnknownCandidateIds(
           return {
             ...stop,
             candidateId: null,
-            title: genericTitles[stop.kind],
-            detail: 'Confirm a suitable current local option before visiting.',
           };
         }),
       })),
