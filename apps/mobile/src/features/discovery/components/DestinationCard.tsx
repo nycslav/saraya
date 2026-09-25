@@ -17,7 +17,11 @@ export function DestinationCard({ destination }: { destination: DestinationSumma
       style={({ pressed }) => pressed && styles.pressed}
     >
       <Card>
-        <DestinationArtwork label={destination.name} tone={destination.heroTone} />
+        <DestinationArtwork
+          imageUrl={destination.thumbnailImageUrl}
+          label={destination.name}
+          tone={destination.heroTone}
+        />
         <View style={styles.body}>
           <View style={styles.topline}>
             <View style={styles.location}>

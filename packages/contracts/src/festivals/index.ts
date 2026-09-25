@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { islandGroupSchema } from '../destinations';
 
 export const directWebUrlSchema = z
+  .string()
   .url()
   .refine((value) => /^https?:\/\//i.test(value), 'Source URL must use HTTP or HTTPS.')
   .refine(
@@ -45,7 +46,7 @@ export const provenanceSourceCoreSchema = z.object({
   title: z.string().min(1),
   url: directWebUrlSchema,
   sourceType: festivalSourceTypeSchema,
-  accessedAt: z.iso.date(),
+  accessedAt: z.string().date(),
 });
 
 export const festivalSourceSchema = provenanceSourceCoreSchema.extend({
@@ -81,7 +82,7 @@ export const culturalGuideSectionSchema = z.object({
 export const festivalCulturalGuideSchema = z
   .object({
     festivalId: z.string().min(1),
-    lastReviewedAt: z.iso.date(),
+    lastReviewedAt: z.string().date(),
     categories: z.object({
       history: culturalGuideSectionSchema,
       customs: culturalGuideSectionSchema,
@@ -148,7 +149,7 @@ export const festivalScheduleItemSchema = z.object({
 });
 
 export const festivalOccurrenceEventSchema = z.object({
-  date: z.iso.date(),
+  date: z.string().date(),
   time: z.string().min(1).optional(),
   title: z.string().min(1),
   description: z.string().min(1),
@@ -158,11 +159,11 @@ export const festivalOccurrenceSchema = z
   .object({
     scheduleYear: z.number().int().min(2000).max(2200).optional(),
     scheduleStatus: festivalScheduleStatusSchema,
-    confirmedStartDate: z.iso.date().optional(),
-    confirmedEndDate: z.iso.date().optional(),
+    confirmedStartDate: z.string().date().optional(),
+    confirmedEndDate: z.string().date().optional(),
     estimatedDateDescription: z.string().min(1).optional(),
     verificationNote: z.string().min(1),
-    lastVerifiedAt: z.iso.datetime({ offset: true }),
+    lastVerifiedAt: z.string().datetime({ offset: true }),
     sourceIds: z.array(z.string().min(1)).min(1),
     events: z.array(festivalOccurrenceEventSchema).default([]),
   })
@@ -209,7 +210,7 @@ export const festivalOccurrenceSchema = z
 
 export const sarayaFestivalEditorialSchema = z.object({
   attribution: z.literal('Saraya-curated'),
-  lastReviewedAt: z.iso.date(),
+  lastReviewedAt: z.string().date(),
   travelAdvice: z.array(z.string().min(1)).min(1),
   survivalGuide: z.array(z.string().min(1)).min(1),
   accommodationWarning: z.string().min(1),
@@ -280,9 +281,9 @@ export const festivalDetailSchema = festivalSummarySchema
     }
   });
 
-export const festivalDetailWithCultureSchema = festivalDetailSchema.safeExtend({
-  culturalGuide: festivalCulturalGuideSchema,
-});
+export const festivalDetailWithCultureSchema = festivalDetailSchema.and(
+  z.object({ culturalGuide: festivalCulturalGuideSchema }),
+);
 
 export const festivalQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),

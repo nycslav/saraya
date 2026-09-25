@@ -103,7 +103,11 @@ export function DestinationDetailScreen() {
       >
         <ArrowLeft color={colors.navy} size={24} />
       </Pressable>
-      <DestinationArtwork label={destination.name} tone={destination.heroTone} />
+      <DestinationArtwork
+        imageUrl={destination.thumbnailImageUrl}
+        label={destination.name}
+        tone={destination.heroTone}
+      />
       <View style={styles.titleBlock}>
         <View style={styles.eyebrowRow}>
           <MapPin color={colors.blue} size={17} />

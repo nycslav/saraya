@@ -1,0 +1,24 @@
+[
+  {
+    "destinationId": "batanes",
+    "filename": "batanes.webp",
+    "publicUrl": "https://wcormjwfrsyqxhoswpza.supabase.co/storage/v1/object/public/destination-images/batanes.webp",
+    "altText": "A cow grazing across the rolling green hills of Batanes",
+    "sourcePage": "https://unsplash.com/photos/black-and-white-cow-on-green-grass-field-under-blue-sky-during-daytime-M6GsC4AGrEs",
+    "photographer": "Rexy Quieta",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-24"
+  },
+  {
+    "destinationId": "apo-island",
+    "filename": "apo-island.webp",
+    "publicUrl": "https://wcormjwfrsyqxhoswpza.supabase.co/storage/v1/object/public/destination-images/apo-island.webp",
+    "altText": "An aerial view of a boat in the clear coastal water around Apo Island",
+    "sourcePage": "https://unsplash.com/photos/aerial-photography-of-yacht-in-body-of-water-re2Meno1UIU",
+    "photographer": "Cris Tagupa",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-24"
+  }
+]

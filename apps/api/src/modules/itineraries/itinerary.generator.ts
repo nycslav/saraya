@@ -7,6 +7,7 @@ import type {
 import { GeminiItineraryGenerator } from '../../integrations/gemini/gemini-itinerary.generator';
 import { OpenAiItineraryGenerator } from '../../integrations/openai/openai-itinerary.generator';
 import type { PlaceCandidate } from '../../integrations/places/places.provider';
+import { removeUnknownCandidateIds } from './itinerary-place-matcher';
 import { itineraryPlanSchema, type ItineraryPlan } from './itinerary.plan';
 
 export interface ItineraryGenerator {
@@ -26,7 +27,7 @@ export class DeterministicItineraryGenerator implements ItineraryGenerator {
   async generate(
     preferences: TripPreferences,
     destination: DestinationDetail,
-    _candidates: PlaceCandidate[],
+    candidates: PlaceCandidate[],
   ): Promise<ItineraryGenerationResult> {
     const days = Array.from({ length: preferences.durationDays }, (_, dayIndex) => {
       const primary =
@@ -95,24 +96,18 @@ class ResilientItineraryGenerator implements ItineraryGenerator {
   ): Promise<ItineraryGenerationResult> {
     try {
       const result = await this.primary.generate(preferences, destination, candidates);
-      assertKnownCandidateIds(result.plan, candidates);
-      return result;
+      const sanitized = removeUnknownCandidateIds(result.plan, candidates);
+      if (sanitized.removedIds.length > 0) {
+        console.warn(
+          `AI itinerary returned ${sanitized.removedIds.length} unknown place candidate reference(s); ` +
+          'continuing with verified replacements.',
+        );
+      }
+      return { ...result, plan: sanitized.plan };
     } catch (error) {
       console.warn('AI itinerary generation failed; using the deterministic fallback.', error);
       return this.fallback.generate(preferences, destination, candidates);
     }
-  }
-}
-
-function assertKnownCandidateIds(plan: ItineraryPlan, candidates: PlaceCandidate[]) {
-  const candidateIds = new Set(candidates.map(({ id }) => id));
-  const unknownId = plan.days
-    .flatMap(({ stops }) => stops)
-    .map(({ candidateId }) => candidateId)
-    .find((candidateId) => candidateId !== null && !candidateIds.has(candidateId));
-
-  if (unknownId) {
-    throw new Error(`AI itinerary referenced an unknown place candidate: ${unknownId}`);
   }
 }
 

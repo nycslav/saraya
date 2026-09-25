@@ -12,6 +12,7 @@ const summary: DestinationSummary = {
   category: 'Nature',
   rating: 4.9,
   summary: 'Rolling hills and Ivatan heritage.',
+  thumbnailImageUrl: 'https://example.com/destination-images/batanes.webp',
   heroTone: 'forest',
   tags: ['Nature', 'Heritage'],
 };
@@ -49,6 +50,7 @@ describe('destination API gateway', () => {
     const results = await new ApiDestinationGateway().list({ search: 'Batanes', islandGroup: 'Luzon' });
 
     expect(results).toEqual([summary]);
+    expect(results[0]?.thumbnailImageUrl).toContain('/destination-images/batanes.webp');
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://api.saraya.test/destinations?search=Batanes&islandGroup=Luzon',
       expect.objectContaining({ headers: expect.objectContaining({ Accept: 'application/json' }) }),

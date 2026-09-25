@@ -57,6 +57,7 @@ describe('destination API', () => {
     expect(response.body).toEqual(
       expect.objectContaining({
         id: 'batanes',
+        thumbnailImageUrl: expect.stringContaining('/destination-images/batanes.webp'),
         coordinates: expect.objectContaining({ latitude: expect.any(Number) }),
         culturalGuide: expect.objectContaining({ etiquette: expect.any(Array) }),
       }),
