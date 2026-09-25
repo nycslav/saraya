@@ -214,3 +214,19 @@ errors, empty results, invalid candidate IDs, or AI errors preserve the determin
 
 Never place this key in an `EXPO_PUBLIC_` variable. Verify Geoapify attribution and storage terms
 before changing the current short-lived cache into durable place storage.
+# Push notifications
+
+Saraya's MVP push path is mobile Expo push token → Saraya API → Expo Push Service → FCM/APNs.
+It does not call Firebase Admin directly. Backend domain code depends on `NotificationProvider`; the
+current `ExpoPushNotificationProvider` batches at most 100 messages, applies a timeout, normalizes
+partial failures, and marks `DeviceNotRegistered` tokens inactive. Tests inject a mock provider and
+make no network calls.
+
+An accepted Expo push ticket means Expo accepted the request, not that the device displayed it.
+Ticket IDs are preserved in delivery results. Fetching Expo push receipts belongs in a future
+background job; it must deactivate tokens when receipts report `DeviceNotRegistered`.
+
+Android delivery requires FCM V1 credentials configured for the existing EAS project with
+`eas credentials --platform android`. Never commit the downloaded service-account JSON. Pushes need
+a supported device and a newly built development client; Saraya's release validation uses a physical
+Android device, and Expo Go is not the validation target.

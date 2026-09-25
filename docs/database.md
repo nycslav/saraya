@@ -57,3 +57,11 @@ When the festival backend is implemented, normalize this into at least:
 Only a `confirmed` occurrence may persist exact confirmed dates. Estimated or recurring records must
 not be converted into calendar timestamps. Migration and indexes remain deferred until the team
 selects the database migration tool and the API foundation is ready.
+# Notification persistence
+
+Migration `009_create_notification_devices_and_preferences.sql` adds `device_tokens` and
+`notification_preferences`. Push tokens are globally unique, indexed by user, and can be marked
+inactive without deletion. Registering a token seen for a different signed-in account deliberately
+transfers it to the current authenticated account. Preferences default to disabled and are stored
+per user. The current schema has no `users` table, so these tables use the repository's existing
+`text` user-ID convention without inventing a foreign identity system.

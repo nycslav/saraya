@@ -8,6 +8,7 @@ import { achievementRouter, userAchievementRouter } from './modules/achievements
 import { checkInRouter } from './modules/check-ins/check-in.route';
 import { destinationRouter } from './modules/destinations/destination.route';
 import { itineraryRouter } from './modules/itineraries/itinerary.route';
+import { notificationRouter } from './modules/notifications/notification.route';
 import {
   regionalAlertRouter,
   safetyAlertRouter,
@@ -31,6 +32,7 @@ app.use('/bucket-list', bucketListRouter);
 app.use('/check-ins', checkInRouter);
 app.use('/destinations', destinationRouter);
 app.use('/itineraries', itineraryRouter);
+app.use('/notifications', notificationRouter);
 app.use('/safety-alerts', safetyAlertRouter);
 app.use('/alerts', regionalAlertRouter);
 app.use('/weather', weatherRouter);

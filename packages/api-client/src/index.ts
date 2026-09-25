@@ -9,14 +9,19 @@ import {
   destinationDetailSchema,
   destinationSummarySchema,
   generatedItinerarySchema,
+  deviceTokenRegistrationResponseSchema,
+  deviceTokenRegistrationSchema,
+  deviceTokenRemovalSchema,
   journeyEntrySchema,
   journeyStatisticsSchema,
   photoUploadResultSchema,
+  notificationPreferencesSchema,
   safetyAlertListResponseSchema,
   safetyAlertQuerySchema,
   safetyAlertSchema,
   updateBucketListItemSchema,
   updateCheckInSchema,
+  updateNotificationPreferencesSchema,
   weatherQuerySchema,
   weatherResponseSchema,
   userProfileSchema,
@@ -25,10 +30,13 @@ import {
   type GoogleLoginRequest,
   type DiscoveryQuery,
   type GeneratedItinerary,
+  type DeviceTokenRegistration,
+  type DeviceTokenRemoval,
   type LoginRequest,
   type RegisterRequest,
   type TripPreferences,
   type UpdateProfileRequest,
+  type UpdateNotificationPreferences,
   type UpdateBucketListItemInput,
   type UpdateCheckInInput,
   type SafetyAlertQuery,
@@ -164,6 +172,36 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
       async getById(id: string) {
         return destinationDetailSchema.parse(
           await request(`/destinations/${encodeURIComponent(id)}`),
+        );
+      },
+    },
+    notifications: {
+      async registerDevice(input: DeviceTokenRegistration) {
+        const registration = deviceTokenRegistrationSchema.parse(input);
+        return deviceTokenRegistrationResponseSchema.parse(
+          await request('/notifications/devices', {
+            method: 'POST',
+            body: JSON.stringify(registration),
+          }),
+        );
+      },
+      async unregisterDevice(input: DeviceTokenRemoval) {
+        const removal = deviceTokenRemovalSchema.parse(input);
+        await requestWithoutResponse('/notifications/devices', {
+          method: 'DELETE',
+          body: JSON.stringify(removal),
+        });
+      },
+      async getPreferences() {
+        return notificationPreferencesSchema.parse(await request('/notifications/preferences'));
+      },
+      async updatePreferences(input: UpdateNotificationPreferences) {
+        const changes = updateNotificationPreferencesSchema.parse(input);
+        return notificationPreferencesSchema.parse(
+          await request('/notifications/preferences', {
+            method: 'PATCH',
+            body: JSON.stringify(changes),
+          }),
         );
       },
     },

@@ -6,4 +6,5 @@ export * from './destinations';
 export * from './festivals';
 export * from './itineraries';
 export * from './monetization';
+export * from './notifications';
 export * from './safety-alerts';

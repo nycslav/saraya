@@ -202,3 +202,13 @@ EXPO_PUBLIC_API_BASE_URL=http://<reachable-host>:3000
 ```
 
 Use the computer's LAN address instead of `localhost` when testing on a physical phone.
+# Notification endpoints
+
+All notification endpoints require authenticated server identity. Request bodies never accept a
+user ID. Until the shared JWT middleware populates `res.locals.authenticatedUserId`, these routes
+fail closed with `401 AUTHENTICATION_REQUIRED`.
+
+- `POST /notifications/devices` registers or reactivates `{ pushToken, platform }`.
+- `DELETE /notifications/devices` deactivates the authenticated user's `{ pushToken }`.
+- `GET /notifications/preferences` returns safety-alert and festival-reminder preferences.
+- `PATCH /notifications/preferences` updates one or both supported preferences.

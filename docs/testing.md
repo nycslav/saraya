@@ -89,3 +89,9 @@ npm.cmd run lint --workspace=@saraya/mobile
 npm.cmd run typecheck --workspace=@saraya/mobile
 npm.cmd run test --workspace=@saraya/mobile -- --ci --coverage
 ```
+# Push notification testing
+
+Notification tests cover runtime contracts, repository ownership/upsert behavior, preferences,
+authenticated API routes, provider batching and failure normalization, permission handling, listener
+cleanup, foreground/background taps, and cold-start routing. Expo native APIs and provider transport
+are mocked; automated tests send zero real pushes and require no FCM credentials.

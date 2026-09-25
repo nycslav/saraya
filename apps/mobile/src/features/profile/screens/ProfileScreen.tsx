@@ -55,7 +55,12 @@ export function ProfileScreen() {
       <Text accessibilityRole="header" style={styles.sectionTitle}>Travel tools</Text>
       <Card>
         <ToolRow icon={BookOpen} label="Journal highlights" status="Not connected" />
-        <ToolRow icon={Bell} label="Safety alerts" status="Not connected" />
+        <ToolRow
+          icon={Bell}
+          label="Notifications"
+          status="Manage"
+          onPress={() => router.push('/notifications/preferences' as Href)}
+        />
         <ToolRow icon={Sparkles} label="Saraya Plus" status="Service unavailable" />
         <ToolRow icon={ShieldCheck} label="Privacy and preferences" status="Coming next" last />
       </Card>
@@ -84,18 +89,21 @@ function ToolRow({
   label,
   status,
   last = false,
+  onPress,
 }: {
   icon: typeof BookOpen;
   label: string;
   status: string;
   last?: boolean;
+  onPress?: () => void;
 }) {
   return (
     <Pressable
       accessibilityLabel={`${label}, ${status}`}
       accessibilityRole="button"
-      accessibilityState={{ disabled: true }}
-      disabled
+      accessibilityState={{ disabled: !onPress }}
+      disabled={!onPress}
+      onPress={onPress}
       style={[styles.toolRow, !last && styles.toolBorder]}
     >
       <Icon color={colors.blue} size={21} />
