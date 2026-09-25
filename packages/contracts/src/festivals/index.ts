@@ -285,9 +285,18 @@ export const festivalDetailWithCultureSchema = festivalDetailSchema.safeExtend({
 });
 
 export const festivalQuerySchema = z.object({
-  search: z.string().trim().optional(),
-  region: z.string().trim().min(1).optional(),
-  month: z.number().int().min(1).max(12).optional(),
+  search: z.string().trim().max(100).optional(),
+  region: z.string().trim().min(1).max(100).optional(),
+  month: z.coerce.number().int().min(1).max(12).optional(),
+});
+
+export const festivalIdParamsSchema = z.object({
+  id: z
+    .string()
+    .trim()
+    .min(1)
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Festival ID must be a lowercase slug.'),
 });
 
 export type FestivalCategory = z.infer<typeof festivalCategorySchema>;
@@ -308,3 +317,4 @@ export type FestivalSummary = z.infer<typeof festivalSummarySchema>;
 export type FestivalDetail = z.infer<typeof festivalDetailSchema>;
 export type FestivalDetailWithCulture = z.infer<typeof festivalDetailWithCultureSchema>;
 export type FestivalQuery = z.infer<typeof festivalQuerySchema>;
+export type FestivalIdParams = z.infer<typeof festivalIdParamsSchema>;

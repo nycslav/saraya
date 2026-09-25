@@ -24,22 +24,31 @@ TPB / DOT / NCCA + LGU / official organizer
                     |
           human review and normalization
                     |
-       database/seeds/festivals.json
-                    +
- database/seeds/festival-cultural-guides.json
-                    |
-        FixtureFestivalGateway (demo)
-                    |
-          Events and Festival Detail UI
+ canonical festival + cultural-guide JSON
+           /                         \
+ FixtureFestivalGateway       validated seed import
+           |                         |
+           |                    PostgreSQL
+           |                         |
+           |               repository -> service
+           |                         |
+           |                    Saraya API
+           |                         |
+           |                typed API client
+           |                         |
+           +------ FestivalGateway --+
+                         |
+             Events and Festival Detail UI
 ```
 
 `database/seeds/festivals.json` owns stable festival and occurrence data.
 `database/seeds/festival-cultural-guides.json` owns one cultural guide per festival ID, with six
 independently classified categories and category-level source references. The fixture adapter parses
 and joins both files through shared Zod contracts, so the mobile demo has no independent data copy.
-The general Express foundation now exists, but a festival API module is still deferred; a future
-`ApiFestivalGateway` can replace the fixture without changing the screens.
+The API adapter uses the typed API client to reach the Express festival module and PostgreSQL while
+the fixture adapter remains available for deterministic tests and demos. `EXPO_PUBLIC_DATA_MODE`
+selects the adapter without changing either festival screen.
 
-Production ingestion will replace the fixture boundary, not the screens: researched source records
-are normalized, provenance is stored, a human approves schedule changes, PostgreSQL is updated, and
-the festival API serves the same contract. Scraped changes must never publish automatically.
+Future production ingestion replaces the seed-import boundary, not the screens or shared response
+contract. Researched changes still require human approval; scraped changes must never publish
+automatically.

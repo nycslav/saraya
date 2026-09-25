@@ -1,10 +1,32 @@
 import type { FestivalDetailWithCulture, FestivalQuery, FestivalSummary } from '@saraya/contracts';
+import { ApiClientError, createApiClient } from '@saraya/api-client';
+
+import { getApiBaseUrl } from '@/core/config';
 
 import { mockFestivals } from './data/mockFestivals';
 
 export interface FestivalGateway {
   list(query: FestivalQuery): Promise<FestivalSummary[]>;
   getById(id: string): Promise<FestivalDetailWithCulture | null>;
+}
+
+export class ApiFestivalGateway implements FestivalGateway {
+  private get client() {
+    return createApiClient(getApiBaseUrl());
+  }
+
+  list(query: FestivalQuery) {
+    return this.client.festivals.upcoming(query);
+  }
+
+  async getById(id: string) {
+    try {
+      return await this.client.festivals.getById(id);
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 404) return null;
+      throw error;
+    }
+  }
 }
 
 const wait = (milliseconds: number) =>
@@ -56,4 +78,7 @@ export class FixtureFestivalGateway implements FestivalGateway {
 /** @deprecated Use FixtureFestivalGateway for the curated offline demo adapter. */
 export class MockFestivalGateway extends FixtureFestivalGateway {}
 
-export const festivalGateway: FestivalGateway = new FixtureFestivalGateway();
+export const festivalGateway: FestivalGateway =
+  process.env.EXPO_PUBLIC_DATA_MODE === 'api'
+    ? new ApiFestivalGateway()
+    : new FixtureFestivalGateway();

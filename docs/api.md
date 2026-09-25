@@ -61,6 +61,29 @@ cultural guide. An unknown ID returns `404` with the `DESTINATION_NOT_FOUND` err
 Invalid query parameters return `400` with the `VALIDATION_ERROR` error code. Unknown routes
 return `404` with `ROUTE_NOT_FOUND`.
 
+## Festival API
+
+Festival responses use the shared runtime contracts and preserve the canonical catalog's schedule,
+source, editorial, and cultural-guide verification metadata.
+
+### `GET /festivals`
+
+Returns festival summaries ordered alphabetically. Optional `search`, `region`, and `month`
+parameters match the existing mobile filters. `search` covers festival names, location, category,
+and tags; `month` is an integer from 1 through 12.
+
+### `GET /festivals/upcoming`
+
+Returns the same filtered summary shape ordered cyclically from the server's current month. A
+festival's recurring `typicalMonth` drives this ordering; the endpoint does not fabricate a
+current-year date from recurring timing.
+
+### `GET /festivals/:id`
+
+Returns a complete festival with its one-to-one cultural guide. Unknown IDs return
+`404 FESTIVAL_NOT_FOUND`; malformed non-slug IDs and invalid filters return
+`400 VALIDATION_ERROR`.
+
 ## Safety alerts and weather API
 
 Safety and weather requests require exactly one location context: a `latitude` and `longitude`
@@ -199,6 +222,7 @@ public mobile environment variables before starting Expo:
 
 ```text
 EXPO_PUBLIC_API_BASE_URL=http://<reachable-host>:3000
+EXPO_PUBLIC_DATA_MODE=api
 ```
 
 Use the computer's LAN address instead of `localhost` when testing on a physical phone.

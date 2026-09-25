@@ -38,25 +38,24 @@ on affected regions, a severity/type B-tree index for filters, and a GiST index 
 coverage. Migration `008_create_safety_alerts.sql` requires the normal cross-member migration
 review before shared deployment.
 
-## Festival normalization direction
+## Festival persistence
 
-The hackathon keeps stable identity and the represented annual occurrence together in the curated
-festival seed. A separate `festival-cultural-guides.json` maintains exactly one guide per festival
-ID. Its history, customs, payment, pasalubong, dining, and photography/social categories each carry
-their own verification status and source references.
+Migration `010_create_festivals.sql` adds `festivals` and `festival_cultural_guides`. Stable IDs,
+names, locality, region, island group, typical month, and schedule status are promoted to typed,
+queryable columns, with indexes on region, typical month, and schedule status. The complete
+shared-contract documents are also stored as
+JSONB so occurrence events, provenance sources, verification notes, editorial guidance, and all
+other canonical fields remain lossless rather than being flattened or fabricated.
 
-When the festival backend is implemented, normalize this into at least:
+Each cultural guide is a separate row keyed by and cascading from its festival. Its JSONB document
+retains the six category-specific verification states and source relations, while
+`last_reviewed_at` is promoted for review operations. Runtime Zod validation occurs when seeds are
+loaded and when database rows are mapped to API responses.
 
-- `festivals`: stable identity, location, recurring timing, and editorial guidance;
-- `festival_occurrences`: festival ID, year, status, confirmed dates, verification timestamp, and
-  cancellation/rescheduling notes;
-- `festival_sources`: publisher, direct URL, type, purpose, and access date;
-- `festival_cultural_guides` and category records keyed to a festival;
-- provenance-source records and relations for occurrence and cultural-category claims.
-
-Only a `confirmed` occurrence may persist exact confirmed dates. Estimated or recurring records must
-not be converted into calendar timestamps. Migration and indexes remain deferred until the team
-selects the database migration tool and the API foundation is ready.
+The database seed command imports the existing `festivals.json` and
+`festival-cultural-guides.json`; no second festival dataset exists. Upserts preserve IDs and make
+repeated seeding deterministic, while stale festival rows are removed. Recurring timing remains a
+month and description. Only source data already marked `confirmed` retains exact occurrence dates.
 # Notification persistence
 
 Migration `009_create_notification_devices_and_preferences.sql` adds `device_tokens` and

@@ -58,6 +58,12 @@ next step, and verify the source links for the September 22 enrichment batch. `n
 emits the machine-readable summary;
 `npm run culture:audit:full` adds the per-festival research inventory.
 
+Festival backend tests additionally cover query coercion and rejection, deterministic seed joins,
+in-memory and PostgreSQL repository mapping, parameterized filtering, cyclic upcoming ordering,
+detail/not-found responses, Supertest routes, typed API-client request and response validation, and
+the mobile `ApiFestivalGateway`. Database and fetch boundaries are mocked; no test requires a live
+PostgreSQL server or remote festival source.
+
 ## Safety, weather, and foreground-location coverage
 
 Safety tests are offline and deterministic. Shared-contract cases cover valid alerts/weather, each

@@ -13,6 +13,11 @@ distinguishes externally supported facts from Saraya traveler guidance and insuf
 Run `npm run culture:audit` after changing either dataset; use `npm run culture:audit:full` for the
 per-festival verification inventory.
 
+`npm run db:seed` validates both files with the shared Zod contracts, verifies their one-to-one ID
+mapping, and upserts them into `festivals` and `festival_cultural_guides`. The transformation to
+query columns plus lossless JSONB documents is implemented in the API seed path; these two JSON
+files remain the only manually maintained festival source.
+
 The September 2026 catalog contains 151 festivals. It was expanded by reviewing all 177 entries in
 the twelve month filters of the TPB calendar: 149 entries were accepted as distinct supported
 festival identities, 18 were rejected as non-festivals, duplicates, or conflicting listings, and 10

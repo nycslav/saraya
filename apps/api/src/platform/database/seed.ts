@@ -1,5 +1,9 @@
 import { seedAchievements } from '../../modules/achievements/achievement.seed';
 import { seedDestinations } from '../../modules/destinations/destination.seed';
+import {
+  seedFestivalCulturalGuides,
+  seedFestivalDetails,
+} from '../../modules/festivals/festival.seed';
 import { seedSafetyAlerts } from '../../modules/safety-alerts/safety-alert.seed';
 import { closePool, getPool } from './pool';
 
@@ -119,8 +123,54 @@ async function seed() {
         ],
       );
     }
+    await client.query('DELETE FROM festivals WHERE NOT (id = ANY($1::text[]))', [
+      seedFestivalDetails.map(({ id }) => id),
+    ]);
+    for (const festival of seedFestivalDetails) {
+      await client.query(
+        `INSERT INTO festivals (
+          id, name, city, province, region, island_group, typical_month, schedule_status,
+          festival_data
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          city = EXCLUDED.city,
+          province = EXCLUDED.province,
+          region = EXCLUDED.region,
+          island_group = EXCLUDED.island_group,
+          typical_month = EXCLUDED.typical_month,
+          schedule_status = EXCLUDED.schedule_status,
+          festival_data = EXCLUDED.festival_data,
+          updated_at = now()`,
+        [
+          festival.id,
+          festival.name,
+          festival.city,
+          festival.province,
+          festival.region,
+          festival.islandGroup,
+          festival.typicalMonth,
+          festival.occurrence.scheduleStatus,
+          JSON.stringify(festival),
+        ],
+      );
+    }
+    for (const guide of seedFestivalCulturalGuides) {
+      await client.query(
+        `INSERT INTO festival_cultural_guides (festival_id, guide_data, last_reviewed_at)
+         VALUES ($1, $2::jsonb, $3)
+         ON CONFLICT (festival_id) DO UPDATE SET
+           guide_data = EXCLUDED.guide_data,
+           last_reviewed_at = EXCLUDED.last_reviewed_at,
+           updated_at = now()`,
+        [guide.festivalId, JSON.stringify(guide), guide.lastReviewedAt],
+      );
+    }
     await client.query('COMMIT');
-    console.log(`Seeded ${seedDestinations.length} destinations, ${seedAchievements.length} achievements, and ${seedSafetyAlerts.length} safety alerts.`);
+    console.log(
+      `Seeded ${seedDestinations.length} destinations, ${seedAchievements.length} achievements, ` +
+        `${seedSafetyAlerts.length} safety alerts, and ${seedFestivalDetails.length} festivals.`,
+    );
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

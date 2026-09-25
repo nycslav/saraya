@@ -8,6 +8,9 @@ import {
   createCheckInSchema,
   destinationDetailSchema,
   destinationSummarySchema,
+  festivalDetailWithCultureSchema,
+  festivalQuerySchema,
+  festivalSummarySchema,
   generatedItinerarySchema,
   deviceTokenRegistrationResponseSchema,
   deviceTokenRegistrationSchema,
@@ -30,6 +33,7 @@ import {
   type GoogleLoginRequest,
   type DiscoveryQuery,
   type GeneratedItinerary,
+  type FestivalQuery,
   type DeviceTokenRegistration,
   type DeviceTokenRemoval,
   type LoginRequest,
@@ -55,6 +59,14 @@ export class ApiClientError extends Error {
 }
 
 export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<string | null>) {
+  const festivalParams = (input: FestivalQuery) => {
+    const query = festivalQuerySchema.parse(input);
+    const params = new URLSearchParams();
+    if (query.search) params.set('search', query.search);
+    if (query.region) params.set('region', query.region);
+    if (query.month) params.set('month', String(query.month));
+    return params;
+  };
   const locationParams = (query: WeatherQuery | SafetyAlertQuery) => {
     const params = new URLSearchParams();
     if (query.latitude !== undefined) params.set('latitude', String(query.latitude));
@@ -172,6 +184,21 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
       async getById(id: string) {
         return destinationDetailSchema.parse(
           await request(`/destinations/${encodeURIComponent(id)}`),
+        );
+      },
+    },
+    festivals: {
+      async list(input: FestivalQuery = {}) {
+        const data = await request(`/festivals?${festivalParams(input).toString()}`);
+        return z.array(festivalSummarySchema).parse(data);
+      },
+      async upcoming(input: FestivalQuery = {}) {
+        const data = await request(`/festivals/upcoming?${festivalParams(input).toString()}`);
+        return z.array(festivalSummarySchema).parse(data);
+      },
+      async getById(id: string) {
+        return festivalDetailWithCultureSchema.parse(
+          await request(`/festivals/${encodeURIComponent(id)}`),
         );
       },
     },
