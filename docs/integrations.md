@@ -230,3 +230,20 @@ Android delivery requires FCM V1 credentials configured for the existing EAS pro
 `eas credentials --platform android`. Never commit the downloaded service-account JSON. Pushes need
 a supported device and a newly built development client; Saraya's release validation uses a physical
 Android device, and Expo Go is not the validation target.
+
+Festival reminder dispatch reuses `NotificationService.sendFestivalReminderNotification`; Festival
+code never reads push tokens or contacts Expo directly. `festivalRemindersEnabled` remains the
+server-authoritative delivery gate. `FestivalReminderService.dispatchDueReminders` is the narrow
+testable dispatch boundary. A production scheduler, retry policy, receipt polling, and distributed
+job locking remain deferred.
+
+## Device calendar
+
+The mobile Festival feature uses the SDK-compatible `expo-calendar` package through a provider-neutral
+calendar gateway. Permission is requested only after the user presses **Add to calendar**. Calendar
+access is independent of account identity, push permission, and Saraya server reminders.
+
+Only future occurrences with confirmed start and end dates become all-day events. The end is mapped
+to the next date because system calendars use an exclusive all-day end. Saraya stores the returned
+native event ID in local AsyncStorage to avoid creating the same confirmed occurrence twice. It does
+not synchronize calendar IDs with the backend.

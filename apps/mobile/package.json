@@ -29,6 +29,7 @@
     "@saraya/api-client": "0.1.0",
     "@saraya/contracts": "0.1.0",
     "expo": "~57.0.24",
+    "expo-calendar": "~57.0.5",
     "expo-constants": "~57.0.19",
     "expo-dev-client": "~57.0.19",
     "expo-file-system": "~57.0.7",

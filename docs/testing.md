@@ -101,3 +101,14 @@ Notification tests cover runtime contracts, repository ownership/upsert behavior
 authenticated API routes, provider batching and failure normalization, permission handling, listener
 cleanup, foreground/background taps, and cold-start routing. Expo native APIs and provider transport
 are mocked; automated tests send zero real pushes and require no FCM credentials.
+
+Festival reminder tests cover strict ownership-free request contracts, supported timing, repository
+ownership isolation, active-reminder uniqueness, cancellation, atomic due claiming, authenticated
+Supertest routes, typed API-client bearer transport, mobile gateway behavior, and dispatch through
+the existing notification service. Preference-disabled delivery is explicitly skipped without
+calling the provider.
+
+Festival calendar tests inject a native provider and local event-ID store. They cover existing and
+contextually requested permission, denial, unavailable writable calendars, confirmed all-day date
+mapping, exclusive end dates, recurring/past rejection, duplicate prevention, and native failures.
+No automated test creates a real calendar event or sends a real push.

@@ -6,9 +6,13 @@ import {
   createBucketListItemSchema,
   createCheckInResultSchema,
   createCheckInSchema,
+  createFestivalReminderSchema,
   destinationDetailSchema,
   destinationSummarySchema,
   festivalDetailWithCultureSchema,
+  festivalReminderListSchema,
+  festivalReminderSchema,
+  festivalReminderStatusResponseSchema,
   festivalQuerySchema,
   festivalSummarySchema,
   generatedItinerarySchema,
@@ -30,6 +34,7 @@ import {
   userProfileSchema,
   type CreateBucketListItemInput,
   type CreateCheckInInput,
+  type CreateFestivalReminder,
   type GoogleLoginRequest,
   type DiscoveryQuery,
   type GeneratedItinerary,
@@ -200,6 +205,26 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
         return festivalDetailWithCultureSchema.parse(
           await request(`/festivals/${encodeURIComponent(id)}`),
         );
+      },
+      async createReminder(id: string, input: CreateFestivalReminder = { leadDays: 1 }) {
+        const reminder = createFestivalReminderSchema.parse(input);
+        return festivalReminderSchema.parse(
+          await request(`/festivals/${encodeURIComponent(id)}/reminder`, {
+            method: 'POST',
+            body: JSON.stringify(reminder),
+          }),
+        );
+      },
+      async getReminder(id: string) {
+        return festivalReminderStatusResponseSchema.parse(
+          await request(`/festivals/${encodeURIComponent(id)}/reminder`),
+        );
+      },
+      async cancelReminder(id: string) {
+        await request(`/festivals/${encodeURIComponent(id)}/reminder`, { method: 'DELETE' });
+      },
+      async listReminders() {
+        return festivalReminderListSchema.parse(await request('/festival-reminders'));
       },
     },
     notifications: {

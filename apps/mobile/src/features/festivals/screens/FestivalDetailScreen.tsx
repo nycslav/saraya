@@ -20,6 +20,7 @@ import { Button, Card, LoadingState, Screen, SectionTitle, StatusPanel } from '@
 import { colors, radius, spacing, type } from '@/ui/theme';
 
 import { FestivalArtwork } from '../components/FestivalArtwork';
+import { FestivalActions } from '../components/FestivalActions';
 import { festivalGateway, type FestivalGateway } from '../gateways';
 import { formatFestivalDate, getFestivalSchedulePresentation } from '../services/festival-schedule';
 
@@ -190,6 +191,8 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
       />
 
       <Text style={styles.verified}>Information last verified {lastVerified}</Text>
+
+      <FestivalActions festival={festival} />
 
       <SectionTitle title="History and meaning" />
       <Text style={styles.body}>{festival.history}</Text>

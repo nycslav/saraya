@@ -15,6 +15,17 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ id: mockFestivalId }),
   useRouter: () => ({ back: mockBack, push: mockPush, replace: mockReplace }),
 }));
+jest.mock('@/features/auth/AuthProvider', () => ({
+  useAuth: () => ({ user: { id: 'user-1' }, restoring: false }),
+}));
+jest.mock('@/features/notifications/gateway', () => ({
+  notificationGateway: {
+    getPreferences: jest.fn(),
+    updatePreferences: jest.fn(),
+    enable: jest.fn(),
+    registerCurrentToken: jest.fn(),
+  },
+}));
 
 describe('festival mobile screens', () => {
   beforeEach(() => {

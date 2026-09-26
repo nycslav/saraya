@@ -64,3 +64,17 @@ inactive without deletion. Registering a token seen for a different signed-in ac
 transfers it to the current authenticated account. Preferences default to disabled and are stored
 per user. The current schema has no `users` table, so these tables use the repository's existing
 `text` user-ID convention without inventing a foreign identity system.
+
+## Festival reminder persistence
+
+Migration `011_create_festival_reminders.sql` adds `festival_reminders`. Each row owns a stable
+Festival foreign key, opaque authenticated `text` user ID, supported lead time, exact delivery
+timestamp, delivery state, optional sent timestamp, and audit timestamps. There is no users table
+on this branch, so the migration follows notification ownership and does not invent a user foreign
+key.
+
+A partial unique index permits at most one active reminder per user and Festival. Additional indexes
+support authenticated user lists and ordered due-reminder claiming. Dispatch atomically changes due
+rows from `active` to `dispatching` with `FOR UPDATE SKIP LOCKED`, then records `sent` only when an
+existing eligible device accepts delivery; disabled preferences or no eligible device result in
+`skipped`. Migration deployment is manual and must not target shared Supabase without review.

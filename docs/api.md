@@ -84,6 +84,24 @@ Returns a complete festival with its one-to-one cultural guide. Unknown IDs retu
 `404 FESTIVAL_NOT_FOUND`; malformed non-slug IDs and invalid filters return
 `400 VALIDATION_ERROR`.
 
+## Festival reminder API
+
+All Festival reminder routes require `res.locals.authenticatedUserId`. Bodies never accept a user
+ID, and the API returns only the current user's records. Until Member 1's JWT middleware populates
+that local, the production routers fail closed with `401 AUTHENTICATION_REQUIRED`.
+
+- `POST /festivals/:festivalId/reminder` creates or updates one active reminder. The optional
+  `leadDays` is `1` or `7` and defaults to `1`. Only a future officially confirmed occurrence is
+  eligible; otherwise the API returns `409 FESTIVAL_REMINDER_UNAVAILABLE`.
+- `GET /festivals/:festivalId/reminder` returns the current user's active reminder or `null`.
+- `DELETE /festivals/:festivalId/reminder` idempotently cancels only the current user's reminder
+  and returns `204`.
+- `GET /festival-reminders` lists the current user's active reminders in delivery order.
+
+The delivery timestamp uses 09:00 Asia/Manila on the configured lead day as Saraya's notification
+delivery convention. It is not represented as the Festival's start time. The service exposes an
+atomic due-claim and dispatch boundary, but no production scheduler currently invokes it.
+
 ## Safety alerts and weather API
 
 Safety and weather requests require exactly one location context: a `latitude` and `longitude`

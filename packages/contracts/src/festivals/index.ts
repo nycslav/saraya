@@ -299,6 +299,34 @@ export const festivalIdParamsSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Festival ID must be a lowercase slug.'),
 });
 
+export const festivalReminderLeadDaysSchema = z.union([z.literal(1), z.literal(7)]);
+export const createFestivalReminderSchema = z
+  .object({
+    leadDays: festivalReminderLeadDaysSchema.default(1),
+  })
+  .strict();
+export const festivalReminderStatusSchema = z.enum([
+  'active',
+  'dispatching',
+  'sent',
+  'skipped',
+  'cancelled',
+]);
+export const festivalReminderSchema = z
+  .object({
+    id: z.uuid(),
+    festivalId: festivalIdParamsSchema.shape.id,
+    leadDays: festivalReminderLeadDaysSchema,
+    remindAt: z.iso.datetime({ offset: true }),
+    status: festivalReminderStatusSchema,
+    sentAt: z.iso.datetime({ offset: true }).nullable(),
+    createdAt: z.iso.datetime({ offset: true }),
+    updatedAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+export const festivalReminderListSchema = z.array(festivalReminderSchema);
+export const festivalReminderStatusResponseSchema = festivalReminderSchema.nullable();
+
 export type FestivalCategory = z.infer<typeof festivalCategorySchema>;
 export type FestivalScheduleStatus = z.infer<typeof festivalScheduleStatusSchema>;
 export type FestivalSourceType = z.infer<typeof festivalSourceTypeSchema>;
@@ -318,3 +346,7 @@ export type FestivalDetail = z.infer<typeof festivalDetailSchema>;
 export type FestivalDetailWithCulture = z.infer<typeof festivalDetailWithCultureSchema>;
 export type FestivalQuery = z.infer<typeof festivalQuerySchema>;
 export type FestivalIdParams = z.infer<typeof festivalIdParamsSchema>;
+export type FestivalReminderLeadDays = z.infer<typeof festivalReminderLeadDaysSchema>;
+export type CreateFestivalReminder = z.infer<typeof createFestivalReminderSchema>;
+export type FestivalReminderStatus = z.infer<typeof festivalReminderStatusSchema>;
+export type FestivalReminder = z.infer<typeof festivalReminderSchema>;

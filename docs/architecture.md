@@ -52,3 +52,12 @@ selects the adapter without changing either festival screen.
 Future production ingestion replaces the seed-import boundary, not the screens or shared response
 contract. Researched changes still require human approval; scraped changes must never publish
 automatically.
+
+Festival planning has two separate provider-neutral paths. Authenticated Saraya reminders persist
+server-side and dispatch through the existing notification service. Device calendar events stay on
+the device through the Expo Calendar adapter. Neither path invents dates from recurring timing.
+
+```text
+Festival Detail -> FestivalReminderGateway -> typed client -> authenticated API
+               -> CalendarGateway -> Expo Calendar -> device calendar
+```

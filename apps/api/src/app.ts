@@ -10,6 +10,10 @@ import { serveCheckInPhoto } from './modules/check-ins/check-in.photo';
 import { checkInRouter } from './modules/check-ins/check-in.route';
 import { destinationRouter } from './modules/destinations/destination.route';
 import { festivalRouter } from './modules/festivals/festival.route';
+import {
+  festivalReminderListRouter,
+  festivalReminderRouter,
+} from './modules/festival-reminders/festival-reminder.route';
 import { itineraryRouter } from './modules/itineraries/itinerary.route';
 import { notificationRouter } from './modules/notifications/notification.route';
 import {
@@ -34,6 +38,8 @@ app.use('/achievements', achievementRouter);
 app.use('/bucket-list', bucketListRouter);
 app.use('/check-ins', checkInRouter);
 app.use('/destinations', destinationRouter);
+app.use('/festival-reminders', festivalReminderListRouter);
+app.use('/festivals', festivalReminderRouter);
 app.use('/festivals', festivalRouter);
 app.use('/itineraries', itineraryRouter);
 app.use('/notifications', notificationRouter);
