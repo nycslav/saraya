@@ -10,11 +10,11 @@ describe('destination API', () => {
     expect(response.body).toEqual({ status: 'ok' });
   });
 
-  it('returns all 99 curated destination summaries', async () => {
+  it('returns all 100 curated destination summaries', async () => {
     const response = await request(app).get('/destinations');
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(99);
+    expect(response.body).toHaveLength(100);
     expect(response.body[0]).not.toHaveProperty('culturalGuide');
     for (const destination of response.body) {
       expect(destination.summary.match(/[.!?](?=\s|$)/g)).toHaveLength(2);

@@ -28,168 +28,6 @@
     "photographer": "Precy Salazar",
     "platform": "Unsplash",
     "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "mount-pulag",
-    "filename": "mount-pulag.webp",
-    "sourcePage": "https://unsplash.com/photos/brown-hills-during-daytime-iwiGk5YqcYE",
-    "photographer": "Nick Aguilos",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "boracay",
-    "filename": "boracay.webp",
-    "sourcePage": "https://unsplash.com/photos/people-walking-on-boracay-beach-NR-2_RIb62k",
-    "photographer": "Laurentiu Morariu",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "binondo",
-    "filename": "binondo.webp",
-    "sourcePage": "https://unsplash.com/photos/people-in-crowded-city-street-kEQ5yNC_waM",
-    "photographer": "Michael Buillerey",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "intramuros",
-    "filename": "intramuros.webp",
-    "sourcePage": "https://unsplash.com/photos/a-cobblestone-street-lined-with-parked-bicycles-6npsbEuCCKU",
-    "photographer": "john mishael Calimoso",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "romblon",
-    "filename": "romblon.webp",
-    "sourcePage": "https://unsplash.com/photos/green-trees-near-blue-sea-under-blue-sky-during-daytime-WEXv3GPm-fE",
-    "photographer": "Cristina Ong",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "puerto-princesa",
-    "filename": "puerto-princesa.webp",
-    "sourcePage": "https://unsplash.com/photos/a-group-of-people-in-a-boat-in-a-body-of-water-by-a-cliff-with-puerto-princesa-subterranean-river-national-park-in-the-background-YsNgfJwUpxQ",
-    "photographer": "Elaine Ore",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "coron",
-    "filename": "coron.webp",
-    "sourcePage": "https://unsplash.com/photos/aerial-photo-of-clear-blue-sea-surrounded-by-mountains-IL-fBBnF-GU",
-    "photographer": "John Hernandez",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "el-nido",
-    "filename": "el-nido.webp",
-    "sourcePage": "https://unsplash.com/photos/a-group-of-people-in-a-body-of-water-surrounded-by-large-rocks-wrHnE3kMplg",
-    "photographer": "Rommel Paras",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "puerto-galera",
-    "filename": "puerto-galera.webp",
-    "sourcePage": "https://unsplash.com/photos/elaborate-sandcastle-with-intricate-details-on-a-beach-ZnybAEmhfYA",
-    "photographer": "KJ Gonzales",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "tagaytay",
-    "filename": "tagaytay.webp",
-    "sourcePage": "https://unsplash.com/photos/a-view-of-a-lake-and-mountains-from-the-top-of-a-hill-5_E6W06YQfQ",
-    "photographer": "Jannel Ivory",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "mount-pinatubo",
-    "filename": "mount-pinatubo.webp",
-    "sourcePage": "https://unsplash.com/photos/a-scenic-view-of-mountains-and-a-lake-GpoSNUTbW4w",
-    "photographer": "shotbymikafrbs",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "subic",
-    "filename": "subic.webp",
-    "sourcePage": "https://unsplash.com/photos/an-aerial-view-of-a-beach-with-people-in-the-water-wUaElcxsKXw",
-    "photographer": "Junel Mujar",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "basco",
-    "filename": "basco.webp",
-    "sourcePage": "https://unsplash.com/photos/white-and-red-concrete-lighthouse-under-blue-sky-during-daytime-jzID70kJoKo",
-    "photographer": "Rexy Quieta",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "palaui-island",
-    "filename": "palaui-island.webp",
-    "sourcePage": "https://unsplash.com/photos/ocean-photography-932BjC8Izwg",
-    "photographer": "Rex Verances",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "banaue-rice-terraces",
-    "filename": "banaue-rice.webp",
-    "sourcePage": "https://unsplash.com/photos/aerial-photography-of-green-mountain-3QFQOxGCVmE",
-    "photographer": "Doan Tuan",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "sagada",
-    "filename": "sagada.webp",
-    "sourcePage": "https://unsplash.com/photos/mountain-at-daytime-Yfh7E4KWDZ0",
-    "photographer": "Aldrin Brosas",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "baguio",
-    "filename": "baguio.webp",
-    "sourcePage": "https://unsplash.com/photos/a-town-in-the-mountains-1pwpsrjAy4E",
-    "photographer": "Ivan Arcilla",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
-    "verifiedAt": "2026-09-26"
-  },
-  {
-    "destinationId": "pagudpud",
-    "filename": "pagudpud.webp",
-    "sourcePage": "https://unsplash.com/photos/a-group-of-windmills-on-a-hill-at-sunset-DJzy_PX_TAA",
-    "photographer": "Precy Salazar",
-    "platform": "Unsplash",
-    "licenseUrl": "https://unsplash.com/license",
     "verifiedAt": "2026-09-26",
     "altText": "Wind turbines line the hills of Pagudpud at sunset."
   },
@@ -334,7 +172,7 @@
     "altText": "Ocean and rugged coastline seen from Cape Engaño on Palaui Island."
   },
   {
-    "destinationId": "banaue-rice",
+    "destinationId": "banaue-rice-terraces",
     "filename": "banaue-rice.webp",
     "sourcePage": "https://unsplash.com/photos/aerial-photography-of-green-mountain-3QFQOxGCVmE",
     "photographer": "Doan Tuan",
@@ -542,5 +380,115 @@
     "licenseUrl": "https://unsplash.com/license",
     "verifiedAt": "2026-09-26",
     "altText": "A river winds through a lush green mountain valley in Bukidnon."
+  },
+  {
+    "destinationId": "siargao",
+    "filename": "siargao.webp",
+    "sourcePage": "https://unsplash.com/photos/an-aerial-view-of-a-tropical-island-with-a-white-sand-beach-bVpbD3cwy7k",
+    "photographer": "Adrien Brun",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Aerial view of a tropical island and white sand beach in Siargao."
+  },
+  {
+    "destinationId": "surigao-city",
+    "filename": "surigao.webp",
+    "sourcePage": "https://unsplash.com/photos/a-small-island-with-trees-txjgYqiK3Qc",
+    "photographer": "Cris Tagupa",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A small tree-covered island in the Britania Islands, Surigao del Sur."
+  },
+  {
+    "destinationId": "paoay",
+    "filename": "paoay.webp",
+    "sourcePage": "https://www.pexels.com/photo/saint-augustine-church-on-philippines-15553681/",
+    "photographer": "Garley Gibson",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Historic Paoay Church, with its stone facade and bell tower beneath a bright sky."
+  },
+  {
+    "destinationId": "taal-heritage-town",
+    "filename": "taal-heritage-town.webp",
+    "sourcePage": "https://www.pexels.com/photo/taal-batangas-in-aerial-photography-13527956/",
+    "photographer": "Christopher Camitan",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Aerial view of Taal Basilica and the surrounding historic town."
+  },
+  {
+    "destinationId": "batad",
+    "filename": "batad.webp",
+    "sourcePage": "https://pixabay.com/photos/philippines-rice-terraces-batad-3806979/",
+    "photographer": "lester56",
+    "platform": "Pixabay",
+    "licenseUrl": "https://pixabay.com/service/license-summary/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Layered rice terraces curve across the green mountainsides of Batad."
+  },
+  {
+    "destinationId": "zambales-coves",
+    "filename": "zambales-coves.webp",
+    "sourcePage": "https://www.pexels.com/photo/people-on-beach-near-rocks-4090933/",
+    "photographer": "Win Briones",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Aerial view of people and boats near a rocky beach in the Philippines."
+  },
+  {
+    "destinationId": "mayon-volcano",
+    "filename": "mayon.webp",
+    "sourcePage": "https://www.pexels.com/photo/landscape-with-clouds-over-volcano-mountain-and-old-ruin-in-foreground-6154452/",
+    "photographer": "Ethan Michael",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Mayon Volcano rises behind the historic Cagsawa Ruins in Daraga."
+  },
+  {
+    "destinationId": "sta-cruz-island",
+    "filename": "sta-cruz-island.webp",
+    "sourcePage": "https://www.pexels.com/photo/docked-boats-2951603/",
+    "photographer": "Jeys Tubianosa",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Boats are docked beside a rugged, tree-lined coast near Santa Cruz."
+  },
+  {
+    "destinationId": "dipolog-dapitan",
+    "filename": "dipolog-dapitan.webp",
+    "sourcePage": "https://www.pexels.com/photo/sculptures-at-punto-del-desembarco-de-rizal-en-dapitan-18888361/",
+    "photographer": "Bryan",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Golden statues at the Rizal Landing Monument in Dapitan, Zamboanga del Norte."
+  },
+  {
+    "destinationId": "zamboanga-city",
+    "filename": "zamboanga.webp",
+    "sourcePage": "https://www.pexels.com/photo/stunning-architecture-of-zamboanga-city-mosque-39358122/",
+    "photographer": "Robert Tarona Jr.",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "The mosque facade in Zamboanga City, with ornate arches and domes."
+  },
+  {
+    "destinationId": "general-santos",
+    "filename": "general-santos.webp",
+    "sourcePage": "https://www.pexels.com/photo/colorful-ferries-docked-at-busy-industrial-port-38569004/",
+    "photographer": "6 Nothing Ahead",
+    "platform": "Pexels",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "verifiedAt": "2026-09-26",
+    "altText": "Colorful ferries sit at an industrial port beside cargo containers and cranes."
   }
 ]
