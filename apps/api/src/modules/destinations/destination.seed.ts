@@ -18,6 +18,7 @@ const destinationSeedSchema = z.object({
     (summary) => (summary.match(/[.!?](?=\s|$)/g) ?? []).length === 2,
     'Destination summaries must contain exactly two sentences.',
   ),
+  thumbnailImageUrl: z.string().url().optional(),
   heroTone: z.enum(['sky', 'sunset', 'forest', 'lagoon', 'violet', 'gold']),
   tags: z.array(z.string().min(1)).min(1),
   coordinates: z.tuple([
@@ -57,6 +58,7 @@ export const seedDestinations: DestinationDetail[] = seeds.map((seed) =>
     category: seed.category,
     rating: seed.rating,
     summary: seed.summary,
+    thumbnailImageUrl: seed.thumbnailImageUrl,
     heroTone: seed.heroTone,
     tags: seed.tags,
     coordinates: { latitude: seed.coordinates[0], longitude: seed.coordinates[1] },

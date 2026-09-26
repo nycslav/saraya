@@ -19,6 +19,7 @@ interface DestinationRow extends QueryResultRow {
   category: string;
   rating: string | number;
   summary: string;
+  thumbnail_image_url?: string | null;
   hero_tone: string;
   tags: string[];
   latitude?: string | number;
@@ -32,7 +33,8 @@ interface DestinationRow extends QueryResultRow {
 }
 
 const summaryColumns = `
-  id, name, province, region, island_group, category, rating, summary, hero_tone, tags
+  id, name, province, region, island_group, category, rating, summary,
+  thumbnail_image_url, hero_tone, tags
 `;
 
 export class PostgresDestinationRepository implements DestinationRepository {
@@ -93,6 +95,7 @@ function mapSummary(row: DestinationRow) {
     category: row.category,
     rating: Number(row.rating),
     summary: row.summary,
+    thumbnailImageUrl: row.thumbnail_image_url ?? undefined,
     heroTone: row.hero_tone,
     tags: row.tags,
   };

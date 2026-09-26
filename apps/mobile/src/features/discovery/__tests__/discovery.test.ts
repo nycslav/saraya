@@ -12,6 +12,8 @@ const summary: DestinationSummary = {
   category: 'Nature',
   rating: 4.9,
   summary: 'Rolling hills and Ivatan heritage.',
+  thumbnailImageUrl:
+    'https://wcormjwfrsyqxhoswpza.supabase.co/storage/v1/object/public/destination-images/batanes.webp',
   heroTone: 'forest',
   tags: ['Nature', 'Heritage'],
 };
@@ -62,6 +64,7 @@ describe('destination API gateway', () => {
     } as Response);
 
     await expect(new ApiDestinationGateway().getById('batanes')).resolves.toEqual(detail);
+    expect(detail.thumbnailImageUrl).toContain('/destination-images/batanes.webp');
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://api.saraya.test/destinations/batanes',
       expect.any(Object),

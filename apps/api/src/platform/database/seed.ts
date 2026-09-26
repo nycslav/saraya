@@ -16,13 +16,13 @@ async function seed() {
       await client.query(
         `INSERT INTO destinations (
           id, name, province, region, island_group, category, rating, summary, description,
-          hero_tone, tags, highlights, best_for, location, historical_context, etiquette,
-          local_phrase
+          thumbnail_image_url, hero_tone, tags, highlights, best_for, location,
+          historical_context, etiquette, local_phrase
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9,
-          $10, $11, $12, $13,
-          ST_SetSRID(ST_MakePoint($14, $15), 4326)::geography,
-          $16, $17, $18
+          $10, $11, $12, $13, $14,
+          ST_SetSRID(ST_MakePoint($15, $16), 4326)::geography,
+          $17, $18, $19
         )
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,
@@ -33,6 +33,7 @@ async function seed() {
           rating = EXCLUDED.rating,
           summary = EXCLUDED.summary,
           description = EXCLUDED.description,
+          thumbnail_image_url = EXCLUDED.thumbnail_image_url,
           hero_tone = EXCLUDED.hero_tone,
           tags = EXCLUDED.tags,
           highlights = EXCLUDED.highlights,
@@ -52,6 +53,7 @@ async function seed() {
           destination.rating,
           destination.summary,
           destination.description,
+          destination.thumbnailImageUrl ?? null,
           destination.heroTone,
           destination.tags,
           destination.highlights,

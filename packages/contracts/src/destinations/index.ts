@@ -19,6 +19,7 @@ export const destinationSummarySchema = z.object({
   category: destinationCategorySchema,
   rating: z.number().min(0).max(5),
   summary: z.string().min(1),
+  thumbnailImageUrl: z.string().url().optional(),
   heroTone: z.enum(['sky', 'sunset', 'forest', 'lagoon', 'violet', 'gold']),
   tags: z.array(z.string().min(1)).min(1),
 });

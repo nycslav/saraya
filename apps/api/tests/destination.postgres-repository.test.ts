@@ -23,6 +23,7 @@ describe('PostgresDestinationRepository', () => {
           category: 'Culture',
           rating: '4.8',
           summary: 'First sentence. Second sentence.',
+          thumbnail_image_url: 'https://example.com/baguio.webp',
           hero_tone: 'forest',
           tags: ['Arts', 'Food', 'Mountains'],
           latitude: '16.4023',
@@ -42,6 +43,7 @@ describe('PostgresDestinationRepository', () => {
 
     expect(result).toEqual(expect.objectContaining({
       id: 'baguio', rating: 4.8,
+      thumbnailImageUrl: 'https://example.com/baguio.webp',
       coordinates: { latitude: 16.4023, longitude: 120.596 },
     }));
     expect(mockQuery).toHaveBeenCalledWith(
