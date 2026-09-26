@@ -20,5 +20,527 @@
     "platform": "Unsplash",
     "licenseUrl": "https://unsplash.com/license",
     "verifiedAt": "2026-09-24"
+  },
+  {
+    "destinationId": "pagudpud",
+    "filename": "pagudpud.webp",
+    "sourcePage": "https://unsplash.com/photos/a-group-of-windmills-on-a-hill-at-sunset-DJzy_PX_TAA",
+    "photographer": "Precy Salazar",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "mount-pulag",
+    "filename": "mount-pulag.webp",
+    "sourcePage": "https://unsplash.com/photos/brown-hills-during-daytime-iwiGk5YqcYE",
+    "photographer": "Nick Aguilos",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "boracay",
+    "filename": "boracay.webp",
+    "sourcePage": "https://unsplash.com/photos/people-walking-on-boracay-beach-NR-2_RIb62k",
+    "photographer": "Laurentiu Morariu",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "binondo",
+    "filename": "binondo.webp",
+    "sourcePage": "https://unsplash.com/photos/people-in-crowded-city-street-kEQ5yNC_waM",
+    "photographer": "Michael Buillerey",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "intramuros",
+    "filename": "intramuros.webp",
+    "sourcePage": "https://unsplash.com/photos/a-cobblestone-street-lined-with-parked-bicycles-6npsbEuCCKU",
+    "photographer": "john mishael Calimoso",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "romblon",
+    "filename": "romblon.webp",
+    "sourcePage": "https://unsplash.com/photos/green-trees-near-blue-sea-under-blue-sky-during-daytime-WEXv3GPm-fE",
+    "photographer": "Cristina Ong",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "puerto-princesa",
+    "filename": "puerto-princesa.webp",
+    "sourcePage": "https://unsplash.com/photos/a-group-of-people-in-a-boat-in-a-body-of-water-by-a-cliff-with-puerto-princesa-subterranean-river-national-park-in-the-background-YsNgfJwUpxQ",
+    "photographer": "Elaine Ore",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "coron",
+    "filename": "coron.webp",
+    "sourcePage": "https://unsplash.com/photos/aerial-photo-of-clear-blue-sea-surrounded-by-mountains-IL-fBBnF-GU",
+    "photographer": "John Hernandez",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "el-nido",
+    "filename": "el-nido.webp",
+    "sourcePage": "https://unsplash.com/photos/a-group-of-people-in-a-body-of-water-surrounded-by-large-rocks-wrHnE3kMplg",
+    "photographer": "Rommel Paras",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "puerto-galera",
+    "filename": "puerto-galera.webp",
+    "sourcePage": "https://unsplash.com/photos/elaborate-sandcastle-with-intricate-details-on-a-beach-ZnybAEmhfYA",
+    "photographer": "KJ Gonzales",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "tagaytay",
+    "filename": "tagaytay.webp",
+    "sourcePage": "https://unsplash.com/photos/a-view-of-a-lake-and-mountains-from-the-top-of-a-hill-5_E6W06YQfQ",
+    "photographer": "Jannel Ivory",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "mount-pinatubo",
+    "filename": "mount-pinatubo.webp",
+    "sourcePage": "https://unsplash.com/photos/a-scenic-view-of-mountains-and-a-lake-GpoSNUTbW4w",
+    "photographer": "shotbymikafrbs",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "subic",
+    "filename": "subic.webp",
+    "sourcePage": "https://unsplash.com/photos/an-aerial-view-of-a-beach-with-people-in-the-water-wUaElcxsKXw",
+    "photographer": "Junel Mujar",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "basco",
+    "filename": "basco.webp",
+    "sourcePage": "https://unsplash.com/photos/white-and-red-concrete-lighthouse-under-blue-sky-during-daytime-jzID70kJoKo",
+    "photographer": "Rexy Quieta",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "palaui-island",
+    "filename": "palaui-island.webp",
+    "sourcePage": "https://unsplash.com/photos/ocean-photography-932BjC8Izwg",
+    "photographer": "Rex Verances",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "banaue-rice-terraces",
+    "filename": "banaue-rice.webp",
+    "sourcePage": "https://unsplash.com/photos/aerial-photography-of-green-mountain-3QFQOxGCVmE",
+    "photographer": "Doan Tuan",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "sagada",
+    "filename": "sagada.webp",
+    "sourcePage": "https://unsplash.com/photos/mountain-at-daytime-Yfh7E4KWDZ0",
+    "photographer": "Aldrin Brosas",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "baguio",
+    "filename": "baguio.webp",
+    "sourcePage": "https://unsplash.com/photos/a-town-in-the-mountains-1pwpsrjAy4E",
+    "photographer": "Ivan Arcilla",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26"
+  },
+  {
+    "destinationId": "pagudpud",
+    "filename": "pagudpud.webp",
+    "sourcePage": "https://unsplash.com/photos/a-group-of-windmills-on-a-hill-at-sunset-DJzy_PX_TAA",
+    "photographer": "Precy Salazar",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Wind turbines line the hills of Pagudpud at sunset."
+  },
+  {
+    "destinationId": "mount-pulag",
+    "filename": "mount-pulag.webp",
+    "sourcePage": "https://unsplash.com/photos/brown-hills-during-daytime-iwiGk5YqcYE",
+    "photographer": "Nick Aguilos",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Brown mountain hills under the daytime sky."
+  },
+  {
+    "destinationId": "boracay",
+    "filename": "boracay.webp",
+    "sourcePage": "https://unsplash.com/photos/people-walking-on-boracay-beach-NR-2_RIb62k",
+    "photographer": "Laurentiu Morariu",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "People walk along Boracay Beach beside the sea."
+  },
+  {
+    "destinationId": "binondo",
+    "filename": "binondo.webp",
+    "sourcePage": "https://unsplash.com/photos/people-in-crowded-city-street-kEQ5yNC_waM",
+    "photographer": "Michael Buillerey",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A crowded city street in Binondo during Chinese New Year."
+  },
+  {
+    "destinationId": "intramuros",
+    "filename": "intramuros.webp",
+    "sourcePage": "https://unsplash.com/photos/a-cobblestone-street-lined-with-parked-bicycles-6npsbEuCCKU",
+    "photographer": "john mishael Calimoso",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A cobblestone street in Intramuros lined with parked bicycles."
+  },
+  {
+    "destinationId": "romblon",
+    "filename": "romblon.webp",
+    "sourcePage": "https://unsplash.com/photos/green-trees-near-blue-sea-under-blue-sky-during-daytime-WEXv3GPm-fE",
+    "photographer": "Cristina Ong",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Green trees along the blue sea beneath a clear sky in Romblon."
+  },
+  {
+    "destinationId": "puerto-princesa",
+    "filename": "puerto-princesa.webp",
+    "sourcePage": "https://unsplash.com/photos/a-group-of-people-in-a-boat-in-a-body-of-water-by-a-cliff-with-puerto-princesa-subterranean-river-national-park-in-the-background-YsNgfJwUpxQ",
+    "photographer": "Elaine Ore",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Visitors ride a boat through the river beneath the limestone cliffs of Puerto Princesa Underground River."
+  },
+  {
+    "destinationId": "coron",
+    "filename": "coron.webp",
+    "sourcePage": "https://unsplash.com/photos/aerial-photo-of-clear-blue-sea-surrounded-by-mountains-IL-fBBnF-GU",
+    "photographer": "John Hernandez",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "An aerial view of clear blue water surrounded by Coron’s mountains."
+  },
+  {
+    "destinationId": "el-nido",
+    "filename": "el-nido.webp",
+    "sourcePage": "https://unsplash.com/photos/a-group-of-people-in-a-body-of-water-surrounded-by-large-rocks-wrHnE3kMplg",
+    "photographer": "Rommel Paras",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "People wade through water among the large limestone rocks of El Nido."
+  },
+  {
+    "destinationId": "puerto-galera",
+    "filename": "puerto-galera.webp",
+    "sourcePage": "https://unsplash.com/photos/elaborate-sandcastle-with-intricate-details-on-a-beach-ZnybAEmhfYA",
+    "photographer": "KJ Gonzales",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "An intricate sandcastle stands on a beach in Puerto Galera."
+  },
+  {
+    "destinationId": "tagaytay",
+    "filename": "tagaytay.webp",
+    "sourcePage": "https://unsplash.com/photos/a-view-of-a-lake-and-mountains-from-the-top-of-a-hill-5_E6W06YQfQ",
+    "photographer": "Jannel Ivory",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A lake and mountain range viewed from a hill in Tagaytay."
+  },
+  {
+    "destinationId": "mount-pinatubo",
+    "filename": "mount-pinatubo.webp",
+    "sourcePage": "https://unsplash.com/photos/a-scenic-view-of-mountains-and-a-lake-GpoSNUTbW4w",
+    "photographer": "shotbymikafrbs",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A lake sits among the rugged mountains of Mount Pinatubo."
+  },
+  {
+    "destinationId": "subic",
+    "filename": "subic.webp",
+    "sourcePage": "https://unsplash.com/photos/an-aerial-view-of-a-beach-with-people-in-the-water-wUaElcxsKXw",
+    "photographer": "Junel Mujar",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "An aerial view of a beach with people swimming in the water."
+  },
+  {
+    "destinationId": "basco",
+    "filename": "basco.webp",
+    "sourcePage": "https://unsplash.com/photos/white-and-red-concrete-lighthouse-under-blue-sky-during-daytime-jzID70kJoKo",
+    "photographer": "Rexy Quieta",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A white and red lighthouse stands beneath a blue sky in Basco, Batanes."
+  },
+  {
+    "destinationId": "palaui-island",
+    "filename": "palaui-island.webp",
+    "sourcePage": "https://unsplash.com/photos/ocean-photography-932BjC8Izwg",
+    "photographer": "Rex Verances",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Ocean and rugged coastline seen from Cape Engaño on Palaui Island."
+  },
+  {
+    "destinationId": "banaue-rice",
+    "filename": "banaue-rice.webp",
+    "sourcePage": "https://unsplash.com/photos/aerial-photography-of-green-mountain-3QFQOxGCVmE",
+    "photographer": "Doan Tuan",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Aerial view of green mountain terraces at Khau Phạ Pass, Vietnam."
+  },
+  {
+    "destinationId": "sagada",
+    "filename": "sagada.webp",
+    "sourcePage": "https://unsplash.com/photos/mountain-at-daytime-Yfh7E4KWDZ0",
+    "photographer": "Aldrin Brosas",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A mountain landscape in Sagada beneath the daytime sky."
+  },
+  {
+    "destinationId": "baguio",
+    "filename": "baguio.webp",
+    "sourcePage": "https://unsplash.com/photos/a-town-in-the-mountains-1pwpsrjAy4E",
+    "photographer": "Ivan Arcilla",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A town nestled among the mountains in Baguio."
+  },
+  {
+    "destinationId": "iloilo-city",
+    "filename": "iloilo.webp",
+    "sourcePage": "https://unsplash.com/photos/aerial-view-of-green-trees-beside-body-of-water-during-daytime-dnyUj6hAnfU",
+    "photographer": "Ivan Torres",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Aerial view of green trees beside the water in Iloilo. The coastline and a small boat are visible."
+  },
+  {
+    "destinationId": "guimaras",
+    "filename": "guimaras.webp",
+    "sourcePage": "https://unsplash.com/photos/a-rocky-cliff-with-trees-on-it-CDKz4pD9Mrk",
+    "photographer": "Adam Bilbrough",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A tree-covered rocky cliff rises above the sea in Guimaras."
+  },
+  {
+    "destinationId": "gigantes-islands",
+    "filename": "gigantes-island.webp",
+    "sourcePage": "https://unsplash.com/photos/tropical-tree-beside-house-during-daytime-xCZ8ynsCfrw",
+    "photographer": "John Cosio",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A tropical palm tree stands beside a small house on Islas de Gigantes."
+  },
+  {
+    "destinationId": "roxas-city",
+    "filename": "roxas-city.webp",
+    "sourcePage": "https://unsplash.com/photos/a-city-next-to-a-river-qItYH_YHYQ4",
+    "photographer": "Justin Capay",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A city sits beside a river in Roxas City in the early morning."
+  },
+  {
+    "destinationId": "bacolod",
+    "filename": "bacolod.webp",
+    "sourcePage": "https://unsplash.com/photos/low-angle-photography-of-brown-concrete-2-storey-building-between-trees-QsRG5VAPNQo",
+    "photographer": "Brian Kairuz",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "The Ruins, a brown stone building framed by trees in Bacolod."
+  },
+  {
+    "destinationId": "dumaguete",
+    "filename": "dumaguete.webp",
+    "sourcePage": "https://unsplash.com/photos/sea-turtle-underwater-photography-dDPZKOi6LCI",
+    "photographer": "Dale de Vera",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A sea turtle swims underwater near Apo Island, Dumaguete."
+  },
+  {
+    "destinationId": "siquijor",
+    "filename": "siquijor.webp",
+    "sourcePage": "https://unsplash.com/photos/a-view-of-the-ocean-from-the-top-of-a-hill-u3Zf-4hPrh4",
+    "photographer": "Nikko Lawrence Uy",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "View of the blue ocean and coastline from a hill in Siquijor."
+  },
+  {
+    "destinationId": "cebu-city",
+    "filename": "cebu.webp",
+    "sourcePage": "https://unsplash.com/photos/white-and-brown-concrete-building-under-blue-sky-during-daytime-l-fiuqSVU3s",
+    "photographer": "Hitoshi Namura",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Simala Church, a white and brown church building beneath a blue sky in Cebu."
+  },
+  {
+    "destinationId": "oslob",
+    "filename": "oslob.webp",
+    "sourcePage": "https://unsplash.com/photos/black-and-white-fish-in-water-0lgdsiAdg3k",
+    "photographer": "Jeremiah Del Mar",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A whale shark swims through the water in Oslob."
+  },
+  {
+    "destinationId": "bantayan-island",
+    "filename": "bantayan-island.webp",
+    "sourcePage": "https://unsplash.com/photos/green-tree-on-gray-rock-formation-near-blue-sea-under-blue-sky-during-daytime-_eAB32SQYKA",
+    "photographer": "Celine Martin",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A green tree grows on a rocky outcrop beside the blue sea on Bantayan Island."
+  },
+  {
+    "destinationId": "malapascua",
+    "filename": "malapascua.webp",
+    "sourcePage": "https://unsplash.com/photos/a-boat-that-is-sitting-in-the-water-GL-kqxKiPIA",
+    "photographer": "Sean Robertson",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A boat floats in the water near Malapascua Island."
+  },
+  {
+    "destinationId": "bohol",
+    "filename": "bohol.webp",
+    "sourcePage": "https://unsplash.com/photos/an-aerial-view-of-a-lush-green-landscape-VEnc4fnXDmQ",
+    "photographer": "Geio Tischler",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "Aerial view of Bohol’s green Chocolate Hills."
+  },
+  {
+    "destinationId": "panglao",
+    "filename": "panglao.webp",
+    "sourcePage": "https://unsplash.com/photos/a-monkey-sleeping-on-a-tree-branch-in-a-forest-JXyzIFf-gU4",
+    "photographer": "SJ",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A small primate sleeps on a tree branch in a forest in Panglao."
+  },
+  {
+    "destinationId": "biliran",
+    "filename": "biliran.webp",
+    "sourcePage": "https://unsplash.com/photos/a-rice-field-with-palm-trees-and-mountains-in-the-background-idEXffndW1E",
+    "photographer": "Ulf Sandström",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A rice field bordered by palm trees, with mountains in the distance on Biliran Island."
+  },
+  {
+    "destinationId": "camiguin",
+    "filename": "camiguin.webp",
+    "sourcePage": "https://unsplash.com/photos/man-sits-overlooking-a-large-cross-in-the-ocean-AnkKSHqBha8",
+    "photographer": "Bart Ros",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A man sits above the ocean, looking toward the large cross off Camiguin Island."
+  },
+  {
+    "destinationId": "white-island-camiguin",
+    "filename": "white-island-camiguin.webp",
+    "sourcePage": "https://unsplash.com/photos/man-walking-to-the-water-with-the-distance-of-mountain-during-daytime-AkHHvKkX-LI",
+    "photographer": "RONATORY",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A man walks across the white sand toward clear water, with a mountain in the distance on White Island."
+  },
+  {
+    "destinationId": "cagayan-de-oro",
+    "filename": "cagayan-de-oro.webp",
+    "sourcePage": "https://unsplash.com/photos/a-man-standing-on-top-of-a-lush-green-hillside-imxv5CH1Dxw",
+    "photographer": "Nico Alumbro",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A man stands on a lush green ridge above a valley in Cagayan de Oro."
+  },
+  {
+    "destinationId": "bukidnon",
+    "filename": "bukidnon.webp",
+    "sourcePage": "https://unsplash.com/photos/a-river-running-through-a-lush-green-valley-J5QkB8IAg-k",
+    "photographer": "Rene Padillo",
+    "platform": "Unsplash",
+    "licenseUrl": "https://unsplash.com/license",
+    "verifiedAt": "2026-09-26",
+    "altText": "A river winds through a lush green mountain valley in Bukidnon."
   }
 ]
