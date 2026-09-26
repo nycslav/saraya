@@ -1,27 +1,10 @@
 import { Router, type RequestHandler } from 'express';
 
+import { requireAuthenticatedUser } from '../../platform/http/auth.middleware';
 import { createNotificationController } from './notification.controller';
 
-declare global {
-  namespace Express {
-    interface Locals { authenticatedUserId: string }
-  }
-}
-
-// Member 1's JWT middleware will populate res.locals.authenticatedUserId.
-// Until then these sensitive routes fail closed instead of using demo-user.
-export const requireNotificationUser: RequestHandler = (_request, response, next) => {
-  if (!response.locals.authenticatedUserId) {
-    response.status(401).json({
-      error: { code: 'AUTHENTICATION_REQUIRED', message: 'Sign in to manage notifications.' },
-    });
-    return;
-  }
-  next();
-};
-
 export function createNotificationRouter(
-  authenticate: RequestHandler = requireNotificationUser,
+  authenticate: RequestHandler = requireAuthenticatedUser,
   controller = createNotificationController(),
 ) {
   const router = Router();

@@ -29,6 +29,13 @@ records in `database/seeds/destinations.json` so API development can continue in
 Initialize a configured database with `npm run db:migrate`, then load the catalog with
 `npm run db:seed`.
 
+Google authentication requires `GOOGLE_WEB_CLIENT_ID`, `JWT_ACCESS_SECRET`, and
+`JWT_REFRESH_SECRET` in the API environment. Both JWT secrets must contain at least 32 characters.
+The Google client ID is the same web OAuth client ID used by the mobile application, but the API
+must receive it through its own deployment environment. `POST /auth/google` only signs in an
+existing `users` row whose email matches Google's verified email; it never creates an account.
+Raw Google ID tokens and Saraya refresh tokens must not be logged or stored in configuration files.
+
 The itinerary module uses the official Google Gen AI SDK when `AI_PROVIDER=gemini` and
 `GEMINI_API_KEY` is present. Set `GEMINI_MODEL` to override the default `gemini-3.6-flash`.
 The OpenAI adapter remains available with `AI_PROVIDER=openai`. Missing credentials, provider

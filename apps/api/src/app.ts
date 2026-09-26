@@ -4,6 +4,8 @@ import multer from 'multer';
 import { ZodError } from 'zod';
 
 import { PhotoNotFoundError } from './integrations/photo-storage/photo-storage.types';
+import { AuthenticationError } from './modules/auth/auth.errors';
+import { authRouter } from './modules/auth/auth.route';
 import { bucketListRouter } from './modules/bucket-list/bucket-list.route';
 import { achievementRouter, userAchievementRouter } from './modules/achievements/achievement.route';
 import { serveCheckInPhoto } from './modules/check-ins/check-in.photo';
@@ -34,6 +36,7 @@ app.get('/health', (_request, response) => {
   response.json({ status: 'ok' });
 });
 
+app.use('/auth', authRouter);
 app.use('/achievements', achievementRouter);
 app.use('/bucket-list', bucketListRouter);
 app.use('/check-ins', checkInRouter);
@@ -55,6 +58,13 @@ app.use((_request, response) => {
 });
 
 const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+  if (error instanceof AuthenticationError) {
+    response.status(error.status).json({
+      error: { code: error.code, message: error.message },
+    });
+    return;
+  }
+
   if (error instanceof PhotoNotFoundError) {
     response.status(404).json({
       error: { code: 'PHOTO_NOT_FOUND', message: 'The requested travel photo does not exist.' },

@@ -1,13 +1,13 @@
 import { Router, type RequestHandler } from 'express';
 
-import { requireNotificationUser } from '../notifications/notification.route';
+import { requireAuthenticatedUser } from '../../platform/http/auth.middleware';
 import {
   createFestivalReminderController,
   type FestivalReminderController,
 } from './festival-reminder.controller';
 
 export function createFestivalReminderRouters(
-  authenticate: RequestHandler = requireNotificationUser,
+  authenticate: RequestHandler = requireAuthenticatedUser,
   controller: FestivalReminderController = createFestivalReminderController(),
 ) {
   const festivalReminderRouter = Router();
