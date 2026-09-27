@@ -111,7 +111,21 @@ describe('festival mobile screens', () => {
 
     mockFestivalId = 'diyandi-balingasag';
     await render(<FestivalDetailScreen gateway={new MockFestivalGateway(mockFestivals, 1, 0)} />);
-    expect(await screen.findAllByText('Evidence still needed')).toHaveLength(3);
+    expect(await screen.findAllByText('Not verified yet')).toHaveLength(3);
+    expect(
+      screen.getByText("Oops! Saraya couldn't find reliable history about this festival yet."),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Saraya couldn't verify festival-specific customs yet. Check organizer guidance and be respectful during religious and community activities.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Saraya doesn't have a verified pasalubong recommendation for this festival yet. Look for products recommended by local tourism offices or established community sellers.",
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/we have not yet found a reliable source/i)).toBeNull();
     expect(screen.queryByText('Cultural sources')).toBeNull();
   });
 
