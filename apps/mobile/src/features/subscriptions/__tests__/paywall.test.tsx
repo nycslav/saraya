@@ -38,7 +38,7 @@ jest.mock('../gateways/revenuecat-subscription.gateway', () => ({
   },
 }));
 
-jest.mock('../services/local-generation-quota', () => ({
+jest.mock('../services/generation-quota', () => ({
   generationQuotaGateway: {
     getQuota: (...args: unknown[]) => mockGetQuota(...args),
     creditTopUp: (...args: unknown[]) => mockCreditTopUp(...args),

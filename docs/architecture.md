@@ -4,11 +4,15 @@ Saraya is a TypeScript monorepo with an Expo mobile client and an Express API. P
 
 ```text
 Expo mobile -> typed API client -> Express modules -> PostgreSQL/PostGIS
-                                      |           -> Redis
-                                      +-> provider adapters
+                                       |           -> Redis (optional)
+                                       +-> provider adapters
+                                       |
+                          background jobs -> feature services
 ```
 
 External providers are accessed through backend adapters. Provider secrets and privileged calls must never be bundled into the mobile application.
+
+Background jobs (festival reminders, weather polling) are thin entry points in `src/jobs/` that delegate to existing feature services. A provider-neutral `JobScheduler` abstraction decouples job registration from the coordination backend: `NoopJobScheduler` runs in-process; `RedisJobScheduler` delegates to a Redis worker when `SCHEDULER_BACKEND=redis` is configured. Redis is an optional infrastructure dependency — when unavailable, the noop scheduler keeps jobs running in-process.
 
 The required MVP is implemented before offline mode, AI itineraries, hidden gems, or WebSocket live alerts.
 

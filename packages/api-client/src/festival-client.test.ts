@@ -107,4 +107,38 @@ describe('festival API client', () => {
       createApiClient('https://api.saraya.test').festivals.getReminder('masskara'),
     ).rejects.toMatchObject({ status: 401, message: 'Sign in to manage notifications.' });
   });
+
+  it('gets and synchronizes authoritative subscription state with authentication', async () => {
+    const state = {
+      access: 'premium' as const,
+      quota: {
+        access: 'premium' as const,
+        includedLimit: 10,
+        includedRemaining: 8,
+        topUpRemaining: 10,
+        canGenerate: true,
+        canRegenerate: true,
+        periodStart: '2026-09-01T00:00:00.000Z',
+        periodEnd: '2026-10-01T00:00:00.000Z',
+      },
+    };
+    const fetchMock = jest
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(Response.json(state))
+      .mockResolvedValueOnce(Response.json(state));
+    const client = createApiClient('https://api.saraya.test', async () => 'access-token');
+
+    await expect(client.subscriptions.getState()).resolves.toEqual(state);
+    await expect(client.subscriptions.synchronize()).resolves.toEqual(state);
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      'https://api.saraya.test/subscriptions/me',
+      'https://api.saraya.test/subscriptions/sync',
+    ]);
+    expect(fetchMock.mock.calls[1]?.[1]).toEqual(
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({ Authorization: 'Bearer access-token' }),
+      }),
+    );
+  });
 });

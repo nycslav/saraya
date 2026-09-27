@@ -1,13 +1,20 @@
-import { Router } from 'express';
+import { Router, type RequestHandler } from 'express';
 
+import { requireNotificationUser } from '../notifications/notification.route';
 import {
-  generateItinerary,
-  getItinerary,
-  saveItinerary,
+  createItineraryController,
+  type ItineraryController,
 } from './itinerary.controller';
 
-export const itineraryRouter = Router();
+export function createItineraryRouter(
+  authenticate: RequestHandler = requireNotificationUser,
+  controller: ItineraryController = createItineraryController(),
+) {
+  const router = Router();
+  router.post('/generate', authenticate, controller.generate);
+  router.post('/', controller.save);
+  router.get('/:id', controller.get);
+  return router;
+}
 
-itineraryRouter.post('/generate', generateItinerary);
-itineraryRouter.post('/', saveItinerary);
-itineraryRouter.get('/:id', getItinerary);
+export const itineraryRouter = createItineraryRouter();

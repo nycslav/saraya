@@ -175,11 +175,38 @@ preview only. Production must use the Android public SDK key and matching Google
 - A generation is consumed only after itinerary generation succeeds.
 - Top-ups are deduplicated by the store/RevenueCat transaction identifier.
 
-The current mobile `LocalGenerationQuotaGateway` persists demo state in AsyncStorage. It is not
-secure, is not synchronized across devices, and is not account-authoritative. Once authentication
-and Member 2's itinerary backend are available, the API must own quota rows, calendar rollover,
-transaction-id uniqueness, and an atomic generate-then-consume operation. RevenueCat webhooks must
-idempotently record top-ups. The app should then replace the local gateway with an API adapter.
+API mode now uses the authenticated Saraya API as the entitlement and quota authority. The local
+AsyncStorage gateway remains only for fixture/demo mode. The API reserves a credit before invoking
+the itinerary generator, consumes it only after successful generation, and releases it after
+provider failure or cancellation. PostgreSQL row locks serialize reservations for one account.
+
+Configure the RevenueCat integration with server-only environment values:
+
+```text
+REVENUECAT_WEBHOOK_AUTHORIZATION=<exact Authorization header configured in RevenueCat>
+REVENUECAT_WEBHOOK_SIGNING_SECRET=<HMAC signing secret>
+REVENUECAT_SECRET_API_KEY=<server REST API key>
+REVENUECAT_ENTITLEMENT_ID=saraya_premium
+REVENUECAT_LIFETIME_PRODUCT_ID=saraya_premium_lifetime
+REVENUECAT_TOP_UP_PRODUCT_ID=saraya_generations_10
+```
+
+The webhook URL is `POST /webhooks/revenuecat`. Both configured authentication mechanisms are
+required when both values are present. HMAC verification uses the exact raw request body and a
+five-minute timestamp tolerance. Event IDs and consumable transaction IDs are independently
+deduplicated. Only normalized event metadata is persisted.
+
+`POST /subscriptions/sync` retrieves current Customer Info from RevenueCat's server API and is the
+authoritative restore/reconciliation path. It also imports previously purchased consumables by
+transaction ID. Neither endpoint accepts a client user ID, premium flag, credit amount, or purchase
+transaction as authority.
+
+RevenueCat is still initialized anonymously on this branch. Member 1 must call
+`identifyRevenueCatUser(authenticatedUser.id)` after authentication and
+`resetRevenueCatUser()` during logout. Until the shared JWT middleware provides
+`res.locals.authenticatedUserId`, subscription state, sync, and itinerary generation fail closed
+with `401`; webhook events for unknown RevenueCat customer IDs remain recorded as
+`pending_association` and cannot grant access.
 
 ## Gemini itinerary generation
 

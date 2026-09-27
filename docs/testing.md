@@ -112,3 +112,27 @@ Festival calendar tests inject a native provider and local event-ID store. They 
 contextually requested permission, denial, unavailable writable calendars, confirmed all-day date
 mapping, exclusive end dates, recurring/past rejection, duplicate prevention, and native failures.
 No automated test creates a real calendar event or sends a real push.
+
+## RevenueCat backend tests
+
+Backend subscription tests use in-memory or mocked PostgreSQL and RevenueCat boundaries. They cover
+Authorization and raw-body HMAC validation, malformed payloads, duplicate event and transaction
+delivery, entitlement activation/deactivation/transfer, restore synchronization, Free and Premium
+quota rules, UTC rollover, top-up persistence, ownership isolation, concurrent reservations, and
+release after failed or cancelled generation. Tests never perform real purchases, send webhooks to
+RevenueCat, or mutate shared Supabase.
+
+## Background job boundary tests
+
+Job entry points are thin and tested with injected fakes — no live scheduling, Redis, or provider
+calls. Tests cover:
+
+- **send-reminders** — delegates to `FestivalReminderService.dispatchDueReminders`, uses default
+  limit of 100, logs results only when reminders are claimed, suppresses logging on idle runs.
+- **poll-weather** — delegates to `WeatherProvider.getWeather` for each location, continues when
+  individual locations fail, logs aggregate success/failure counts.
+- **JobScheduler** — `NoopJobScheduler` (no-op schedule/cancel), `RedisJobScheduler` (writes
+  schedule + membership to Redis-like client, removes on cancel), `createJobScheduler` factory
+  (selects backend, warns and falls back to noop when Redis backend configured without a client).
+- **InMemoryJobRunner** — schedules next run with correct delay, calls `scheduler.schedule` per job,
+  stops and clears timers cleanly.

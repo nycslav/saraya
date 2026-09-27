@@ -78,3 +78,21 @@ support authenticated user lists and ordered due-reminder claiming. Dispatch ato
 rows from `active` to `dispatching` with `FOR UPDATE SKIP LOCKED`, then records `sent` only when an
 existing eligible device accepts delivery; disabled preferences or no eligible device result in
 `skipped`. Migration deployment is manual and must not target shared Supabase without review.
+
+## Subscription and generation-quota persistence
+
+Migration `012_create_subscriptions_and_generation_quotas.sql` adds RevenueCat customer mappings,
+authoritative entitlement snapshots, normalized webhook event records, generation quota accounts,
+idempotent top-up transactions, and generation reservations. User IDs remain opaque `text` values;
+there is no users table or invented foreign key on this branch.
+
+Webhook event IDs and purchase transaction IDs are independent primary keys. This prevents both a
+retried delivery and a differently identified delivery of the same consumable transaction from
+granting credits twice. Events received before authenticated customer association are retained as
+`pending_association` and grant nothing.
+
+Quota account rows track Free lifetime use, the current Premium UTC month and its use, and purchased
+credit balance. Reservations record which allowance was selected. PostgreSQL transactions and
+`SELECT ... FOR UPDATE` serialize access to an account so simultaneous generation requests cannot
+overspend. Included allowance is selected before top-up credit; only a successfully consumed
+reservation mutates usage, while released reservations leave balances unchanged.

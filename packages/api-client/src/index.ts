@@ -23,6 +23,7 @@ import {
   journeyStatisticsSchema,
   photoUploadResultSchema,
   notificationPreferencesSchema,
+  subscriptionStateSchema,
   safetyAlertListResponseSchema,
   safetyAlertQuerySchema,
   safetyAlertSchema,
@@ -254,6 +255,16 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
             method: 'PATCH',
             body: JSON.stringify(changes),
           }),
+        );
+      },
+    },
+    subscriptions: {
+      async getState() {
+        return subscriptionStateSchema.parse(await request('/subscriptions/me'));
+      },
+      async synchronize() {
+        return subscriptionStateSchema.parse(
+          await request('/subscriptions/sync', { method: 'POST' }),
         );
       },
     },

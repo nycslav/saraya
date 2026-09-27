@@ -22,11 +22,20 @@ import {
   weatherRouter,
 } from './modules/safety-alerts/safety-alert.route';
 import { uploadRoot } from './integrations/photo-storage/local-photo-storage';
+import {
+  revenueCatWebhookRouter,
+  subscriptionRouter,
+} from './modules/subscriptions/subscription.route';
 
 export const app = express();
 
 app.disable('x-powered-by');
 app.use(cors());
+app.use(
+  '/webhooks/revenuecat',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  revenueCatWebhookRouter,
+);
 app.use(express.json({ limit: '1mb' }));
 app.get('/uploads/check-ins/:fileName', serveCheckInPhoto);
 
@@ -44,6 +53,7 @@ app.use('/festivals', festivalRouter);
 app.use('/itineraries', itineraryRouter);
 app.use('/notifications', notificationRouter);
 app.use('/safety-alerts', safetyAlertRouter);
+app.use('/subscriptions', subscriptionRouter);
 app.use('/alerts', regionalAlertRouter);
 app.use('/weather', weatherRouter);
 app.use('/user/achievements', userAchievementRouter);

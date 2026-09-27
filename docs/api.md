@@ -146,6 +146,9 @@ weather-model conditions are not official government safety warnings.
 
 Accepts the shared trip-preference contract: destination, starting point, 1-30 day duration,
 budget, interests, pace, and accessibility needs. It returns a validated day-by-day itinerary.
+The route requires `res.locals.authenticatedUserId`. It atomically reserves server-side quota,
+consumes the reservation only after successful generation, and releases it on provider failure or
+request cancellation. Exhausted accounts receive `402 GENERATION_QUOTA_EXHAUSTED`.
 When `AI_PROVIDER=gemini` and `GEMINI_API_KEY` are configured, the API uses Gemini structured
 output. Missing credentials or provider failures use the deterministic generator for local
 development and reliable demonstrations. The `generationSource` response field is `gemini`,
@@ -157,8 +160,30 @@ The AI selects candidate IDs rather than inventing business names, and the API r
 selection into an optional stop `place` object containing its provider ID, verified name, category,
 address, and coordinates. Place or AI failures continue through the deterministic fallback.
 
-The mobile client calls this endpoint only after the RevenueCat premium handoff. Server-side
-RevenueCat entitlement verification remains Member 3's integration boundary.
+The mobile API adapter sends the stored bearer token and refreshes quota after generation; it never
+decrements authoritative quota locally.
+
+## Subscription and RevenueCat API
+
+### `GET /subscriptions/me`
+
+Returns the authenticated user's server-authoritative premium access and generation quota. It does
+not accept a user ID. Without shared authentication middleware it fails closed with
+`401 AUTHENTICATION_REQUIRED`.
+
+### `POST /subscriptions/sync`
+
+Associates the authenticated Saraya user ID with the identical RevenueCat App User ID, retrieves
+Customer Info through the server-side RevenueCat API, reconciles lifetime entitlement state, and
+idempotently imports generation-pack transactions. It requires `REVENUECAT_SECRET_API_KEY` and
+returns `503 REVENUECAT_SYNC_UNAVAILABLE` when server lookup is not configured.
+
+### `POST /webhooks/revenuecat`
+
+Receives the raw RevenueCat body. The endpoint validates the configured Authorization header and
+HMAC signature, validates the event schema, and returns `processed`, `duplicate`,
+`pending-association`, or `ignored`. Event IDs and top-up transaction IDs are unique. Unknown
+customer IDs never become Saraya user IDs implicitly.
 
 ### `POST /itineraries`
 
@@ -254,3 +279,17 @@ fail closed with `401 AUTHENTICATION_REQUIRED`.
 - `DELETE /notifications/devices` deactivates the authenticated user's `{ pushToken }`.
 - `GET /notifications/preferences` returns safety-alert and festival-reminder preferences.
 - `PATCH /notifications/preferences` updates one or both supported preferences.
+
+# Background jobs
+
+Background jobs run on the API server and delegate to existing feature services. Jobs are registered
+in `src/jobs/` and scheduled via a provider-neutral `JobScheduler` abstraction. See
+`src/jobs/README.md` for the execution model.
+
+| Job | Service called |
+|-----|----------------|
+| send-reminders | `FestivalReminderService.dispatchDueReminders` |
+| poll-weather | `WeatherProvider.getWeather` (cache warming) |
+
+Jobs are not exposed as HTTP endpoints. They run in-process by default; set `SCHEDULER_BACKEND=redis`
+to delegate scheduling to a Redis worker process.

@@ -29,3 +29,19 @@ services:
         value: gemini-3.6-flash
       - key: GEOAPIFY_API_KEY
         sync: false
+      - key: REVENUECAT_WEBHOOK_AUTHORIZATION
+        sync: false
+      - key: REVENUECAT_WEBHOOK_SIGNING_SECRET
+        sync: false
+      - key: REVENUECAT_SECRET_API_KEY
+        sync: false
+      - key: REVENUECAT_ENTITLEMENT_ID
+        value: saraya_premium
+      - key: REVENUECAT_LIFETIME_PRODUCT_ID
+        value: saraya_premium_lifetime
+      - key: REVENUECAT_TOP_UP_PRODUCT_ID
+        value: saraya_generations_10
+      - key: SCHEDULER_ENABLED
+        value: "true"
+      - key: SCHEDULER_BACKEND
+        value: noop
