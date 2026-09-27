@@ -11,6 +11,7 @@ import { achievementRouter, userAchievementRouter } from './modules/achievements
 import { serveCheckInPhoto } from './modules/check-ins/check-in.photo';
 import { checkInRouter } from './modules/check-ins/check-in.route';
 import { destinationRouter } from './modules/destinations/destination.route';
+import { destinationSafetyRouter } from './modules/destination-safety/destination-safety.route';
 import { festivalRouter } from './modules/festivals/festival.route';
 import {
   festivalReminderListRouter,
@@ -49,6 +50,7 @@ app.use('/auth', authRouter);
 app.use('/achievements', achievementRouter);
 app.use('/bucket-list', bucketListRouter);
 app.use('/check-ins', checkInRouter);
+app.use('/destinations', destinationSafetyRouter);
 app.use('/destinations', destinationRouter);
 app.use('/festival-reminders', festivalReminderListRouter);
 app.use('/festivals', festivalReminderRouter);

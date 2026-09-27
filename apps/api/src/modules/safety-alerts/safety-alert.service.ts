@@ -1,4 +1,5 @@
 import {
+  destinationConditionsSchema,
   safetyAlertQuerySchema,
   weatherQuerySchema,
   weatherResponseSchema,
@@ -110,5 +111,19 @@ export class SafetyAlertService {
         source: this.weatherProvider.source,
       });
     }
+  }
+
+  async destinationConditions(rawDestinationId: unknown) {
+    const destinationId = typeof rawDestinationId === 'string' ? rawDestinationId : '';
+    const [alertResult, weather] = await Promise.all([
+      this.list({ destinationId }),
+      this.weather({ destinationId }),
+    ]);
+    return destinationConditionsSchema.parse({
+      destination: alertResult.location,
+      weather,
+      safetyAlerts: alertResult.alerts,
+      fetchedAt: this.now().toISOString(),
+    });
   }
 }

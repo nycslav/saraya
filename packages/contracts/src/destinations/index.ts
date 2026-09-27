@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { resolvedLocationSchema, safetyAlertSchema, weatherResponseSchema } from '../safety-alerts';
+
 export const islandGroupSchema = z.enum(['Luzon', 'Visayas', 'Mindanao']);
 export const destinationCategorySchema = z.enum([
   'Beach',
@@ -47,8 +49,35 @@ export const discoveryQuerySchema = z.object({
   interest: z.string().trim().optional(),
 });
 
+export const destinationIdParamsSchema = z.object({
+  id: z.string().trim().min(1).max(200),
+}).strict();
+
+export const destinationConditionsSchema = z.object({
+  destination: resolvedLocationSchema.extend({
+    kind: z.literal('destination'),
+    destinationId: z.string().trim().min(1),
+  }),
+  weather: weatherResponseSchema,
+  safetyAlerts: z.array(safetyAlertSchema),
+  fetchedAt: z.iso.datetime({ offset: true }),
+}).strict();
+
+export const destinationSafetySubscriptionSchema = z.object({
+  destinationId: z.string().trim().min(1).max(200),
+  subscribed: z.boolean(),
+  createdAt: z.iso.datetime({ offset: true }).nullable(),
+}).strict();
+
+export const destinationSafetySubscriptionRequestSchema = z.preprocess(
+  (value) => value ?? {},
+  z.object({}).strict(),
+);
+
 export type IslandGroup = z.infer<typeof islandGroupSchema>;
 export type DestinationCategory = z.infer<typeof destinationCategorySchema>;
 export type DestinationSummary = z.infer<typeof destinationSummarySchema>;
 export type DestinationDetail = z.infer<typeof destinationDetailSchema>;
 export type DiscoveryQuery = z.infer<typeof discoveryQuerySchema>;
+export type DestinationConditions = z.infer<typeof destinationConditionsSchema>;
+export type DestinationSafetySubscription = z.infer<typeof destinationSafetySubscriptionSchema>;

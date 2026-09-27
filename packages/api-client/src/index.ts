@@ -8,6 +8,8 @@ import {
   createCheckInSchema,
   createFestivalReminderSchema,
   destinationDetailSchema,
+  destinationConditionsSchema,
+  destinationSafetySubscriptionSchema,
   destinationSummarySchema,
   festivalDetailWithCultureSchema,
   festivalReminderListSchema,
@@ -190,6 +192,29 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
       async getById(id: string) {
         return destinationDetailSchema.parse(
           await request(`/destinations/${encodeURIComponent(id)}`),
+        );
+      },
+      async getConditions(id: string) {
+        return destinationConditionsSchema.parse(
+          await request(`/destinations/${encodeURIComponent(id)}/conditions`),
+        );
+      },
+      async subscribeToSafetyAlerts(id: string) {
+        return destinationSafetySubscriptionSchema.parse(
+          await request(`/destinations/${encodeURIComponent(id)}/safety-subscription`, {
+            method: 'POST',
+          }),
+        );
+      },
+      async getSafetySubscription(id: string) {
+        return destinationSafetySubscriptionSchema.parse(
+          await request(`/destinations/${encodeURIComponent(id)}/safety-subscription`),
+        );
+      },
+      async unsubscribeFromSafetyAlerts(id: string) {
+        await requestWithoutResponse(
+          `/destinations/${encodeURIComponent(id)}/safety-subscription`,
+          { method: 'DELETE' },
         );
       },
     },
