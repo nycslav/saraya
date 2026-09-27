@@ -2,6 +2,11 @@ import type { LoginRequest, RegisterRequest, UpdateProfileRequest, UserProfile }
 import type { PropsWithChildren } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import {
+  identifyRevenueCatUser,
+  resetRevenueCatUser,
+} from '@/features/subscriptions/services/revenuecat';
+
 import { authGateway } from './gateway';
 import { getGoogleIdToken, signOutFromGoogle } from './googleSignIn';
 
@@ -17,6 +22,17 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+async function synchronizeRevenueCatUser(userId: string) {
+  try {
+    await identifyRevenueCatUser(userId);
+  } catch {
+    // Authentication must remain available when purchases are not configured, but stale
+    // customer state must not be allowed to cross an account boundary.
+    await resetRevenueCatUser().catch(() => undefined);
+    console.warn('RevenueCat identity could not be synchronized for the authenticated user.');
+  }
+}
+
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [restoring, setRestoring] = useState(true);
@@ -24,10 +40,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let active = true;
     void authGateway.restore()
-      .then((session) => {
+      .then(async (session) => {
+        if (session) {
+          await synchronizeRevenueCatUser(session.user.id);
+        } else {
+          await resetRevenueCatUser().catch(() => undefined);
+        }
         if (active) setUser(session?.user ?? null);
       })
-      .catch(() => {
+      .catch(async () => {
+        await resetRevenueCatUser().catch(() => undefined);
         if (active) setUser(null);
       })
       .finally(() => {
@@ -38,12 +60,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const login = useCallback(async (input: LoginRequest) => {
     const session = await authGateway.login(input);
+    await synchronizeRevenueCatUser(session.user.id);
     setUser(session.user);
     return session.user;
   }, []);
 
   const register = useCallback(async (input: RegisterRequest) => {
     const session = await authGateway.register(input);
+    await synchronizeRevenueCatUser(session.user.id);
     setUser(session.user);
     return session.user;
   }, []);
@@ -52,6 +76,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const idToken = await getGoogleIdToken();
     if (!idToken) return null;
     const session = await authGateway.loginWithGoogle(idToken);
+    await synchronizeRevenueCatUser(session.user.id);
     setUser(session.user);
     return session.user;
   }, []);
@@ -63,7 +88,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   const logout = useCallback(async () => {
-    await Promise.allSettled([authGateway.logout(), signOutFromGoogle()]);
+    await Promise.allSettled([
+      authGateway.logout(),
+      signOutFromGoogle(),
+      resetRevenueCatUser(),
+    ]);
     setUser(null);
   }, []);
 

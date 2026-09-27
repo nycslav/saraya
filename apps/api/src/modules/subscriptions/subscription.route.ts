@@ -1,13 +1,13 @@
 import { Router, type RequestHandler } from 'express';
 
-import { requireNotificationUser } from '../notifications/notification.route';
+import { requireAuthenticatedUser } from '../../platform/http/auth.middleware';
 import {
   createSubscriptionController,
   type SubscriptionController,
 } from './subscription.controller';
 
 export function createSubscriptionRouter(
-  authenticate: RequestHandler = requireNotificationUser,
+  authenticate: RequestHandler = requireAuthenticatedUser,
   controller: SubscriptionController = createSubscriptionController(),
 ) {
   const router = Router();

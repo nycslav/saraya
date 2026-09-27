@@ -1,13 +1,13 @@
 import { Router, type RequestHandler } from 'express';
 
-import { requireNotificationUser } from '../notifications/notification.route';
+import { requireAuthenticatedUser } from '../../platform/http/auth.middleware';
 import {
   createItineraryController,
   type ItineraryController,
 } from './itinerary.controller';
 
 export function createItineraryRouter(
-  authenticate: RequestHandler = requireNotificationUser,
+  authenticate: RequestHandler = requireAuthenticatedUser,
   controller: ItineraryController = createItineraryController(),
 ) {
   const router = Router();

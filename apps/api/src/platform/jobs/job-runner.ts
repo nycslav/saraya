@@ -11,11 +11,12 @@ export interface JobRunnerOptions {
 
 export interface JobRunner {
   start(): Promise<void>;
-  stop(): void;
+  stop(): Promise<void>;
 }
 
 export class InMemoryJobRunner implements JobRunner {
   private readonly timers = new Map<JobName, Timer>();
+  private running = false;
 
   constructor(
     private readonly jobs: Job[],
@@ -24,36 +25,53 @@ export class InMemoryJobRunner implements JobRunner {
   ) {}
 
   async start() {
+    if (this.running) return;
+    this.running = true;
+
     for (const job of this.jobs) {
       await this.scheduler.schedule(job);
-      this.scheduleNext(job);
+      if (this.running) this.scheduleNext(job);
     }
   }
 
-  stop() {
+  async stop() {
+    this.running = false;
     for (const timer of this.timers.values()) {
-      this.options.clearTimeout?.(timer);
+      this.clearTimer(timer);
     }
     this.timers.clear();
+    await Promise.all(this.jobs.map((job) => this.scheduler.cancel(job.name)));
   }
 
   private scheduleNext(job: Job) {
     const delay = this.nextRunDelay(job.cron, this.now());
-    const timer = this.options.setTimeout?.(() => this.execute(job), delay);
-    if (timer) {
-      timer.unref();
-      this.timers.set(job.name, timer);
-    }
+    const timer = this.setTimer(() => void this.execute(job), delay);
+    timer.unref();
+    this.timers.set(job.name, timer);
   }
 
   private async execute(job: Job) {
+    if (!this.running) return;
     try {
       await job.run();
     } catch (error) {
       console.error(`[job:${job.name}]`, error);
     }
     this.timers.delete(job.name);
-    this.scheduleNext(job);
+    if (this.running) this.scheduleNext(job);
+  }
+
+  private setTimer(callback: () => void, delay: number): Timer {
+    if (this.options.setTimeout) return this.options.setTimeout(callback, delay);
+    return globalThis.setTimeout(callback, delay) as Timer;
+  }
+
+  private clearTimer(timer: Timer) {
+    if (this.options.clearTimeout) {
+      this.options.clearTimeout(timer);
+      return;
+    }
+    globalThis.clearTimeout(timer as ReturnType<typeof globalThis.setTimeout>);
   }
 
   private now(): Date {

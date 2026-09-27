@@ -28,7 +28,7 @@ describe('InMemoryJobRunner', () => {
     expect(delay).toBeLessThanOrEqual(5 * 60 * 1000);
     expect(delay % (1_000)).toBe(0);
 
-    runner.stop();
+    await runner.stop();
     expect(clearTimeout).toHaveBeenCalled();
   });
 
@@ -45,7 +45,7 @@ describe('InMemoryJobRunner', () => {
     await runner.start();
 
     expect(scheduler.schedule).toHaveBeenCalledWith(mockJob);
-    runner.stop();
+    await runner.stop();
   });
 
   it('stops scheduling after calling stop', async () => {
@@ -58,8 +58,31 @@ describe('InMemoryJobRunner', () => {
     });
 
     await runner.start();
-    runner.stop();
+    await runner.stop();
 
     expect(clearTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses platform timers by default and cancels them on shutdown', async () => {
+    jest.useFakeTimers();
+    const scheduler: JobScheduler = {
+      schedule: jest.fn(),
+      cancel: jest.fn(),
+    };
+
+    try {
+      const runner = new InMemoryJobRunner([mockJob], scheduler, {
+        now: () => new Date('2026-09-26T10:00:00.000Z'),
+      });
+
+      await runner.start();
+      expect(jest.getTimerCount()).toBe(1);
+
+      await runner.stop();
+      expect(jest.getTimerCount()).toBe(0);
+      expect(scheduler.cancel).toHaveBeenCalledWith(mockJob.name);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

@@ -42,6 +42,13 @@ export function createAuthenticationMiddleware(tokens: AuthTokenService): Reques
 let defaultTokens: AuthTokenService | undefined;
 
 export const requireAuthenticatedUser: RequestHandler = (request, response, next) => {
+  if (!bearerToken(request.header('authorization'))) {
+    response.status(401).json({
+      error: { code: 'AUTHENTICATION_REQUIRED', message: 'Sign in to access this resource.' },
+    });
+    return;
+  }
+
   try {
     defaultTokens ??= createAuthTokenServiceFromEnvironment();
     return createAuthenticationMiddleware(defaultTokens)(request, response, next);
