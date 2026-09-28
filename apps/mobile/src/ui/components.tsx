@@ -1,12 +1,15 @@
 import type { PropsWithChildren, ReactNode } from 'react';
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { LucideIcon } from 'lucide-react-native';
-import { Search, Sparkles } from 'lucide-react-native';
+import { ArrowLeft, Search, Sparkles } from 'lucide-react-native';
 import {
   ActivityIndicator,
   AccessibilityInfo,
+  Animated,
   Image,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -35,15 +38,76 @@ function useReducedMotion() {
 }
 
 export function Screen({
+  backAction,
   children,
   scroll = true,
   contentContainerStyle,
+  onScroll,
+  scrollEventThrottle,
   ...scrollProps
-}: PropsWithChildren<ScrollViewProps & { scroll?: boolean; contentContainerStyle?: ViewStyle }>) {
+}: PropsWithChildren<
+  ScrollViewProps & {
+    backAction?: { accessibilityLabel?: string; onPress: () => void };
+    scroll?: boolean;
+    contentContainerStyle?: ViewStyle;
+  }
+>) {
+  const reducedMotion = useReducedMotion();
+  const [backVisibility] = useState(() => new Animated.Value(1));
+  const lastOffset = useRef(0);
+  const directionDistance = useRef(0);
+  const direction = useRef<'down' | 'up' | null>(null);
+  const [backVisible, setBackVisible] = useState(true);
+  const effectiveBackVisible = reducedMotion || backVisible;
+
+  const updateBackVisibility = (visible: boolean) => {
+    if (!backAction || backVisible === visible) return;
+    const nextVisible = reducedMotion ? true : visible;
+    setBackVisible(nextVisible);
+    Animated.timing(backVisibility, {
+      duration: reducedMotion ? 0 : nextVisible ? 140 : 180,
+      toValue: nextVisible ? 1 : 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (backAction && !reducedMotion) {
+      const offset = Math.max(0, event.nativeEvent.contentOffset.y);
+      const delta = offset - lastOffset.current;
+      const nextDirection = delta > 0 ? 'down' : delta < 0 ? 'up' : direction.current;
+
+      if (offset <= spacing.md) {
+        direction.current = null;
+        directionDistance.current = 0;
+        updateBackVisibility(true);
+      } else if (nextDirection && delta !== 0) {
+        if (direction.current !== nextDirection) {
+          direction.current = nextDirection;
+          directionDistance.current = 0;
+        }
+        directionDistance.current += Math.abs(delta);
+        if (nextDirection === 'down' && directionDistance.current >= 24) {
+          updateBackVisibility(false);
+        } else if (nextDirection === 'up' && directionDistance.current >= 12) {
+          updateBackVisibility(true);
+        }
+      }
+      lastOffset.current = offset;
+    }
+    onScroll?.(event);
+  };
+
   const content = scroll ? (
     <ScrollView
-      contentContainerStyle={[styles.screenContent, contentContainerStyle]}
+      contentContainerStyle={[
+        styles.screenContent,
+        contentContainerStyle,
+        backAction && styles.screenContentWithFloatingBack,
+      ]}
       keyboardShouldPersistTaps="handled"
+      onScroll={handleScroll}
+      scrollEventThrottle={scrollEventThrottle ?? 16}
       showsVerticalScrollIndicator={false}
       {...scrollProps}
     >
@@ -53,7 +117,48 @@ export function Screen({
     <View style={[styles.screenContent, styles.fill, contentContainerStyle]}>{children}</View>
   );
 
-  return <SafeAreaView style={styles.safeArea}>{content}</SafeAreaView>;
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {content}
+      {backAction ? (
+        <Animated.View
+          accessibilityElementsHidden={!effectiveBackVisible}
+          importantForAccessibility={effectiveBackVisible ? 'auto' : 'no-hide-descendants'}
+          pointerEvents={effectiveBackVisible ? 'auto' : 'none'}
+          style={[
+            styles.floatingBackWrap,
+            reducedMotion
+              ? styles.floatingBackReducedMotion
+              : {
+                  opacity: backVisibility,
+                  transform: [
+                    {
+                      translateY: backVisibility.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-64, 0],
+                      }),
+                    },
+                  ],
+                },
+          ]}
+          testID="scroll-aware-back-container"
+        >
+          <Pressable
+            accessibilityLabel={backAction.accessibilityLabel ?? 'Go back'}
+            accessibilityRole="button"
+            hitSlop={4}
+            onPress={backAction.onPress}
+            style={({ pressed }) => [
+              styles.floatingBack,
+              pressed && (reducedMotion ? styles.pressedReducedMotion : styles.pressed),
+            ]}
+          >
+            <ArrowLeft color={colors.navy} size={24} />
+          </Pressable>
+        </Animated.View>
+      ) : null}
+    </SafeAreaView>
+  );
 }
 
 type ButtonProps = PressableProps & {
@@ -263,6 +368,20 @@ export function ComingSoonScreen({ title, owner }: { title: string; owner: strin
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background }, fill: { flex: 1 },
   screenContent: { padding: spacing.xl, paddingBottom: 120, gap: spacing.lg },
+  screenContentWithFloatingBack: { paddingTop: 76 },
+  floatingBackWrap: { position: 'absolute', left: spacing.xl, top: spacing.md, zIndex: 20 },
+  floatingBackReducedMotion: { opacity: 1, transform: [{ translateY: 0 }] },
+  floatingBack: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.card,
+  },
   button: { minHeight: 52, borderRadius: radius.md, paddingHorizontal: spacing.xl, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: spacing.sm },
   buttonPrimary: { backgroundColor: colors.coral },
   buttonSecondary: { backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border },

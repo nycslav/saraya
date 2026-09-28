@@ -8,7 +8,6 @@ import {
 } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  ArrowLeft,
   BedDouble,
   Bus,
   Check,
@@ -20,7 +19,7 @@ import {
   X,
 } from 'lucide-react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { destinationGateway } from '@/features/discovery/gateways';
 import { Button, Chip, LoadingState, Mascot, Screen, StatusPanel } from '@/ui/components';
@@ -206,8 +205,7 @@ export function ItineraryPlannerScreen() {
   if (status === 'ready' && itinerary) {
     const day = itinerary.days.find((item) => item.dayNumber === activeDay) ?? itinerary.days[0];
     return (
-      <Screen>
-        <BackButton onPress={() => setStatus('idle')} />
+      <Screen backAction={{ onPress: () => setStatus('idle') }}>
         <View style={styles.resultHero}>
           <Text style={styles.resultEyebrow}>{itinerary.preferences.durationDays} DAYS · {destinationName.toUpperCase()}</Text>
           <Text accessibilityRole="header" style={styles.resultTitle}>{itinerary.title}</Text>
@@ -258,8 +256,7 @@ export function ItineraryPlannerScreen() {
   }
 
   return (
-    <Screen>
-      <BackButton onPress={() => router.back()} />
+    <Screen backAction={{ onPress: () => router.back() }}>
       <View style={styles.headerRow}>
         <View style={styles.headerCopy}>
           <Text accessibilityRole="header" style={styles.title}>Trip preferences</Text>
@@ -305,17 +302,8 @@ export function ItineraryPlannerScreen() {
   );
 }
 
-function BackButton({ onPress }: { onPress: () => void }) {
-  return (
-    <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={onPress} style={styles.back}>
-      <ArrowLeft color={colors.navy} size={24} />
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   centeredScreen: { justifyContent: 'center', minHeight: '100%', paddingBottom: spacing.xxxl },
-  back: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   headerRow: { flexDirection: 'row', alignItems: 'center' }, headerCopy: { flex: 1, gap: spacing.xs },
   title: { color: colors.navy, fontFamily: type.black, fontSize: 28 },
   subtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 14, lineHeight: 20 },
