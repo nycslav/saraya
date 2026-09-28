@@ -1,4 +1,4 @@
-import { scrollToMeasuredSection } from '../screens/DiscoverScreen';
+import { getCarouselCardWidth, scrollToMeasuredSection } from '../screens/DiscoverScreen';
 
 describe('DiscoverScreen region scrolling', () => {
   it.each([
@@ -21,5 +21,16 @@ describe('DiscoverScreen region scrolling', () => {
     scrollToMeasuredSection({ scrollTo }, 8, false);
 
     expect(scrollTo).toHaveBeenCalledWith({ y: 0, animated: true });
+  });
+});
+
+describe('DiscoverScreen destination carousel sizing', () => {
+  it.each([
+    [320, 248],
+    [375, 287],
+    [430, 342],
+    [768, 360],
+  ])('uses an adaptive card width for a %spx viewport', (viewportWidth, expectedWidth) => {
+    expect(getCarouselCardWidth(viewportWidth)).toBe(expectedWidth);
   });
 });
