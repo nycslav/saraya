@@ -18,6 +18,7 @@ export const MapPinned = Icon;
 export const RefreshCw = Icon;
 export const Rows3 = Icon;
 export const Search = Icon;
+export const ShieldCheck = Icon;
 export const Sparkles = Icon;
 export const Star = Icon;
 export const UserRound = Icon;
