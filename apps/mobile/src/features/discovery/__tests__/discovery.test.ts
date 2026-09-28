@@ -64,6 +64,7 @@ describe('destination API gateway', () => {
     } as Response);
 
     await expect(new ApiDestinationGateway().getById('batanes')).resolves.toEqual(detail);
+    expect(detail.thumbnailImageUrl).toContain('/destination-images/batanes.webp');
     expect(globalThis.fetch).toHaveBeenCalledWith(
       'https://api.saraya.test/destinations/batanes',
       expect.any(Object),

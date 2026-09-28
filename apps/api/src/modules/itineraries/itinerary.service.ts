@@ -24,6 +24,7 @@ import {
   createItineraryRepository,
   type ItineraryRepository,
 } from './itinerary.repository';
+import { SubscriptionService } from '../subscriptions/subscription.service';
 
 export class ItineraryDestinationNotFoundError extends Error {}
 export class InvalidGeneratedItineraryError extends Error {}
@@ -34,7 +35,16 @@ export class ItineraryService {
     private readonly generator: ItineraryGenerator = createItineraryGenerator(),
     private readonly itineraries: ItineraryRepository = createItineraryRepository(),
     private readonly places: PlacesProvider = createPlacesProvider(),
+    private readonly subscriptions: SubscriptionService = new SubscriptionService(),
   ) {}
+
+  generateForUser(userId: string, rawPreferences: unknown, isCancelled?: () => boolean) {
+    return this.subscriptions.withGenerationReservation(
+      userId,
+      () => this.generate(rawPreferences),
+      isCancelled,
+    );
+  }
 
   async generate(rawPreferences: unknown): Promise<GeneratedItinerary> {
     const preferences = tripPreferencesSchema.parse(rawPreferences);

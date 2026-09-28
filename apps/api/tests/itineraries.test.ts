@@ -1,6 +1,25 @@
 import request from 'supertest';
+import express, { type ErrorRequestHandler, type RequestHandler } from 'express';
+import { ZodError } from 'zod';
 
 import { app } from '../src/app';
+import { createItineraryRouter } from '../src/modules/itineraries/itinerary.route';
+
+const authenticate: RequestHandler = (_request, response, next) => {
+  response.locals.authenticatedUserId = 'itinerary-test-user';
+  next();
+};
+const authenticatedApp = express();
+authenticatedApp.use(express.json());
+authenticatedApp.use('/itineraries', createItineraryRouter(authenticate));
+const validationErrors: ErrorRequestHandler = (error, _request, response, _next) => {
+  if (error instanceof ZodError) {
+    response.status(400).json({ error: { code: 'VALIDATION_ERROR' } });
+    return;
+  }
+  response.status(500).json({ error: { code: 'INTERNAL_ERROR' } });
+};
+authenticatedApp.use(validationErrors);
 
 const preferences = {
   destinationId: 'siargao',
@@ -14,7 +33,7 @@ const preferences = {
 
 describe('itinerary API', () => {
   it('generates a validated itinerary for the requested destination and duration', async () => {
-    const response = await request(app).post('/itineraries/generate').send(preferences);
+    const response = await request(authenticatedApp).post('/itineraries/generate').send(preferences);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual(
@@ -31,9 +50,9 @@ describe('itinerary API', () => {
   });
 
   it('saves and retrieves a generated itinerary', async () => {
-    const generated = await request(app).post('/itineraries/generate').send(preferences);
-    const saved = await request(app).post('/itineraries').send(generated.body);
-    const retrieved = await request(app).get(`/itineraries/${generated.body.id}`);
+    const generated = await request(authenticatedApp).post('/itineraries/generate').send(preferences);
+    const saved = await request(authenticatedApp).post('/itineraries').send(generated.body);
+    const retrieved = await request(authenticatedApp).get(`/itineraries/${generated.body.id}`);
 
     expect(saved.status).toBe(201);
     expect(retrieved.status).toBe(200);
@@ -41,7 +60,7 @@ describe('itinerary API', () => {
   });
 
   it('rejects an unavailable destination', async () => {
-    const response = await request(app)
+    const response = await request(authenticatedApp)
       .post('/itineraries/generate')
       .send({ ...preferences, destinationId: 'not-real' });
 
@@ -50,7 +69,7 @@ describe('itinerary API', () => {
   });
 
   it('rejects invalid trip preferences before generation', async () => {
-    const response = await request(app)
+    const response = await request(authenticatedApp)
       .post('/itineraries/generate')
       .send({ ...preferences, durationDays: 31, interests: [] });
 
@@ -59,8 +78,8 @@ describe('itinerary API', () => {
   });
 
   it('rejects an itinerary whose saved days do not match its preferences', async () => {
-    const generated = await request(app).post('/itineraries/generate').send(preferences);
-    const response = await request(app)
+    const generated = await request(authenticatedApp).post('/itineraries/generate').send(preferences);
+    const response = await request(authenticatedApp)
       .post('/itineraries')
       .send({ ...generated.body, days: generated.body.days.slice(0, 2) });
 
@@ -69,9 +88,16 @@ describe('itinerary API', () => {
   });
 
   it('returns a stable response for an unknown saved itinerary', async () => {
-    const response = await request(app).get('/itineraries/not-real');
+    const response = await request(authenticatedApp).get('/itineraries/not-real');
 
     expect(response.status).toBe(404);
     expect(response.body.error.code).toBe('ITINERARY_NOT_FOUND');
+  });
+
+  it('fails closed when authenticated identity is unavailable', async () => {
+    const response = await request(app).post('/itineraries/generate').send(preferences);
+
+    expect(response.status).toBe(401);
+    expect(response.body.error.code).toBe('AUTHENTICATION_REQUIRED');
   });
 });

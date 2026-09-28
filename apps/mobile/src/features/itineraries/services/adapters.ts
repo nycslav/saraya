@@ -7,6 +7,7 @@ import {
 } from '@saraya/contracts';
 
 import { getApiBaseUrl } from '@/core/config';
+import { sessionStore } from '@/features/auth/sessionStore';
 
 import type { ItineraryGateway, PendingItineraryStore } from '../gateways';
 
@@ -14,7 +15,10 @@ const PENDING_KEY = '@saraya/pending-itinerary';
 
 export class ApiItineraryGateway implements ItineraryGateway {
   private get client() {
-    return createApiClient(getApiBaseUrl());
+    return createApiClient(
+      getApiBaseUrl(),
+      async () => (await sessionStore.read())?.accessToken ?? null,
+    );
   }
 
   generate(preferences: TripPreferences, signal?: AbortSignal) {

@@ -18,5 +18,11 @@ export {
   RevenueCatPremiumGateway,
   premiumGateway,
 } from './gateways/revenuecat-subscription.gateway';
-export { generationQuotaGateway, LocalGenerationQuotaGateway } from './services/local-generation-quota';
-export { initializeRevenueCat } from './services/revenuecat';
+export { ApiGenerationQuotaGateway } from './gateways/api-generation-quota.gateway';
+export { LocalGenerationQuotaGateway } from './services/local-generation-quota';
+export { generationQuotaGateway } from './services/generation-quota';
+export {
+  identifyRevenueCatUser,
+  initializeRevenueCat,
+  resetRevenueCatUser,
+} from './services/revenuecat';

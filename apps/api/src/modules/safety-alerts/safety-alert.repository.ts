@@ -34,7 +34,7 @@ function pointInRing(point: Coordinates, ring: [number, number][]) {
   return inside;
 }
 
-function affectsCoordinates(alert: SafetyAlert, coordinates: Coordinates) {
+export function affectsCoordinates(alert: SafetyAlert, coordinates: Coordinates) {
   return alert.affectedArea?.coordinates.some((polygon) =>
     polygon[0] ? pointInRing(coordinates, polygon[0]) : false,
   ) ?? false;

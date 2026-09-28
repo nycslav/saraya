@@ -1,7 +1,8 @@
 # Push notification development and manual testing
 
 Saraya uses Expo Push Service through a provider-neutral API boundary. The code supports safety-alert
-and festival-reminder payloads only; scheduling and weather polling are intentionally separate work.
+and festival-reminder payloads only; automatic production scheduling and weather polling remain
+separate work.
 
 ## External setup
 
@@ -9,7 +10,8 @@ and festival-reminder payloads only; scheduling and weather polling are intentio
 2. Configure the FCM V1 service-account credential for the existing EAS project by running
    `npm run credentials:android --workspace=@saraya/mobile`. Do not add the JSON file to Git.
 3. Build a new native client with `npm run android:build:development` and install its APK on a
-   physical Android device. Adding `expo-notifications` means restarting Metro alone is insufficient.
+   physical Android device. Both `expo-notifications` and `expo-calendar` are native modules, so
+   restarting Metro alone is insufficient after this dependency change.
 4. Apply migrations with `npm run db:migrate` and run the API with `npm run dev:api`.
 5. Set the mobile API URL to an address the phone can reach, then run Metro with
    `npm run dev:mobile`.
@@ -33,3 +35,8 @@ and festival-reminder payloads only; scheduling and weather polling are intentio
 
 Real delivery is not proven until this physical-device flow succeeds. An accepted Expo ticket is not
 guaranteed delivery; push-receipt polling remains deferred to a background job.
+
+Festival reminder rows can be created only after Member 1's authentication middleware populates
+`res.locals.authenticatedUserId`. The API contains atomic due claiming and notification dispatch,
+but no production scheduler invokes it yet. Manual or automated production execution must wait for
+the agreed job infrastructure rather than exposing an unauthenticated dispatch route.

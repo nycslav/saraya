@@ -9,7 +9,7 @@ import { colors, radius, shadows, spacing, type } from '@/ui/theme';
 
 import { PurchaseCancelledError, type PremiumProduct, type PremiumProductKind } from '../gateways/subscription.gateway';
 import { premiumGateway } from '../gateways/revenuecat-subscription.gateway';
-import { generationQuotaGateway } from '../services/local-generation-quota';
+import { generationQuotaGateway } from '../services/generation-quota';
 
 type PaywallState = 'loading' | 'ready' | 'purchasing' | 'restoring' | 'success' | 'error';
 

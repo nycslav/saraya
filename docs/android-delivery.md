@@ -86,6 +86,11 @@ config plugin. Metro updates JavaScript only; it cannot add modules such as `Exp
 that follow one of these native-module errors are cascading import failures, not missing route
 exports.
 
+Festival calendar integration adds `expo-calendar` and its config plugin. Existing installed Saraya
+development APKs do not contain that native module; create and reinstall a new development build
+before testing **Add to calendar**. Do not request calendar permission during startup—the permission
+prompt should appear only after that explicit action.
+
 Before sharing a preview APK, exercise lifetime and consumable purchase success, cancellation,
 failure, lifetime restore, application restart, quota exhaustion, UTC month rollover, and duplicate
 top-up handling. Confirm lifetime entitlement state and both product transactions in RevenueCat.

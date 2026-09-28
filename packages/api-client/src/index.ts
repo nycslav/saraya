@@ -6,9 +6,15 @@ import {
   createBucketListItemSchema,
   createCheckInResultSchema,
   createCheckInSchema,
+  createFestivalReminderSchema,
   destinationDetailSchema,
+  destinationConditionsSchema,
+  destinationSafetySubscriptionSchema,
   destinationSummarySchema,
   festivalDetailWithCultureSchema,
+  festivalReminderListSchema,
+  festivalReminderSchema,
+  festivalReminderStatusResponseSchema,
   festivalQuerySchema,
   festivalSummarySchema,
   generatedItinerarySchema,
@@ -19,6 +25,7 @@ import {
   journeyStatisticsSchema,
   photoUploadResultSchema,
   notificationPreferencesSchema,
+  subscriptionStateSchema,
   safetyAlertListResponseSchema,
   safetyAlertQuerySchema,
   safetyAlertSchema,
@@ -30,6 +37,7 @@ import {
   userProfileSchema,
   type CreateBucketListItemInput,
   type CreateCheckInInput,
+  type CreateFestivalReminder,
   type GoogleLoginRequest,
   type DiscoveryQuery,
   type GeneratedItinerary,
@@ -186,6 +194,29 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
           await request(`/destinations/${encodeURIComponent(id)}`),
         );
       },
+      async getConditions(id: string) {
+        return destinationConditionsSchema.parse(
+          await request(`/destinations/${encodeURIComponent(id)}/conditions`),
+        );
+      },
+      async subscribeToSafetyAlerts(id: string) {
+        return destinationSafetySubscriptionSchema.parse(
+          await request(`/destinations/${encodeURIComponent(id)}/safety-subscription`, {
+            method: 'POST',
+          }),
+        );
+      },
+      async getSafetySubscription(id: string) {
+        return destinationSafetySubscriptionSchema.parse(
+          await request(`/destinations/${encodeURIComponent(id)}/safety-subscription`),
+        );
+      },
+      async unsubscribeFromSafetyAlerts(id: string) {
+        await requestWithoutResponse(
+          `/destinations/${encodeURIComponent(id)}/safety-subscription`,
+          { method: 'DELETE' },
+        );
+      },
     },
     festivals: {
       async list(input: FestivalQuery = {}) {
@@ -200,6 +231,26 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
         return festivalDetailWithCultureSchema.parse(
           await request(`/festivals/${encodeURIComponent(id)}`),
         );
+      },
+      async createReminder(id: string, input: CreateFestivalReminder = { leadDays: 1 }) {
+        const reminder = createFestivalReminderSchema.parse(input);
+        return festivalReminderSchema.parse(
+          await request(`/festivals/${encodeURIComponent(id)}/reminder`, {
+            method: 'POST',
+            body: JSON.stringify(reminder),
+          }),
+        );
+      },
+      async getReminder(id: string) {
+        return festivalReminderStatusResponseSchema.parse(
+          await request(`/festivals/${encodeURIComponent(id)}/reminder`),
+        );
+      },
+      async cancelReminder(id: string) {
+        await request(`/festivals/${encodeURIComponent(id)}/reminder`, { method: 'DELETE' });
+      },
+      async listReminders() {
+        return festivalReminderListSchema.parse(await request('/festival-reminders'));
       },
     },
     notifications: {
@@ -229,6 +280,16 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
             method: 'PATCH',
             body: JSON.stringify(changes),
           }),
+        );
+      },
+    },
+    subscriptions: {
+      async getState() {
+        return subscriptionStateSchema.parse(await request('/subscriptions/me'));
+      },
+      async synchronize() {
+        return subscriptionStateSchema.parse(
+          await request('/subscriptions/sync', { method: 'POST' }),
         );
       },
     },

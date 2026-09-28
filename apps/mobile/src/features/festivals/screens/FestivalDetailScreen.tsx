@@ -1,6 +1,5 @@
 import type {
   CulturalGuideCategory,
-  CulturalGuideVerificationStatus,
   FestivalDetailWithCulture,
 } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -20,7 +19,9 @@ import { Button, Card, LoadingState, Screen, SectionTitle, StatusPanel } from '@
 import { colors, radius, spacing, type } from '@/ui/theme';
 
 import { FestivalArtwork } from '../components/FestivalArtwork';
+import { FestivalActions } from '../components/FestivalActions';
 import { festivalGateway, type FestivalGateway } from '../gateways';
+import { getCulturalGuideText, getCulturalStatusLabel } from '../services/cultural-guide-copy';
 import { formatFestivalDate, getFestivalSchedulePresentation } from '../services/festival-schedule';
 
 const monthNames = [
@@ -46,13 +47,6 @@ const culturalSections: { category: CulturalGuideCategory; title: string }[] = [
   { category: 'dining', title: 'Dining and kamayan etiquette' },
   { category: 'photography-social', title: 'Photography and social interaction' },
 ];
-
-const culturalStatusLabels: Record<CulturalGuideVerificationStatus, string> = {
-  verified: 'Verified',
-  'partially-verified': 'Partially verified',
-  'general-guidance': 'Traveler guidance',
-  'insufficient-evidence': 'Evidence still needed',
-};
 
 function BulletList({ items }: { items: string[] }) {
   return (
@@ -191,6 +185,8 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
 
       <Text style={styles.verified}>Information last verified {lastVerified}</Text>
 
+      <FestivalActions festival={festival} />
+
       <SectionTitle title="History and meaning" />
       <Text style={styles.body}>{festival.history}</Text>
       <Text style={styles.body}>{festival.culturalSignificance}</Text>
@@ -260,10 +256,10 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
                       styles.culturalStatusInsufficient,
                   ]}
                 >
-                  {culturalStatusLabels[guide.verificationStatus]}
+                  {getCulturalStatusLabel(guide.verificationStatus)}
                 </Text>
               </View>
-              <Text style={styles.body}>{guide.text}</Text>
+              <Text style={styles.body}>{getCulturalGuideText(category, guide)}</Text>
             </Card>
           );
         })}

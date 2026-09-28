@@ -7,6 +7,7 @@ import type {
 export interface GenerationQuotaGateway {
   getQuota(access: PremiumAccess): Promise<GenerationQuota>;
   consumeAfterSuccess(access: PremiumAccess): Promise<GenerationConsumption>;
+  refreshAfterServerGeneration?(): Promise<GenerationQuota>;
   creditTopUp(
     access: PremiumAccess,
     transactionId: string,

@@ -22,6 +22,15 @@
       "expo-secure-store",
       "expo-notifications",
       [
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow Saraya to add confirmed festival events to your calendar.",
+          "writeOnlyCalendarPermission": "Allow Saraya to add confirmed festival events to your calendar.",
+          "remindersPermission": false,
+          "writeOnlyAccess": true
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "Allow Saraya to use your location once to show nearby weather and safety alerts."

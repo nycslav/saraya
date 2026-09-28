@@ -141,9 +141,11 @@ export function ItineraryPlannerScreen() {
         setFieldError(null);
         setSaved(false);
         const result = await itineraryGateway.generate(nextPreferences, controller.signal);
-        const consumption = await generationQuotaGateway.consumeAfterSuccess(access);
+        const updatedQuota = generationQuotaGateway.refreshAfterServerGeneration
+          ? await generationQuotaGateway.refreshAfterServerGeneration()
+          : (await generationQuotaGateway.consumeAfterSuccess(access)).quota;
         setItinerary(result);
-        setQuota(consumption.quota);
+        setQuota(updatedQuota);
         setActiveDay(1);
         setStatus('ready');
         await pendingItineraryStore.clear();

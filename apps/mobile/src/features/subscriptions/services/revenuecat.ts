@@ -42,3 +42,16 @@ export async function ensureRevenueCatConfigured() {
   await initializeRevenueCat();
   if (!(await Purchases.isConfigured())) throw new PurchaseConfigurationError();
 }
+
+// Member 1's authenticated user provider should call this after sign-in and account restoration.
+// Using the server-issued user ID here is what lets RevenueCat webhooks map back to Saraya safely.
+export async function identifyRevenueCatUser(userId: string) {
+  if (!userId.trim()) throw new Error('An authenticated Saraya user ID is required.');
+  await ensureRevenueCatConfigured();
+  await Purchases.logIn(userId);
+}
+
+export async function resetRevenueCatUser() {
+  await ensureRevenueCatConfigured();
+  if (!(await Purchases.isAnonymous())) await Purchases.logOut();
+}

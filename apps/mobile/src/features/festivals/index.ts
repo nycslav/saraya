@@ -7,3 +7,15 @@ export {
   MockFestivalGateway,
   type FestivalGateway,
 } from './gateways';
+export {
+  ApiFestivalReminderGateway,
+  FixtureFestivalReminderGateway,
+  festivalReminderGateway,
+  type FestivalReminderGateway,
+} from './reminder-gateways';
+export {
+  ExpoFestivalCalendarGateway,
+  festivalCalendarGateway,
+  type FestivalCalendarGateway,
+  type FestivalCalendarResult,
+} from './services/festival-calendar';
