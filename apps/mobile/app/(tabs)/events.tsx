@@ -1,3 +1,3 @@
-import { ComingSoonScreen } from '@/ui/components';
+import { FestivalListScreen } from '@/features/festivals/screens/FestivalListScreen';
 
-export default function EventsRoute() { return <ComingSoonScreen owner="Member 3" title="Events & Festivals" />; }
+export default FestivalListScreen;
