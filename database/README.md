@@ -19,5 +19,7 @@ Every migration requires review by another member.
 
 The seed command is repeatable. Stable IDs are used as conflict keys, so rerunning it updates
 catalog and demo content without creating duplicates. Safety records are visibly synthetic and are
-not current government warnings.
+not current government warnings. Runtime production queries exclude those demo rows. Migration 015
+adds provider health state used by authoritative warning ingestion; the ingestion path, not seeds,
+creates live CAP warning rows.
 

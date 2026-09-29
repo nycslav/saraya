@@ -35,6 +35,9 @@ const conditions = {
     source: { provider: 'open-meteo', name: 'Open-Meteo', isDemo: false },
   },
   safetyAlerts: [],
+  warningProviderStatus: {
+    status: 'unavailable' as const, lastCheckedAt: null, lastSucceededAt: null,
+  },
   fetchedAt: '2026-09-28T00:00:00.000Z',
 };
 

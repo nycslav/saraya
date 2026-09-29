@@ -10,7 +10,6 @@ import {
 } from '../../src/modules/destination-safety/destination-safety.service';
 import { SafetyAlertService } from '../../src/modules/safety-alerts/safety-alert.service';
 import { InMemorySafetyAlertRepository } from '../../src/modules/safety-alerts/safety-alert.repository';
-import { MockWarningProvider } from '../../src/integrations/warnings';
 import { MockWeatherProvider } from '../../src/integrations/weather';
 
 const now = () => new Date('2026-09-28T00:00:00.000Z');
@@ -19,7 +18,7 @@ describe('DestinationSafetyService', () => {
   const createService = (notify = jest.fn()) => {
     const subscriptions = new InMemoryDestinationSafetySubscriptionRepository();
     const safety = new SafetyAlertService(
-      new InMemorySafetyAlertRepository(), new MockWeatherProvider(), new MockWarningProvider(), now,
+      new InMemorySafetyAlertRepository(), new MockWeatherProvider(), now,
     );
     return {
       subscriptions,
@@ -39,6 +38,7 @@ describe('DestinationSafetyService', () => {
       destination: expect.objectContaining({ destinationId: 'cebu-city' }),
       weather: expect.objectContaining({ providerStatus: 'fresh' }),
       safetyAlerts: expect.any(Array),
+      warningProviderStatus: expect.objectContaining({ status: 'unavailable' }),
     }));
   });
 

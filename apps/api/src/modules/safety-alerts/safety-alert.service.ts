@@ -9,7 +9,7 @@ import {
   type WeatherQuery,
 } from '@saraya/contracts';
 
-import { createWarningProvider, type WarningProvider } from '../../integrations/warnings';
+import { createWarningProvider } from '../../integrations/warnings';
 import { createWeatherProvider, type WeatherProvider } from '../../integrations/weather';
 import {
   createSafetyAlertRepository,
@@ -37,8 +37,8 @@ export class SafetyAlertService {
   constructor(
     private readonly repository: SafetyAlertRepository = createSafetyAlertRepository(),
     private readonly weatherProvider: WeatherProvider = createWeatherProvider(),
-    private readonly warningProvider: WarningProvider = createWarningProvider(),
     private readonly now: () => Date = () => new Date(),
+    private readonly warningProviderName: string = createWarningProvider().source.provider,
   ) {}
 
   private async resolveLocation(query: WeatherQuery | SafetyAlertQuery): Promise<ResolvedLocation> {
@@ -63,22 +63,9 @@ export class SafetyAlertService {
     const query = safetyAlertQuerySchema.parse(rawQuery);
     const location = await this.resolveLocation(query);
     const persisted = await this.repository.findActive(location, query, this.now());
-    let warnings: SafetyAlert[] = [];
-    try {
-      warnings = await this.warningProvider.getActiveWarnings(location);
-    } catch {
-      // Persisted alerts remain useful when a future live provider is unavailable.
-    }
-    const currentTime = this.now().getTime();
-    const filteredWarnings = warnings.filter((alert) =>
-      new Date(alert.startsAt).getTime() <= currentTime &&
-      (!alert.endsAt || new Date(alert.endsAt).getTime() > currentTime) &&
-      (!query.severity || alert.severity === query.severity) &&
-      (!query.alertType || alert.alertType === query.alertType),
-    );
     return {
       location,
-      alerts: sortAlerts([...new Map([...persisted, ...filteredWarnings].map((alert) => [alert.id, alert])).values()]),
+      alerts: sortAlerts(persisted),
     };
   }
 
@@ -115,14 +102,16 @@ export class SafetyAlertService {
 
   async destinationConditions(rawDestinationId: unknown) {
     const destinationId = typeof rawDestinationId === 'string' ? rawDestinationId : '';
-    const [alertResult, weather] = await Promise.all([
+    const [alertResult, weather, warningProviderStatus] = await Promise.all([
       this.list({ destinationId }),
       this.weather({ destinationId }),
+      this.repository.getWarningProviderStatus(this.warningProviderName),
     ]);
     return destinationConditionsSchema.parse({
       destination: alertResult.location,
       weather,
       safetyAlerts: alertResult.alerts,
+      warningProviderStatus,
       fetchedAt: this.now().toISOString(),
     });
   }

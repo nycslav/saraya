@@ -1,8 +1,10 @@
 # Push notification development and manual testing
 
 Saraya uses Expo Push Service through a provider-neutral API boundary. The code supports safety-alert
-and festival-reminder payloads only; automatic production scheduling and weather polling remain
-separate work.
+and festival-reminder payloads only. The warning-ingestion job reuses this service after an
+authoritative, non-demo CAP warning is atomically inserted or changed. PostGIS/region matching
+selects opted-in destination watchers, and existing notification preferences/device-token checks
+still decide delivery. Identical polling cycles do not send duplicate notifications.
 
 ## External setup
 

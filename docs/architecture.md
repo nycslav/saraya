@@ -12,7 +12,7 @@ Expo mobile -> typed API client -> Express modules -> PostgreSQL/PostGIS
 
 External providers are accessed through backend adapters. Provider secrets and privileged calls must never be bundled into the mobile application.
 
-Background jobs (festival reminders, weather polling) are thin entry points in `src/jobs/` that delegate to existing feature services. A provider-neutral `JobScheduler` abstraction decouples job registration from the coordination backend: `NoopJobScheduler` runs in-process; `RedisJobScheduler` delegates to a Redis worker when `SCHEDULER_BACKEND=redis` is configured. Redis is an optional infrastructure dependency — when unavailable, the noop scheduler keeps jobs running in-process.
+Background jobs (festival reminders, weather polling, and authoritative CAP warning ingestion) are thin entry points in `src/jobs/` that delegate to existing feature services. A provider-neutral `JobScheduler` abstraction decouples job registration from the coordination backend: `NoopJobScheduler` runs in-process; `RedisJobScheduler` delegates to a Redis worker when `SCHEDULER_BACKEND=redis` is configured. Redis is an optional infrastructure dependency — when unavailable, the noop scheduler keeps jobs running in-process.
 
 The required MVP is implemented before offline mode, AI itineraries, hidden gems, or WebSocket live alerts.
 

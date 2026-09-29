@@ -60,6 +60,11 @@ export const destinationConditionsSchema = z.object({
   }),
   weather: weatherResponseSchema,
   safetyAlerts: z.array(safetyAlertSchema),
+  warningProviderStatus: z.object({
+    status: z.enum(['fresh', 'unavailable']),
+    lastCheckedAt: z.iso.datetime({ offset: true }).nullable(),
+    lastSucceededAt: z.iso.datetime({ offset: true }).nullable(),
+  }).strict(),
   fetchedAt: z.iso.datetime({ offset: true }),
 }).strict();
 

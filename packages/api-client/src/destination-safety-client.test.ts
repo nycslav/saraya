@@ -33,6 +33,11 @@ const conditions = destinationConditionsSchema.parse({
     source: { provider: 'open-meteo', name: 'Open-Meteo', isDemo: false },
   },
   safetyAlerts: [],
+  warningProviderStatus: {
+    status: 'fresh',
+    lastCheckedAt: '2026-09-28T00:00:00.000Z',
+    lastSucceededAt: '2026-09-28T00:00:00.000Z',
+  },
   fetchedAt: '2026-09-28T00:00:00.000Z',
 });
 const subscription = destinationSafetySubscriptionSchema.parse({

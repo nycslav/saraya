@@ -23,6 +23,8 @@ secrets. They invoke existing feature services directly:
 
 - `send-reminders` — `FestivalReminderService.dispatchDueReminders`
 - `poll-weather` — warms weather cache via the `WeatherProvider` + `WeatherCache`
+- `poll-warnings` — validates and persists authoritative CAP warnings, then delegates eligible
+  destination-subscriber delivery to the existing notification service
 
 ## Cron conventions
 
@@ -30,5 +32,6 @@ secrets. They invoke existing feature services directly:
 |-----|----------|---------|
 | send-reminders | `*/5 * * * *` | Dispatch due festival reminders every 5 minutes |
 | poll-weather | `0 * * * *` | Warm weather cache hourly for major destinations |
+| poll-warnings | `*/15 * * * *` | Ingest authoritative safety warnings every 15 minutes |
 
 Use UTC for all schedules.

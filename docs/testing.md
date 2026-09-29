@@ -87,8 +87,10 @@ Gateway tests cover API success/failure and deterministic fixture mode. Open-Met
 mocked `fetch` responses and cover exact current variables and units, normalization, attribution,
 timestamps, WMO groups, malformed payloads, timeout, HTTP 4xx/5xx, network failure, unknown codes,
 fresh caching, stale fallback, and unavailable behavior without a cache. Provider-selection and
-mock-warning regressions are also tested. No test requires GPS, PAGASA, Open-Meteo, or internet
-access.
+CAP-provider tests use local XML responses and cover normalization, provenance, polygons, test-alert
+rejection, and malformed XML. Ingestion tests cover idempotent upsert, repeated polling, expiry only
+after a successful poll, provider failure without deletion, notification dispatch, and demo-provider
+isolation. No test requires GPS, PAGASA, Open-Meteo, or internet access.
 
 Run the same required checks locally before opening a pull request:
 
