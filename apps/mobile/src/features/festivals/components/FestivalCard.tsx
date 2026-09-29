@@ -1,7 +1,14 @@
 import type { FestivalSummary } from '@saraya/contracts';
 import { type Href, useRouter } from 'expo-router';
 import { ArrowRight, MapPin } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { Card } from '@/ui/components';
 import { colors, spacing, type } from '@/ui/theme';
@@ -27,9 +34,11 @@ const monthNames = [
 export function FestivalCard({
   festival,
   compact = false,
+  style,
 }: {
   festival: FestivalSummary;
   compact?: boolean;
+  style?: StyleProp<ViewStyle>;
 }) {
   const router = useRouter();
   const month = monthNames[festival.typicalMonth - 1] ?? '';
@@ -41,9 +50,9 @@ export function FestivalCard({
       accessibilityLabel={`${festival.name}, ${festival.city}, ${schedule.shortLabel}`}
       accessibilityRole="button"
       onPress={() => router.push(`/festivals/${festival.id}` as Href)}
-      style={({ pressed }) => pressed && styles.pressed}
+      style={({ pressed }) => [style, pressed && styles.pressed]}
     >
-      <Card style={compact ? styles.compactCard : undefined}>
+      <Card>
         <FestivalArtwork
           compact={compact}
           label={festival.name}
@@ -53,16 +62,25 @@ export function FestivalCard({
         <View style={[styles.body, compact && styles.compactBody]}>
           <View style={styles.location}>
             <MapPin color={colors.blue} size={15} />
-            <Text numberOfLines={1} style={styles.eyebrow}>
+            <Text numberOfLines={compact ? 2 : 1} style={styles.eyebrow}>
               {festival.city} · {festival.region}
             </Text>
           </View>
-          <Text style={[styles.title, compact && styles.compactTitle]}>{festival.name}</Text>
+          <Text
+            numberOfLines={compact ? 3 : undefined}
+            style={[styles.title, compact && styles.compactTitle]}
+          >
+            {festival.name}
+          </Text>
           {!compact ? <Text style={styles.summary}>{festival.summary}</Text> : null}
           <View style={styles.footer}>
             <View style={styles.dateCopy}>
-              <Text style={styles.date}>{schedule.shortLabel}</Text>
-              <Text style={styles.category}>{festival.category}</Text>
+              <Text numberOfLines={compact ? 2 : undefined} style={styles.date}>
+                {schedule.shortLabel}
+              </Text>
+              <Text numberOfLines={compact ? 2 : undefined} style={styles.category}>
+                {festival.category}
+              </Text>
             </View>
             <ArrowRight color={colors.coral} size={20} />
           </View>
@@ -74,9 +92,8 @@ export function FestivalCard({
 
 const styles = StyleSheet.create({
   pressed: { opacity: 0.78 },
-  compactCard: { flexDirection: 'row' },
   body: { padding: spacing.lg, gap: spacing.sm },
-  compactBody: { flex: 1, justifyContent: 'center' },
+  compactBody: { padding: spacing.md, gap: spacing.sm },
   location: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   eyebrow: {
     flex: 1,

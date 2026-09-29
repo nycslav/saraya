@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
   type LayoutChangeEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,7 +31,20 @@ export function groupDestinations(destinations: DestinationSummary[]) {
   ) as Record<IslandGroup, DestinationSummary[]>;
 }
 
+export function scrollToMeasuredSection(
+  scrollView: Pick<ScrollView, 'scrollTo'> | null,
+  y: number,
+  reducedMotion: boolean,
+) {
+  scrollView?.scrollTo({ y: Math.max(0, y - spacing.lg), animated: !reducedMotion });
+}
+
+export function getCarouselCardWidth(viewportWidth: number) {
+  return Math.min(440, Math.round(viewportWidth * 0.8));
+}
+
 export function DiscoverScreen() {
+  const { width: viewportWidth } = useWindowDimensions();
   const scrollViewRef = useRef<ScrollView>(null);
   const [sectionY, setSectionY] = useState<Partial<Record<IslandGroup, number>>>({});
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -68,6 +82,8 @@ export function DiscoverScreen() {
   }, []);
 
   const grouped = groupDestinations(destinations);
+  const carouselCardWidth = getCarouselCardWidth(viewportWidth);
+  const carouselSnapInterval = carouselCardWidth + spacing.md;
   const enabled = Object.fromEntries(
     islandGroups.map((group) => [group, sectionY[group] !== undefined]),
   ) as Record<IslandGroup, boolean>;
@@ -80,7 +96,7 @@ export function DiscoverScreen() {
   const scrollToRegion = (region: IslandGroup) => {
     const y = sectionY[region];
     if (y === undefined) return;
-    scrollViewRef.current?.scrollTo({ y: Math.max(0, y - spacing.lg), animated: !reducedMotion });
+    scrollToMeasuredSection(scrollViewRef.current, y, reducedMotion);
   };
 
   return (
@@ -128,9 +144,7 @@ export function DiscoverScreen() {
                 style={[styles.regionBar, styles[region.toLowerCase() as Lowercase<IslandGroup>]]}
               />
               <View style={styles.sectionCopy}>
-                <Text accessibilityRole="header" style={styles.sectionTitle}>
-                  {region} Destinations
-                </Text>
+                <Text accessibilityRole="header" style={styles.sectionTitle}>{region} Destinations</Text>
                 <Text style={styles.sectionSubtitle}>Highest rated first</Text>
               </View>
             </View>
@@ -147,11 +161,28 @@ export function DiscoverScreen() {
               />
             ) : null}
 
-            {!loading && !error
-              ? grouped[region].map((destination) => (
-                  <DestinationCard destination={destination} key={destination.id} />
-                ))
-              : null}
+            {!loading && !error && grouped[region].length > 0 ? (
+              <ScrollView
+                accessibilityLabel={`${region} destinations`}
+                contentContainerStyle={styles.carouselContent}
+                decelerationRate="fast"
+                directionalLockEnabled
+                disableIntervalMomentum
+                horizontal
+                nestedScrollEnabled
+                showsHorizontalScrollIndicator={false}
+                snapToAlignment="start"
+                snapToInterval={carouselSnapInterval}
+              >
+                {grouped[region].map((destination) => (
+                  <DestinationCard
+                    destination={destination}
+                    key={destination.id}
+                    style={{ width: carouselCardWidth }}
+                  />
+                ))}
+              </ScrollView>
+            ) : null}
           </View>
         ))}
       </ScrollView>
@@ -179,7 +210,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     textAlign: 'center',
   },
-  section: { gap: spacing.lg, paddingTop: spacing.lg },
+  section: { gap: spacing.md, paddingTop: spacing.lg },
   sectionHeading: { flexDirection: 'row', alignItems: 'stretch', gap: spacing.md },
   regionBar: { width: 6, borderRadius: 3 },
   luzon: { backgroundColor: '#00AEEF' },
@@ -188,4 +219,5 @@ const styles = StyleSheet.create({
   sectionCopy: { gap: 2 },
   sectionTitle: { color: colors.navy, fontFamily: type.black, fontSize: 22 },
   sectionSubtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 12 },
+  carouselContent: { gap: spacing.md, paddingVertical: spacing.xs, paddingRight: spacing.xl },
 });

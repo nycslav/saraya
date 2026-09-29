@@ -1,8 +1,15 @@
 import type { FestivalSummary } from '@saraya/contracts';
 import { type Href, useRouter } from 'expo-router';
-import { CalendarDays, Rows3, ShieldCheck } from 'lucide-react-native';
+import { ArrowRight, CalendarDays, Rows3, ShieldCheck } from 'lucide-react-native';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import {
   Button,
@@ -35,7 +42,16 @@ const months = [
   'Dec',
 ] as const;
 
+export function getUpcomingFestivalCardWidth(viewportWidth: number) {
+  return Math.min(440, Math.round(viewportWidth * 0.8));
+}
+
+export function getCalendarFestivalCardWidth(viewportWidth: number) {
+  return Math.min(440, Math.round(viewportWidth * 0.8));
+}
+
 export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: FestivalGateway }) {
+  const { width: viewportWidth } = useWindowDimensions();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState<string>();
@@ -100,6 +116,10 @@ export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: Fe
       });
     return [...groups.entries()];
   }, [festivals]);
+  const upcomingCardWidth = getUpcomingFestivalCardWidth(viewportWidth);
+  const calendarCardWidth = getCalendarFestivalCardWidth(viewportWidth);
+  const upcomingSnapInterval = upcomingCardWidth + spacing.md;
+  const calendarSnapInterval = calendarCardWidth + spacing.md;
 
   const clearFilters = () => {
     beginQuery();
@@ -201,6 +221,13 @@ export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: Fe
         title={viewMode === 'list' ? 'Upcoming festivals' : 'Festival calendar'}
       />
 
+      {viewMode === 'list' && !loading && !error && festivals.length > 1 ? (
+        <View style={styles.swipeHint}>
+          <Text style={styles.swipeHintText}>Swipe to explore</Text>
+          <ArrowRight color={colors.muted} size={16} strokeWidth={2} />
+        </View>
+      ) : null}
+
       {loading ? <LoadingState label="Gathering festival stories…" /> : null}
       {error ? (
         <StatusPanel
@@ -229,7 +256,29 @@ export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: Fe
       ) : null}
 
       {!loading && !error && viewMode === 'list'
-        ? festivals.map((festival) => <FestivalCard festival={festival} key={festival.id} />)
+        ? (
+          <ScrollView
+            accessibilityHint="Swipe horizontally to explore more festivals"
+            accessibilityLabel="Upcoming festivals"
+            contentContainerStyle={styles.carouselContent}
+            decelerationRate="fast"
+            directionalLockEnabled
+            disableIntervalMomentum
+            horizontal
+            nestedScrollEnabled
+            showsHorizontalScrollIndicator={false}
+            snapToAlignment="start"
+            snapToInterval={upcomingSnapInterval}
+          >
+            {festivals.map((festival) => (
+              <FestivalCard
+                festival={festival}
+                key={festival.id}
+                style={{ width: upcomingCardWidth }}
+              />
+            ))}
+          </ScrollView>
+          )
         : null}
 
       {!loading && !error && viewMode === 'calendar'
@@ -241,9 +290,27 @@ export function FestivalListScreen({ gateway = festivalGateway }: { gateway?: Fe
                   {items.length} {items.length === 1 ? 'festival' : 'festivals'}
                 </Text>
               </View>
-              {items.map((festival) => (
-                <FestivalCard compact festival={festival} key={festival.id} />
-              ))}
+              <ScrollView
+                accessibilityLabel={`${months[monthNumber - 1]} festivals`}
+                contentContainerStyle={styles.carouselContent}
+                decelerationRate="fast"
+                directionalLockEnabled
+                disableIntervalMomentum
+                horizontal
+                nestedScrollEnabled
+                showsHorizontalScrollIndicator={false}
+                snapToAlignment="start"
+                snapToInterval={calendarSnapInterval}
+              >
+                {items.map((festival) => (
+                  <FestivalCard
+                    compact
+                    festival={festival}
+                    key={festival.id}
+                    style={{ width: calendarCardWidth }}
+                  />
+                ))}
+              </ScrollView>
             </View>
           ))
         : null}
@@ -265,6 +332,15 @@ const styles = StyleSheet.create({
   filterSection: { gap: spacing.sm },
   filterLabel: { color: colors.muted, fontFamily: type.black, fontSize: 10, letterSpacing: 0.9 },
   horizontalChips: { gap: spacing.sm, paddingRight: spacing.xl },
+  carouselContent: { gap: spacing.md, paddingVertical: spacing.xs, paddingRight: spacing.xl },
+  swipeHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: spacing.xs,
+    marginTop: -spacing.sm,
+  },
+  swipeHintText: { color: colors.muted, fontFamily: type.medium, fontSize: 12 },
   modeToggle: {
     flexDirection: 'row',
     borderWidth: 1,

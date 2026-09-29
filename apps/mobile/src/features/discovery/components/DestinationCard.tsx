@@ -1,20 +1,26 @@
 import type { DestinationSummary } from '@saraya/contracts';
 import { useRouter } from 'expo-router';
 import { ArrowRight, MapPin, Star } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { Card, DestinationArtwork } from '@/ui/components';
 import { colors, spacing, type } from '@/ui/theme';
 
-export function DestinationCard({ destination }: { destination: DestinationSummary }) {
+type DestinationCardProps = {
+  destination: DestinationSummary;
+  style?: StyleProp<ViewStyle>;
+};
+
+export function DestinationCard({ destination, style }: DestinationCardProps) {
   const router = useRouter();
+
   return (
     <Pressable
       accessibilityHint="Opens destination details"
       accessibilityLabel={`${destination.name}, ${destination.province}, rated ${destination.rating}`}
       accessibilityRole="button"
       onPress={() => router.push(`/destinations/${destination.id}`)}
-      style={({ pressed }) => pressed && styles.pressed}
+      style={({ pressed }) => [style, pressed && styles.pressed]}
     >
       <Card>
         <DestinationArtwork
@@ -36,7 +42,9 @@ export function DestinationCard({ destination }: { destination: DestinationSumma
           <Text style={styles.title}>{destination.name}</Text>
           <Text style={styles.summary}>{destination.summary}</Text>
           <View style={styles.footer}>
-            <Text style={styles.region}>{destination.province} · {destination.category}</Text>
+            <Text style={styles.region}>
+              {destination.province} · {destination.category}
+            </Text>
             <ArrowRight color={colors.coral} size={20} />
           </View>
         </View>
@@ -55,5 +63,11 @@ const styles = StyleSheet.create({
   title: { color: colors.navy, fontFamily: type.black, fontSize: 22 },
   summary: { color: colors.muted, fontFamily: type.medium, fontSize: 15, lineHeight: 22 },
   footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  region: { color: colors.muted, fontFamily: type.bold, fontSize: 12 },
+  region: {
+    flex: 1,
+    marginRight: spacing.sm,
+    color: colors.muted,
+    fontFamily: type.bold,
+    fontSize: 12,
+  },
 });

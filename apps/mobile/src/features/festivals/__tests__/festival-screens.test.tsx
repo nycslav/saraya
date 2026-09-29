@@ -4,7 +4,11 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { mockFestivals } from '../data/mockFestivals';
 import { MockFestivalGateway } from '../gateways';
 import { FestivalDetailScreen } from '../screens/FestivalDetailScreen';
-import { FestivalListScreen } from '../screens/FestivalListScreen';
+import {
+  FestivalListScreen,
+  getCalendarFestivalCardWidth,
+  getUpcomingFestivalCardWidth,
+} from '../screens/FestivalListScreen';
 
 const mockBack = jest.fn();
 const mockPush = jest.fn();
@@ -39,6 +43,8 @@ describe('festival mobile screens', () => {
     expect(await screen.findByText('Peñafrancia Festival')).toBeTruthy();
     fireEvent.press(screen.getByRole('button', { name: /Kadayawan Festival, Davao City/i }));
     expect(mockPush).toHaveBeenCalledWith('/festivals/kadayawan');
+    expect(screen.getByLabelText('Upcoming festivals')).toBeTruthy();
+    expect(screen.getByText('Swipe to explore')).toBeTruthy();
   });
 
   it('switches to calendar mode and clears an empty search', async () => {
@@ -48,6 +54,7 @@ describe('festival mobile screens', () => {
     fireEvent.press(screen.getByRole('button', { name: 'calendar view' }));
     expect(await screen.findByText('Festival calendar')).toBeTruthy();
     expect(screen.getAllByText('Jan').length).toBeGreaterThan(1);
+    expect(screen.getByLabelText('Jan festivals')).toBeTruthy();
 
     await act(async () => {
       fireEvent.changeText(screen.getByLabelText('Search festivals'), 'no such celebration');
@@ -145,4 +152,32 @@ describe('festival mobile screens', () => {
     await render(<FestivalDetailScreen gateway={failingGateway} />);
     expect(await screen.findByText('We lost the parade route')).toBeTruthy();
   });
+});
+
+describe('festival carousel sizing', () => {
+  it.each([
+    [320, 256],
+    [375, 300],
+    [430, 344],
+    [768, 440],
+    [812, 440],
+  ])(
+    'uses an 80%% width with a wide-screen cap for upcoming cards at a %spx viewport',
+    (width, expected) => {
+      expect(getUpcomingFestivalCardWidth(width)).toBe(expected);
+    },
+  );
+
+  it.each([
+    [320, 256],
+    [375, 300],
+    [430, 344],
+    [768, 440],
+    [812, 440],
+  ])(
+    'uses an 80%% width with a wide-screen cap for calendar cards at a %spx viewport',
+    (width, expected) => {
+      expect(getCalendarFestivalCardWidth(width)).toBe(expected);
+    },
+  );
 });

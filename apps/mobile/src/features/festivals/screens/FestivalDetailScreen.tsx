@@ -4,7 +4,6 @@ import type {
 } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  ArrowLeft,
   BedDouble,
   CalendarDays,
   MapPin,
@@ -146,16 +145,7 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
   ).length;
 
   return (
-    <Screen contentContainerStyle={styles.screen}>
-      <Pressable
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
-        onPress={() => router.back()}
-        style={styles.back}
-      >
-        <ArrowLeft color={colors.navy} size={24} />
-      </Pressable>
-
+    <Screen backAction={{ onPress: () => router.back() }} contentContainerStyle={styles.screen}>
       <FestivalArtwork
         label={festival.name}
         month={(monthNames[festival.typicalMonth - 1] ?? '').toUpperCase()}
@@ -352,16 +342,6 @@ export function FestivalDetailScreen({ gateway = festivalGateway }: { gateway?: 
 
 const styles = StyleSheet.create({
   screen: { paddingTop: spacing.md },
-  back: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   titleBlock: { gap: spacing.sm },
   eyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   eyebrow: { color: colors.blue, fontFamily: type.black, fontSize: 12, textTransform: 'uppercase' },

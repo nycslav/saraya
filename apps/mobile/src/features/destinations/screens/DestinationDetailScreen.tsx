@@ -1,8 +1,8 @@
 import type { DestinationDetail } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, Heart, MapPin, NotebookPen, Sparkles, Star } from 'lucide-react-native';
+import { Heart, MapPin, NotebookPen, Sparkles, Star } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import {
   Button,
@@ -94,15 +94,7 @@ export function DestinationDetailScreen() {
   }
 
   return (
-    <Screen contentContainerStyle={styles.screen}>
-      <Pressable
-        accessibilityLabel="Go back"
-        accessibilityRole="button"
-        onPress={() => router.back()}
-        style={styles.back}
-      >
-        <ArrowLeft color={colors.navy} size={24} />
-      </Pressable>
+    <Screen backAction={{ onPress: () => router.back() }} contentContainerStyle={styles.screen}>
       <DestinationArtwork
         imageUrl={destination.thumbnailImageUrl}
         label={destination.name}
@@ -193,16 +185,6 @@ export function DestinationDetailScreen() {
 
 const styles = StyleSheet.create({
   screen: { paddingTop: spacing.md },
-  back: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   titleBlock: { gap: spacing.sm },
   eyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   eyebrow: { color: colors.blue, fontFamily: type.black, fontSize: 12, flex: 1 },
