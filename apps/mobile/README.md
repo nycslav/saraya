@@ -23,10 +23,11 @@ EXPO_PUBLIC_API_BASE_URL=http://<reachable-host>:3000
 EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<google-web-oauth-client-id>
 ```
 
-The current demo uses RevenueCat for purchase state and a provider-neutral local quota adapter.
-Free users can successfully generate 3 itineraries before seeing the paywall; lifetime Premium has
-10 included generations per UTC calendar month. Local quota state is not secure account-level
-enforcement and must be replaced by the authenticated API adapter when the backend is available.
+The current demo uses RevenueCat Test Store for purchase state and the authenticated Saraya API for
+server-authoritative entitlements and generation quotas. Free users can successfully generate 3
+itineraries before seeing the paywall; lifetime Premium has 10 included generations per UTC
+calendar month. The local quota adapter remains available only for fixture/demo isolation and is
+not an account-level security boundary.
 
 ## RevenueCat and Android delivery
 
@@ -34,15 +35,18 @@ RevenueCat is initialized once by the root layout and accessed through the Premi
 For local and EAS builds, configure `EXPO_PUBLIC_REVENUECAT_API_KEY` and
 `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID`. The legacy
 `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY` remains accepted for existing local environments, but new
-configuration should use the environment-neutral name. Production requires the RevenueCat Android
-public SDK key and rejects a Test Store key.
+configuration should use the environment-neutral name. Shipaton 2026 Next Gen demonstrations use a
+RevenueCat Test Store key; no Google Play product or paid Google Play developer account is required
+for that MVP flow. A future real-money Google Play release must use the RevenueCat Android public
+SDK key and matching Play products instead of Test Store configuration.
 
 The configured identifiers are `saraya_premium`, `saraya_premium_lifetime`,
 `saraya_generations_10`, and offering `default`. See `docs/integrations.md` for package mapping and
 quota behavior.
 
-Android delivery profiles, EAS environment setup, APK/AAB commands, signing, and the Google Play
-internal-testing checklist are documented in [`docs/android-delivery.md`](../../docs/android-delivery.md).
+Android development/preview profiles, EAS environment setup, demo APK commands, and the separate
+post-hackathon Google Play release checklist are documented in
+[`docs/android-delivery.md`](../../docs/android-delivery.md).
 
 Email and Google authentication use the real Saraya API endpoints. Google sign-in uses Android
 Credential Manager and requires an Android development build; it does not run in Expo Go. The

@@ -162,9 +162,10 @@ be overridden with `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID`,
 `EXPO_PUBLIC_REVENUECAT_OFFERING_ID`, `EXPO_PUBLIC_REVENUECAT_LIFETIME_PACKAGE_ID`, and
 `EXPO_PUBLIC_REVENUECAT_TOP_UP_PACKAGE_ID`.
 
-The intended generation-pack configuration is USD $5.00. Configure that price in each store; the
-app uses RevenueCat's localized `priceString` at runtime. Test Store keys are for development and
-preview only. Production must use the Android public SDK key and matching Google Play products.
+The intended generation-pack price is USD $5.00. For the Shipaton 2026 Next Gen MVP, configure the
+simulated product in RevenueCat Test Store; the app uses RevenueCat's `priceString` at runtime. A
+future real-money release must configure equivalent products in Google Play or App Store Connect
+and use the corresponding platform SDK key. That store work is not part of the Next Gen MVP.
 
 ### Quota behavior
 
@@ -201,12 +202,18 @@ authoritative restore/reconciliation path. It also imports previously purchased 
 transaction ID. Neither endpoint accepts a client user ID, premium flag, credit amount, or purchase
 transaction as authority.
 
-RevenueCat is still initialized anonymously on this branch. Member 1 must call
-`identifyRevenueCatUser(authenticatedUser.id)` after authentication and
-`resetRevenueCatUser()` during logout. Until the shared JWT middleware provides
-`res.locals.authenticatedUserId`, subscription state, sync, and itinerary generation fail closed
-with `401`; webhook events for unknown RevenueCat customer IDs remain recorded as
-`pending_association` and cannot grant access.
+The authentication lifecycle calls `identifyRevenueCatUser(authenticatedUser.id)` after login,
+registration, Google sign-in, and session restoration, and calls `resetRevenueCatUser()` during
+logout or failed restoration. Protected subscription, sync, and itinerary requests derive identity
+from `res.locals.authenticatedUserId`; they never accept client-supplied ownership. Webhook events
+for unknown RevenueCat customer IDs remain recorded as `pending_association` and cannot grant
+access.
+
+For Next Gen acceptance, validate the Test Store flow end to end: paywall presentation, lifetime
+purchase, consumable top-up, cancellation/failure, restore, logout/account switching, webhook
+authorization and HMAC verification, REST reconciliation, authoritative quota updates, and
+idempotent webhook/top-up handling. Google Play Billing validation belongs to a future real-money
+release and is not evidence required for the hackathon MVP.
 
 ## Gemini itinerary generation
 

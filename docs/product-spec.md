@@ -79,8 +79,9 @@ Access to all features including offline mode, AI itinerary generation, hidden g
 - Premium is a one-time lifetime purchase. Ownership does not expire or renew.
 - Lifetime Premium includes 10 successful itinerary generations per UTC calendar month and enables
   Premium-only features, including itinerary regeneration.
-- A consumable pack adds 10 generation credits without granting Premium. Its intended base store
-  configuration is USD $5, while the app displays the localized store price returned by RevenueCat.
+- A consumable pack adds 10 generation credits without granting Premium. Its intended Test Store
+  configuration is USD $5 for the Next Gen demonstration, while the app displays the price returned
+  by RevenueCat. Future real-money stores must configure their own localized prices.
 - Included credits are consumed before purchased credits. Purchased credits survive calendar-month
   resets. Failed or cancelled generation requests do not consume a credit.
 - Authentication and the API must enforce quota atomically per account. Mobile-local quota storage
@@ -178,7 +179,7 @@ verified annual schedules, location-based recommendations, and Saraya-authored s
 
 ## 5. PREMIUM AND STRETCH FEATURES
 
-The features in this section are post-MVP stretch goals unless a feature is explicitly listed in the MVP deliverables. RevenueCat sandbox entitlement and a basic paywall remain part of the required MVP, but the advanced premium capabilities they unlock must not delay the core product flows.
+The features in this section are post-MVP stretch goals unless a feature is explicitly listed in the MVP deliverables. RevenueCat Test Store entitlement and a basic paywall remain part of the required MVP, but the advanced premium capabilities they unlock must not delay the core product flows.
 
 ### 5.1 Complete Offline Mode
 
@@ -377,7 +378,8 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - Google Maps API (mapping and directions)
 - Geoapify Places API behind a backend adapter for nearby itinerary establishments
 - Google/Facebook OAuth (authentication)
-- RevenueCat SDK (lifetime and consumable in-app purchases through Google Play Billing and Apple App Store)
+- RevenueCat SDK with Test Store for the Next Gen lifetime and consumable purchase demonstration;
+  Google Play Billing and Apple App Store purchases are future production integrations
 - Firebase Cloud Messaging (push notifications)
 - Google Gemini API behind a backend adapter (AI itinerary generation - premium)
 
@@ -519,7 +521,11 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - RevenueCat SDK for a non-consumable lifetime Premium purchase and a consumable 10-generation pack.
 - The `saraya_premium` entitlement represents permanent Premium ownership; the consumable does not
   attach to that entitlement.
-- Google Play Console and Apple App Store Connect configuration for sandbox testing.
+- RevenueCat Test Store configuration for the Next Gen MVP: `saraya_premium_lifetime` as a
+  non-consumable, `saraya_generations_10` as a consumable, `saraya_premium` as the entitlement, and
+  both packages exposed through the `default` Offering.
+- Google Play Console or App Store Connect product configuration is required only for a future
+  real-money store release, not for the Next Gen MVP.
 - RevenueCat webhooks synchronize lifetime ownership and idempotently credit consumable purchases.
 - The authenticated itinerary endpoint atomically verifies and consumes one generation only after
   successful generation. Premium included quota resets at 00:00 UTC on the first day of each month.
@@ -571,7 +577,8 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 **Hours 24-36 (if extended hackathon):**
 
 - Continue the premium AI itinerary flow
-- Integrate RevenueCat SDK, configure Google Play/App Store sandbox environments, and implement lifetime Premium and generation top-up purchases.
+- Integrate RevenueCat SDK and Test Store, then validate lifetime Premium, generation top-up,
+  cancellation/failure, restore, account switching, webhook synchronization, and authoritative quota.
 - Performance optimization
 - Prepare demo and presentation materials
 
@@ -586,9 +593,10 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - ✓ Festival/events display with basic data
 - ✓ Achievement system with 5-10 sample achievements
 - ✓ Preference and region filtering working
-- ✓ RevenueCat SDK integrated with the lifetime Premium entitlement and generation-pack sandbox products
+- ✓ RevenueCat SDK integrated with the lifetime Premium entitlement and generation-pack Test Store products
 - ✓ Fully functional demo recording (2-3 minutes)
 - ✓ Documentation and architecture overview
+- ✓ Public open-source repository with reproducible setup instructions and a team-approved license
 
 ### Post-Hackathon Roadmap:
 

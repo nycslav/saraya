@@ -1,8 +1,12 @@
 # Android delivery
 
-Saraya has three EAS Build profiles. Development and preview produce installable APKs; production
-produces an Android App Bundle (AAB) for Google Play. Production submission is deliberately limited
-to the internal-testing track with draft release status.
+Saraya has three EAS Build profiles. Development and preview produce installable APKs suitable for
+native development and the Shipaton 2026 Next Gen demonstration. The Next Gen MVP is evaluated
+through a working demo video and public open-source repository; it does not require a paid Google
+Play developer account, Google Play Billing, an AAB submission, or store publication.
+
+The production profile remains available for a future real-money Google Play release. Its AAB,
+store products, licensed testing, and publication steps are explicitly post-hackathon work.
 
 ## One-time setup
 
@@ -30,16 +34,16 @@ from Expo or Google.
 Each build profile reads the EAS environment with the same name: `development`, `preview`, or
 `production`. Configure these client-visible variables in the Expo dashboard or with `eas env:set`:
 
-| Variable                                     | Development               | Preview                   | Production                          |
+| Variable                                     | Development               | Preview / Next Gen demo   | Future production                   |
 | -------------------------------------------- | ------------------------- | ------------------------- | ----------------------------------- |
 | `EXPO_PUBLIC_APP_ENV`                        | `development`             | `preview`                 | `production`                        |
-| `EXPO_PUBLIC_DATA_MODE`                      | `mock` or `api`           | `mock` or `api`           | `api`                               |
+| `EXPO_PUBLIC_DATA_MODE`                      | `mock` or `api`           | `api`                     | `api`                               |
 | `EXPO_PUBLIC_API_BASE_URL`                   | Reachable development API | Staging/demo API          | Production HTTPS API                |
 | `EXPO_PUBLIC_REVENUECAT_API_KEY`             | RevenueCat Test Store key | RevenueCat Test Store key | Android public SDK key (`goog_...`) |
 | `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID`      | `saraya_premium`          | `saraya_premium`          | `saraya_premium`                    |
 | `EXPO_PUBLIC_REVENUECAT_OFFERING_ID`         | `default`                 | `default`                 | `default`                           |
-| `EXPO_PUBLIC_REVENUECAT_LIFETIME_PACKAGE_ID` | Lifetime package ID       | Lifetime package ID       | Matching Play package ID            |
-| `EXPO_PUBLIC_REVENUECAT_TOP_UP_PACKAGE_ID`   | Top-up package ID         | Top-up package ID         | Matching Play package ID            |
+| `EXPO_PUBLIC_REVENUECAT_LIFETIME_PACKAGE_ID` | `saraya_premium_lifetime` | `saraya_premium_lifetime` | Matching Play package ID            |
+| `EXPO_PUBLIC_REVENUECAT_TOP_UP_PACKAGE_ID`   | `saraya_generations_10`   | `saraya_generations_10`   | Matching Play package ID            |
 
 Example for a non-secret, client-visible value:
 
@@ -49,8 +53,9 @@ npx.cmd eas-cli@24.7.0 env:list --environment preview
 ```
 
 `EXPO_PUBLIC_` values are embedded in the application. They are not suitable for webhook secrets,
-Google service-account keys, OpenAI keys, or other privileged credentials. A production build also
-refuses to initialize RevenueCat if its embedded key begins with `test_`.
+Google service-account keys, OpenAI keys, or other privileged credentials. The Next Gen demo uses
+the Test Store key in a development or preview build. A future production build refuses to
+initialize RevenueCat if its embedded key begins with `test_`.
 
 ## Validate and build
 
@@ -71,9 +76,6 @@ npm.cmd run android:build:development
 
 # Standalone APK for teammates and demonstration devices
 npm.cmd run android:build:preview
-
-# Signed AAB for Google Play
-npm.cmd run android:build:production
 ```
 
 Install the downloaded development or preview APK on a device. A development build connects to
@@ -91,11 +93,35 @@ development APKs do not contain that native module; create and reinstall a new d
 before testing **Add to calendar**. Do not request calendar permission during startup—the permission
 prompt should appear only after that explicit action.
 
-Before sharing a preview APK, exercise lifetime and consumable purchase success, cancellation,
-failure, lifetime restore, application restart, quota exhaustion, UTC month rollover, and duplicate
-top-up handling. Confirm lifetime entitlement state and both product transactions in RevenueCat.
+Before sharing the Next Gen preview APK, exercise Test Store lifetime and consumable purchase
+success, cancellation, failure, lifetime restore, application restart, account switching, quota
+exhaustion, UTC month rollover, webhook redelivery, and duplicate top-up handling. Confirm lifetime
+entitlement state, both Test Store transactions, webhook authorization/HMAC processing, server REST
+reconciliation, and the server-authoritative quota response.
 
-## Google Play internal testing
+## Next Gen MVP delivery checklist
+
+- Mobile lint, type-check, tests, Expo Doctor, and `npm.cmd run android:check` pass.
+- A development or preview APK runs the native authentication, RevenueCat, notification, calendar,
+  secure-storage, and image-picker modules needed by the demonstration.
+- RevenueCat Test Store contains `saraya_premium_lifetime` as a non-consumable,
+  `saraya_generations_10` as a consumable, and the `saraya_premium` entitlement.
+- The `default` Offering exposes the lifetime and top-up packages with the expected identifiers.
+- Paywall, purchase, cancellation/failure, restore, restart, and account-switch behavior pass.
+- Webhook authorization/HMAC, server REST synchronization, authoritative entitlements/quotas,
+  idempotent events, and duplicate top-up protection pass.
+- FCM credentials and physical-device notification behavior are tested separately as documented in
+  `notifications.md`.
+- The public repository contains setup instructions, architecture/testing documentation, and a
+  team-approved open-source `LICENSE`; the demo video shows the working purchase-to-itinerary flow.
+
+No Google Play product, Play Billing test, AAB upload, internal track, or store publication is a
+Member 3 Next Gen MVP requirement.
+
+## Future real-money Google Play release (post-hackathon)
+
+The following work is technically required only when Saraya prepares a real-money Google Play
+release. It is retained as a future production checklist, not as Next Gen completion work:
 
 1. Create the application in Google Play Console with package name `com.teamsaraya.saraya`.
 2. Complete the store listing, app-content declarations, privacy policy, data-safety form, content
@@ -117,10 +143,8 @@ Console, add testers, and explicitly roll it out there. Test billing with a lice
 and an installation obtained through Google Play; a directly installed APK does not validate the
 real Google Play purchase path.
 
-## Release checklist
+### Future production release checklist
 
-- Mobile lint, type-check, and tests pass.
-- `npm.cmd run android:check` passes.
 - Production uses an HTTPS API endpoint and the RevenueCat Android public SDK key.
 - The RevenueCat entitlement identifier and Google Play product mappings are exact.
 - The package name remains `com.teamsaraya.saraya`; changing it creates a different Play app.

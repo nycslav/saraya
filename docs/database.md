@@ -15,7 +15,7 @@ automated-test fallback.
 The second migration creates `itineraries`, `itinerary_days`, and `itinerary_stops`. Core itinerary
 metadata and validated preferences live on the parent record, while ordered days and typed stops
 are relational rows with cascading deletion. A future authentication migration can populate the
-nullable `user_id` without changing the current Shipathon API contract.
+nullable `user_id` without changing the current Shipaton API contract.
 
 The fourth migration records whether Gemini, OpenAI, or the deterministic fallback generated an
 itinerary. The fifth migration adds an optional normalized Geoapify place reference to each stop,
