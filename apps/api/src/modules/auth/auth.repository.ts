@@ -9,8 +9,18 @@ export type StoredRefreshToken = {
   expiresAt: Date;
 };
 
+export type NewGoogleUser = {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+  googleSubject: string;
+};
+
 export interface AuthRepository {
+  findUserByGoogleSubject(googleSubject: string): Promise<AuthUser | null>;
   findUserByEmail(email: string): Promise<AuthUser | null>;
+  createGoogleUser(user: NewGoogleUser): Promise<AuthUser | null>;
   linkGoogleSubject(userId: string, googleSubject: string, avatarUrl: string | null): Promise<AuthUser | null>;
   storeRefreshToken(token: StoredRefreshToken): Promise<void>;
   consumeRefreshToken(id: string, userId: string, tokenHash: string): Promise<AuthUser | null>;

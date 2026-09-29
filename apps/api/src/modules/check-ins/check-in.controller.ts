@@ -9,19 +9,18 @@ import {
 import { CheckInService } from './check-in.service';
 
 const service = new CheckInService();
-const demoUserId = 'demo-user';
 
 export async function listCheckIns(_request: Request, response: Response, next: NextFunction) {
-  try { response.json(await service.list(demoUserId)); } catch (error) { next(error); }
+  try { response.json(await service.list(response.locals.authenticatedUserId)); } catch (error) { next(error); }
 }
 
 export async function listTimeline(_request: Request, response: Response, next: NextFunction) {
-  try { response.json(await service.timeline(demoUserId)); } catch (error) { next(error); }
+  try { response.json(await service.timeline(response.locals.authenticatedUserId)); } catch (error) { next(error); }
 }
 
 export async function listMap(_request: Request, response: Response, next: NextFunction) {
   try {
-    const timeline = await service.timeline(demoUserId);
+    const timeline = await service.timeline(response.locals.authenticatedUserId);
     response.json(timeline.map(({ id, destinationId, destinationName, visitedAt, coordinates }) =>
       ({ id, destinationId, destinationName, visitedAt, coordinates }),
     ));
@@ -29,12 +28,14 @@ export async function listMap(_request: Request, response: Response, next: NextF
 }
 
 export async function getStatistics(_request: Request, response: Response, next: NextFunction) {
-  try { response.json(await service.statistics(demoUserId)); } catch (error) { next(error); }
+  try { response.json(await service.statistics(response.locals.authenticatedUserId)); } catch (error) { next(error); }
 }
 
 export async function createCheckIn(request: Request, response: Response, next: NextFunction) {
   try {
-    response.status(201).json(await service.create(demoUserId, request.body));
+    response.status(201).json(
+      await service.create(response.locals.authenticatedUserId, request.body),
+    );
   } catch (error) {
     if (error instanceof CheckInDestinationNotFoundError) return sendError(response, 404, 'DESTINATION_NOT_FOUND', error.message);
     if (error instanceof CheckInDuplicateError) return sendError(response, 409, 'CHECK_IN_DUPLICATE', error.message);
@@ -44,12 +45,19 @@ export async function createCheckIn(request: Request, response: Response, next: 
 }
 
 export async function updateCheckIn(request: Request, response: Response, next: NextFunction) {
-  try { response.json(await service.update(demoUserId, getId(request), request.body)); }
+  try {
+    response.json(
+      await service.update(response.locals.authenticatedUserId, getId(request), request.body),
+    );
+  }
   catch (error) { handleMutationError(error, response, next); }
 }
 
 export async function deleteCheckIn(request: Request, response: Response, next: NextFunction) {
-  try { await service.delete(demoUserId, getId(request)); response.status(204).send(); }
+  try {
+    await service.delete(response.locals.authenticatedUserId, getId(request));
+    response.status(204).send();
+  }
   catch (error) { handleMutationError(error, response, next); }
 }
 

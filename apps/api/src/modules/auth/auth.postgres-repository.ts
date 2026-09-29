@@ -1,7 +1,12 @@
 import type { QueryResultRow } from 'pg';
 
 import { getPool } from '../../platform/database/pool';
-import type { AuthRepository, AuthUser, StoredRefreshToken } from './auth.repository';
+import type {
+  AuthRepository,
+  AuthUser,
+  NewGoogleUser,
+  StoredRefreshToken,
+} from './auth.repository';
 
 interface UserRow extends QueryResultRow {
   id: string;
@@ -48,10 +53,31 @@ function toUser(row: UserRow): AuthUser {
 }
 
 export class PostgresAuthRepository implements AuthRepository {
+  async findUserByGoogleSubject(googleSubject: string) {
+    const result = await getPool().query<UserRow>(
+      `SELECT ${userColumns} FROM users WHERE google_subject = $1`,
+      [googleSubject],
+    );
+    return result.rows[0] ? toUser(result.rows[0]) : null;
+  }
+
   async findUserByEmail(email: string) {
     const result = await getPool().query<UserRow>(
       `SELECT ${userColumns} FROM users WHERE lower(email) = lower($1)`,
       [email],
+    );
+    return result.rows[0] ? toUser(result.rows[0]) : null;
+  }
+
+  async createGoogleUser(user: NewGoogleUser) {
+    const result = await getPool().query<UserRow>(
+      `INSERT INTO users (
+         id, email, display_name, avatar_url, google_subject, onboarding_complete
+       )
+       VALUES ($1, $2, $3, $4, $5, true)
+       ON CONFLICT DO NOTHING
+       RETURNING ${userColumns}`,
+      [user.id, user.email, user.displayName, user.avatarUrl, user.googleSubject],
     );
     return result.rows[0] ? toUser(result.rows[0]) : null;
   }

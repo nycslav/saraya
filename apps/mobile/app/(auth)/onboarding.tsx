@@ -1,3 +1,5 @@
-import { OnboardingScreen } from '@/features/auth/screens/OnboardingScreen';
+import { Redirect } from 'expo-router';
 
-export default OnboardingScreen;
+export default function OnboardingRoute() {
+  return <Redirect href="/(tabs)/discover" />;
+}
