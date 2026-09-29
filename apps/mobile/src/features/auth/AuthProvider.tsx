@@ -1,4 +1,4 @@
-import type { LoginRequest, RegisterRequest, UpdateProfileRequest, UserProfile } from '@saraya/contracts';
+import type { UserProfile } from '@saraya/contracts';
 import type { PropsWithChildren } from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
@@ -13,10 +13,7 @@ import { getGoogleIdToken, signOutFromGoogle } from './googleSignIn';
 type AuthContextValue = {
   user: UserProfile | null;
   restoring: boolean;
-  login(input: LoginRequest): Promise<UserProfile>;
-  register(input: RegisterRequest): Promise<UserProfile>;
   loginWithGoogle(): Promise<UserProfile | null>;
-  updateProfile(input: UpdateProfileRequest): Promise<UserProfile>;
   logout(): Promise<void>;
 };
 
@@ -58,20 +55,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => { active = false; };
   }, []);
 
-  const login = useCallback(async (input: LoginRequest) => {
-    const session = await authGateway.login(input);
-    await synchronizeRevenueCatUser(session.user.id);
-    setUser(session.user);
-    return session.user;
-  }, []);
-
-  const register = useCallback(async (input: RegisterRequest) => {
-    const session = await authGateway.register(input);
-    await synchronizeRevenueCatUser(session.user.id);
-    setUser(session.user);
-    return session.user;
-  }, []);
-
   const loginWithGoogle = useCallback(async () => {
     const idToken = await getGoogleIdToken();
     if (!idToken) return null;
@@ -79,12 +62,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await synchronizeRevenueCatUser(session.user.id);
     setUser(session.user);
     return session.user;
-  }, []);
-
-  const updateProfile = useCallback(async (input: UpdateProfileRequest) => {
-    const updated = await authGateway.updateProfile(input);
-    setUser(updated);
-    return updated;
   }, []);
 
   const logout = useCallback(async () => {
@@ -97,8 +74,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   const value = useMemo(() => ({
-    user, restoring, login, register, loginWithGoogle, updateProfile, logout,
-  }), [login, loginWithGoogle, logout, register, restoring, updateProfile, user]);
+    user, restoring, loginWithGoogle, logout,
+  }), [loginWithGoogle, logout, restoring, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
