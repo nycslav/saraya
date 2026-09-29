@@ -37,11 +37,20 @@ The required Render secrets are:
 DATABASE_URL
 SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
+GOOGLE_WEB_CLIENT_ID
+JWT_ACCESS_SECRET
+JWT_REFRESH_SECRET
 GEMINI_API_KEY
 GEOAPIFY_API_KEY
+REVENUECAT_WEBHOOK_AUTHORIZATION
+REVENUECAT_WEBHOOK_SIGNING_SECRET
+REVENUECAT_SECRET_API_KEY
 ```
 
-Gemini and Geoapify remain optional for basic operation: Saraya uses deterministic itinerary and place fallbacks when their keys are unavailable.
+Gemini and Geoapify remain optional for basic operation: Saraya uses deterministic itinerary and
+place fallbacks when their keys are unavailable. Authentication secrets are required for protected
+account flows. RevenueCat server values are required for the Next Gen Test Store webhook,
+reconciliation, entitlement, and quota demonstration; never place them in the mobile environment.
 
 ## 4. Configure each mobile checkout
 

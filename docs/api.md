@@ -34,7 +34,7 @@ names and response envelopes should be finalized jointly with the authentication
 
 ## Current destination API
 
-The Member 2 Shipathon backend currently exposes the first discovery vertical slice. Successful
+The Member 2 Shipaton backend currently exposes the first discovery vertical slice. Successful
 responses use the shared runtime schemas from `packages/contracts`; errors use an `error` object
 with stable `code` and `message` fields.
 

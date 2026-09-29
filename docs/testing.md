@@ -17,10 +17,15 @@ calendar reset, top-up persistence, included-before-top-up consumption, transact
 purchase cancellation/failure, preference preservation, and prevention of generation calls when no
 credit remains.
 
-The mobile quota implementation is demo-only. Full integration testing remains blocked on stable
-account identity and server quota persistence. When those land, API tests must prove concurrent
-requests cannot overspend quota, generation failures roll back consumption, webhook redelivery does
-not duplicate top-ups, and the same account observes one balance across devices.
+API mode uses authenticated account identity and server-authoritative quota persistence. API tests
+prove concurrent requests cannot overspend quota, generation failures release reservations,
+webhook redelivery does not duplicate top-ups, and ownership remains isolated. The local mobile
+quota adapter is retained only for fixture tests and offline demonstrations.
+
+The Shipaton 2026 Next Gen manual acceptance run uses RevenueCat Test Store and must cover paywall
+presentation, lifetime purchase, consumable top-up, cancellation/failure, restore, application
+restart, account switching, webhook synchronization, and the resulting authoritative quota. It does
+not require Google Play Billing, a licensed Play tester, or a Play internal-testing release.
 
 ## Mobile continuous integration
 

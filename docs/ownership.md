@@ -54,7 +54,7 @@ The directories containing `.gitkeep` are intentional module boundaries for work
 saraya/
 ├── README.md
 ├── CONTRIBUTING.md
-├── LICENSE                         # Added after the team selects a license
+├── LICENSE                         # Team-approved open-source license required before submission
 ├── .editorconfig
 ├── .gitignore
 ├── .env.example
@@ -214,7 +214,7 @@ saraya/
 5. Database migrations must be reviewed by another member before merging.
 6. Shared files still have one primary owner to prevent conflicting edits.
 
-## 3. Current Shipathon Team Roles
+## 3. Current Shipaton Team Roles
 
 The following roles describe the work delivered by the three feature branches and focus the team on one complete demonstration without removing features from the long-term product plan.
 
@@ -222,17 +222,23 @@ The following roles describe the work delivered by the three feature branches an
 | ------------ | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | **Member 1** | Mobile Experience                | Navigation, visual design, destination discovery, destination details, the trip-preference form, and the itinerary-results screen |
 | **Member 2** | Backend and AI                   | API foundation, destination data, Gemini itinerary generation, itinerary storage, and backend tests                               |
-| **Member 3** | Events, RevenueCat, and Delivery | Festival discovery, paywall, purchases, premium access, Android builds, CI, documentation, testing, and demo preparation          |
+| **Member 3** | Events, RevenueCat, and Delivery | Festival discovery, RevenueCat Test Store purchases, premium access, Android demo builds, CI, documentation, testing, and demo preparation |
 
-All three members share responsibility for testing the complete Shipathon demonstration flow:
+All three members share responsibility for testing the complete Shipaton demonstration flow:
 
 `Destination discovery -> trip preferences -> RevenueCat paywall -> test purchase -> AI itinerary`
 
-These current Shipathon roles take priority when an assignment below overlaps with them. The detailed feature and file ownership in Sections 4 through 13 and Section 15 remains the long-term plan for building the complete application. The Git workflow in Section 14 applies during both the Shipathon and long-term development.
+For Shipaton 2026 Next Gen, delivery means a working recorded demo and a public open-source
+repository with a team-approved `LICENSE` and reproducible setup instructions. Member 3 owns the
+RevenueCat Test Store demonstration and the Android development/preview build needed to exercise
+native functionality. Google Play product creation, Play Billing, licensed-track testing, AAB
+submission, and store publication are future production work, not Next Gen MVP requirements.
+
+These current Shipaton roles take priority when an assignment below overlaps with them. The detailed feature and file ownership in Sections 4 through 13 and Section 15 remains the long-term plan for building the complete application. The Git workflow in Section 14 applies during both the Shipaton and long-term development.
 
 ### 3.1 Continued Product Ownership
 
-The original balanced feature assignment below remains the ownership plan for completing the full Saraya product after the focused Shipathon build.
+The original balanced feature assignment below remains the ownership plan for completing the full Saraya product after the focused Shipaton build.
 
 | Member       | Primary feature area                    | Main responsibilities                                                                                                                                             |
 | ------------ | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -246,7 +252,7 @@ The original balanced feature assignment below remains the ownership plan for co
 | -------------------- | ------------------------------- | ------------ | --------------------------------------------------------------------------------------- |
 | `README.md`          | Member 3                        | Member 1     | Project overview, installation, commands, environment setup, and demo instructions      |
 | `CONTRIBUTING.md`    | Member 3                        | Member 2     | Branching, commits, pull requests, reviews, and coding workflow                         |
-| `LICENSE`            | Member 3                        | Member 1     | Project license selected by the team; pending team decision                             |
+| `LICENSE`            | Member 3                        | Member 1     | Team-approved open-source license added before the public Next Gen submission            |
 | `.gitignore`         | Member 3                        | Member 2     | Ignore rules for Node.js, Expo, IDEs, builds, and environment files                     |
 | `.env.example`       | Member 3                        | Member 1     | Names of required environment variables without secret values                           |
 | `.editorconfig`      | Member 1                        | Member 2     | Cross-editor encoding, indentation, and line-ending rules                               |
@@ -589,14 +595,14 @@ Each member completes features in this order:
 
 - Each member performs the assigned independent tests.
 - Feature owners fix failures in their own modules.
-- Member 3 creates the release build.
+- Member 3 creates and validates the Android development or preview build used for the demo.
 - Member 1 coordinates the demonstration flow.
 - Member 2 consolidates testing evidence and results.
 - All members present the feature area they implemented.
 
 ## 13. Full Product MVP and Stretch-Goal Boundary
 
-This section describes the MVP for the complete Saraya product, not only the focused Shipathon demonstration. During the Shipathon, the current roles and shared demonstration flow in Section 3 take priority. All features below remain part of the continued product plan.
+This section describes the MVP for the complete Saraya product, not only the focused Shipaton demonstration. During the Shipaton, the current roles and shared demonstration flow in Section 3 take priority. All features below remain part of the continued product plan.
 
 ### Required MVP
 
@@ -609,7 +615,8 @@ This section describes the MVP for the complete Saraya product, not only the foc
 - Festival list and details — Member 3
 - Weather and location-based safety alerts — Member 3
 - Basic push-notification handling — Member 3
-- RevenueCat sandbox entitlement and paywall — Member 3
+- RevenueCat Test Store entitlement, paywall, purchase/restore flow, authenticated identity,
+  webhook synchronization, and server-authoritative quota — Member 3
 
 ### Stretch goals after MVP completion
 
