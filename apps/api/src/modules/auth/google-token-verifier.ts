@@ -6,6 +6,7 @@ import { AuthenticationError, invalidCredentials } from './auth.errors';
 export type VerifiedGoogleIdentity = {
   subject: string;
   email: string;
+  displayName: string | null;
   avatarUrl: string | null;
 };
 
@@ -30,6 +31,7 @@ export class GoogleOAuthTokenVerifier implements GoogleTokenVerifier {
       return {
         subject: payload.sub,
         email: payload.email,
+        displayName: payload.name?.trim() || null,
         avatarUrl: payload.picture ?? null,
       };
     } catch (error) {

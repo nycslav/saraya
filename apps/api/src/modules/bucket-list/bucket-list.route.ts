@@ -1,5 +1,7 @@
 import { Router } from 'express';
 
+import { requireAuthenticatedUser } from '../../platform/http/auth.middleware';
+
 import {
   createBucketItem,
   deleteBucketItem,
@@ -9,6 +11,7 @@ import {
 
 export const bucketListRouter = Router();
 
+bucketListRouter.use(requireAuthenticatedUser);
 bucketListRouter.get('/', listBucketItems);
 bucketListRouter.post('/', createBucketItem);
 bucketListRouter.patch('/:id', updateBucketItem);

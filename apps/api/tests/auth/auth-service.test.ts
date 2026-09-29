@@ -4,6 +4,7 @@ import { AuthenticationError, invalidCredentials } from '../../src/modules/auth/
 import type {
   AuthRepository,
   AuthUser,
+  NewGoogleUser,
   StoredRefreshToken,
 } from '../../src/modules/auth/auth.repository';
 import { AuthService } from '../../src/modules/auth/auth.service';
@@ -33,8 +34,26 @@ class InMemoryAuthRepository implements AuthRepository {
   user: AuthUser | null = { ...profile, googleSubject: null };
   readonly refreshTokens = new Map<string, StoredRefreshToken & { revoked: boolean }>();
 
+  async findUserByGoogleSubject(googleSubject: string) {
+    return this.user?.googleSubject === googleSubject ? this.user : null;
+  }
+
   async findUserByEmail(email: string) {
     return this.user?.email.toLowerCase() === email.toLowerCase() ? this.user : null;
+  }
+
+  async createGoogleUser(input: NewGoogleUser) {
+    if (this.user) return null;
+    this.user = {
+      ...input,
+      homeRegion: null,
+      travelStyle: null,
+      budget: null,
+      interests: [],
+      preferredRegions: [],
+      onboardingComplete: true,
+    };
+    return this.user;
   }
 
   async linkGoogleSubject(userId: string, googleSubject: string, avatarUrl: string | null) {
@@ -77,6 +96,7 @@ function createService(repository = new InMemoryAuthRepository(), identity?: Ver
   const verifier = new StubGoogleVerifier(identity ?? {
     subject: 'google-subject-1',
     email: profile.email,
+    displayName: 'Google Traveler',
     avatarUrl: 'https://example.com/avatar.png',
   });
   const tokens = new JwtAuthTokenService(accessSecret, refreshSecret);
@@ -93,12 +113,29 @@ describe('AuthService', () => {
       email: profile.email,
       onboardingComplete: true,
     }));
-    expect(repository.user?.googleSubject).toBe('google-subject-1');
+    expect((repository.user as AuthUser | null)?.googleSubject).toBe('google-subject-1');
     expect(repository.refreshTokens.size).toBe(1);
     await expect(tokens.verifyAccessToken(session.accessToken)).resolves.toBe(profile.id);
   });
 
-  it('rejects invalid Google proof and unknown Google accounts', async () => {
+  it('creates an onboarded Saraya account for a first-time verified Google user', async () => {
+    const repository = new InMemoryAuthRepository();
+    repository.user = null;
+
+    const first = await createService(repository).service.loginWithGoogle('valid');
+    const createdId = first.user.id;
+
+    expect(first.user).toEqual(expect.objectContaining({
+      email: profile.email,
+      displayName: 'Google Traveler',
+      avatarUrl: 'https://example.com/avatar.png',
+      onboardingComplete: true,
+    }));
+    const second = await createService(repository).service.loginWithGoogle('valid-again');
+    expect(second.user.id).toBe(createdId);
+  });
+
+  it('rejects invalid Google proof', async () => {
     const invalid = createService(
       new InMemoryAuthRepository(),
       invalidCredentials('The Google sign-in token is invalid or expired.'),
@@ -106,11 +143,13 @@ describe('AuthService', () => {
     await expect(invalid.service.loginWithGoogle('invalid')).rejects.toMatchObject({
       code: 'INVALID_AUTHENTICATION', status: 401,
     });
+  });
 
+  it('rejects an email already linked to a different Google account', async () => {
     const repository = new InMemoryAuthRepository();
-    repository.user = null;
+    repository.user = { ...profile, googleSubject: 'different-google-subject' };
     await expect(createService(repository).service.loginWithGoogle('valid')).rejects.toMatchObject({
-      code: 'ACCOUNT_NOT_FOUND', status: 403,
+      code: 'INVALID_AUTHENTICATION', status: 401,
     });
   });
 

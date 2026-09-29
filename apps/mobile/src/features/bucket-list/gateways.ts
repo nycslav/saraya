@@ -7,6 +7,9 @@ import {
 } from '@saraya/contracts';
 import { createApiClient } from '@saraya/api-client';
 
+import { getApiBaseUrl } from '@/core/config';
+import { sessionStore } from '@/features/auth/sessionStore';
+
 export interface BucketListGateway {
   list(): Promise<BucketListItem[]>;
   create(input: CreateBucketListItemInput): Promise<BucketListItem>;
@@ -72,9 +75,10 @@ export class MockBucketListGateway implements BucketListGateway {
   }
 }
 
-class ApiBucketListGateway implements BucketListGateway {
+export class ApiBucketListGateway implements BucketListGateway {
   private readonly client = createApiClient(
-    process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000',
+    getApiBaseUrl(),
+    async () => (await sessionStore.read())?.accessToken ?? null,
   );
 
   list() {

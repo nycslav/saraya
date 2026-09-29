@@ -12,6 +12,7 @@ describe('GoogleOAuthTokenVerifier', () => {
         sub: 'google-subject-1',
         email: 'traveler@example.com',
         email_verified: true,
+        name: 'Google Traveler',
         picture: 'https://example.com/avatar.png',
       }),
     } as LoginTicket);
@@ -26,6 +27,7 @@ describe('GoogleOAuthTokenVerifier', () => {
     expect(identity).toEqual({
       subject: 'google-subject-1',
       email: 'traveler@example.com',
+      displayName: 'Google Traveler',
       avatarUrl: 'https://example.com/avatar.png',
     });
   });

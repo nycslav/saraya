@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import type { AuthSession } from '@saraya/contracts';
 
@@ -29,25 +29,54 @@ export class AuthService {
 
   async loginWithGoogle(idToken: string): Promise<AuthSession> {
     const identity = await this.googleVerifier.verify(idToken);
-    const existing = await this.repository.findUserByEmail(identity.email);
-    if (!existing) {
-      throw new AuthenticationError(
-        'ACCOUNT_NOT_FOUND',
-        'This Google account is not registered with Saraya.',
-        403,
+    const email = identity.email.trim().toLowerCase();
+
+    const linked = await this.repository.findUserByGoogleSubject(identity.subject);
+    if (linked) {
+      const updated = await this.repository.linkGoogleSubject(
+        linked.id,
+        identity.subject,
+        identity.avatarUrl,
       );
-    }
-    if (existing.googleSubject && existing.googleSubject !== identity.subject) {
-      throw invalidCredentials('This Saraya account is linked to a different Google account.');
+      return this.createSession(updated ?? linked);
     }
 
-    const user = await this.repository.linkGoogleSubject(
-      existing.id,
+    const existing = await this.repository.findUserByEmail(email);
+    if (existing?.googleSubject && existing.googleSubject !== identity.subject) {
+      throw invalidCredentials('This Saraya account is linked to a different Google account.');
+    }
+    if (existing) return this.createSession(await this.linkExistingUser(existing, identity));
+
+    const created = await this.repository.createGoogleUser({
+      id: `user-${randomUUID()}`,
+      email,
+      displayName: identity.displayName ?? email.split('@')[0]!,
+      avatarUrl: identity.avatarUrl,
+      googleSubject: identity.subject,
+    });
+    if (created) return this.createSession(created);
+
+    // A concurrent first login may have inserted this identity first. Re-read the
+    // unique Google subject/email instead of creating a duplicate account.
+    const raced = await this.repository.findUserByGoogleSubject(identity.subject)
+      ?? await this.repository.findUserByEmail(email);
+    if (!raced || (raced.googleSubject && raced.googleSubject !== identity.subject)) {
+      throw invalidCredentials('This Saraya account is linked to a different Google account.');
+    }
+    return this.createSession(await this.linkExistingUser(raced, identity));
+  }
+
+  private async linkExistingUser(
+    user: AuthUser,
+    identity: Awaited<ReturnType<GoogleTokenVerifier['verify']>>,
+  ) {
+    const linked = await this.repository.linkGoogleSubject(
+      user.id,
       identity.subject,
       identity.avatarUrl,
     );
-    if (!user) throw invalidCredentials();
-    return this.createSession(user);
+    if (!linked) throw invalidCredentials();
+    return linked;
   }
 
   async refresh(refreshToken: string): Promise<AuthSession> {

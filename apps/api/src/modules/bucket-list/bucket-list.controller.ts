@@ -8,11 +8,10 @@ import {
 import { BucketListService } from './bucket-list.service';
 
 const bucketListService = new BucketListService();
-const demoUserId = 'demo-user';
 
 export async function listBucketItems(_request: Request, response: Response, next: NextFunction) {
   try {
-    response.json(await bucketListService.list(demoUserId));
+    response.json(await bucketListService.list(response.locals.authenticatedUserId));
   } catch (error) {
     next(error);
   }
@@ -20,7 +19,9 @@ export async function listBucketItems(_request: Request, response: Response, nex
 
 export async function createBucketItem(request: Request, response: Response, next: NextFunction) {
   try {
-    response.status(201).json(await bucketListService.create(demoUserId, request.body));
+    response.status(201).json(
+      await bucketListService.create(response.locals.authenticatedUserId, request.body),
+    );
   } catch (error) {
     if (error instanceof BucketListDestinationNotFoundError) {
       response.status(404).json({
@@ -41,7 +42,11 @@ export async function createBucketItem(request: Request, response: Response, nex
 export async function updateBucketItem(request: Request, response: Response, next: NextFunction) {
   try {
     response.json(
-      await bucketListService.update(demoUserId, getRequestId(request), request.body),
+      await bucketListService.update(
+        response.locals.authenticatedUserId,
+        getRequestId(request),
+        request.body,
+      ),
     );
   } catch (error) {
     handleNotFound(error, response, next);
@@ -50,7 +55,7 @@ export async function updateBucketItem(request: Request, response: Response, nex
 
 export async function deleteBucketItem(request: Request, response: Response, next: NextFunction) {
   try {
-    await bucketListService.delete(demoUserId, getRequestId(request));
+    await bucketListService.delete(response.locals.authenticatedUserId, getRequestId(request));
     response.status(204).send();
   } catch (error) {
     handleNotFound(error, response, next);

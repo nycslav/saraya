@@ -70,7 +70,7 @@ describe('authentication API', () => {
   it('rejects malformed requests and preserves authentication errors', async () => {
     const service = {
       loginWithGoogle: jest.fn().mockRejectedValue(
-        new AuthenticationError('ACCOUNT_NOT_FOUND', 'Not registered.', 403),
+        new AuthenticationError('INVALID_AUTHENTICATION', 'Invalid token.', 401),
       ),
       refresh: jest.fn(),
       logout: jest.fn(),
@@ -78,8 +78,8 @@ describe('authentication API', () => {
     const app = createTestApp(service);
 
     expect((await request(app).post('/auth/google').send({})).status).toBe(400);
-    const unknown = await request(app).post('/auth/google').send({ idToken: 'valid-proof' });
-    expect(unknown.status).toBe(403);
-    expect(unknown.body.error.code).toBe('ACCOUNT_NOT_FOUND');
+    const invalid = await request(app).post('/auth/google').send({ idToken: 'invalid-proof' });
+    expect(invalid.status).toBe(401);
+    expect(invalid.body.error.code).toBe('INVALID_AUTHENTICATION');
   });
 });
