@@ -6,6 +6,7 @@ import { ArrowLeft, Camera, Check, Image as ImageIcon } from 'lucide-react-nativ
 import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { useAuth } from '@/features/auth/AuthProvider';
 import { destinationGateway } from '@/features/discovery/gateways';
 import { Button, Chip, Screen, SearchField, StatusPanel } from '@/ui/components';
 import { colors, spacing, type } from '@/ui/theme';
@@ -21,6 +22,7 @@ const visitTags = ['Nature', 'Food', 'Heritage', 'Beach', 'Adventure', 'Culture'
 export function CreateCheckInScreen() {
   const params = useLocalSearchParams<{ destinationId?: string }>();
   const router = useRouter();
+  const { restoring, user } = useAuth();
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
   const [destinationId, setDestinationId] = useState(params.destinationId ?? '');
   const [search, setSearch] = useState('');
@@ -57,6 +59,10 @@ export function CreateCheckInScreen() {
   };
 
   const submit = async () => {
+    if (!user) {
+      router.push('/(auth)/login');
+      return;
+    }
     if (!destinationId) { setError('Choose the destination you visited.'); return; }
     const parsedDate = date === formatLocalDate(new Date())
       ? new Date()
@@ -132,7 +138,7 @@ export function CreateCheckInScreen() {
       <View style={styles.group}><Text style={styles.label}>Tags</Text><View style={styles.chips}>{visitTags.map((tag) => <Chip key={tag} label={tag} onPress={() => setTags((current) => current.includes(tag) ? current.filter((item) => item !== tag) : [...current, tag])} selected={tags.includes(tag)} />)}</View></View>
       <View style={styles.group}><Text style={styles.label}>Travel companions</Text><TextInput onChangeText={setCompanions} placeholder="Names separated by commas" placeholderTextColor={colors.muted} style={styles.input} value={companions} /></View>
       {error ? <StatusPanel message={error} title="Unable to save" tone="error" /> : null}
-      <Button icon={Check} label="Save to My Journey" loading={saving} onPress={() => void submit()} />
+      <Button disabled={restoring} icon={Check} label="Save to My Journey" loading={saving} onPress={() => void submit()} />
     </Screen>
   );
 }

@@ -4,6 +4,7 @@ import { Award, MapPin, Plus, Sparkles } from 'lucide-react-native';
 import { useCallback, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useAuth } from '@/features/auth/AuthProvider';
 import { Button, LoadingState, Screen, SectionTitle, StatusPanel } from '@/ui/components';
 import { colors, spacing, type } from '@/ui/theme';
 import { journeyGateway, resolvePhotoUrl } from '../gateways';
@@ -12,6 +13,7 @@ const emptyStats: JourneyStatistics = { totalVisits: 0, uniqueDestinations: 0, i
 
 export function JourneyScreen() {
   const router = useRouter();
+  const { restoring, user } = useAuth();
   const { unlocked } = useLocalSearchParams<{ unlocked?: string }>();
   const [entries, setEntries] = useState<JourneyEntry[]>([]);
   const [statistics, setStatistics] = useState(emptyStats);
@@ -28,7 +30,18 @@ export function JourneyScreen() {
     finally { setLoading(false); }
   }, []);
 
-  useFocusEffect(useCallback(() => { void load(); }, [load]));
+  useFocusEffect(useCallback(() => {
+    if (restoring) return;
+    if (!user) {
+      setEntries([]);
+      setStatistics(emptyStats);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    void load();
+  }, [load, restoring, user]));
 
   return (
     <Screen contentContainerStyle={styles.screen}>
@@ -36,9 +49,15 @@ export function JourneyScreen() {
         <View style={styles.headerCopy}><Text style={styles.title}>My Journey</Text><Text style={styles.subtitle}>Your Cebu story so far.</Text></View>
         <Pressable accessibilityLabel="Record a visit" onPress={() => router.push('/check-ins/create' as never)} style={styles.addButton}><Plus color={colors.white} size={25} /></Pressable>
       </View>
+      {!restoring && !user ? (
+        <StatusPanel
+          message="You can prepare a travel memory now. Sign in only when you press Save to My Journey."
+          title="Your Journey starts when you save"
+        />
+      ) : null}
       {unlocked ? <StatusPanel message={unlocked} title="Badge unlocked" tone="success" /> : null}
       {error ? <StatusPanel action={<Button label="Try again" onPress={() => void load()} variant="secondary" />} message={error} title="Journey unavailable" tone="error" /> : null}
-      {loading ? <LoadingState label="Loading your Journey..." /> : (
+      {restoring || loading ? <LoadingState label="Loading your Journey..." /> : (
         <>
           <View style={styles.mapPanel}>
             <Text style={styles.mapEyebrow}>YOUR TRAVEL MAP</Text>
