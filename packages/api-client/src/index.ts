@@ -34,7 +34,6 @@ import {
   updateNotificationPreferencesSchema,
   weatherQuerySchema,
   weatherResponseSchema,
-  userProfileSchema,
   type CreateBucketListItemInput,
   type CreateCheckInInput,
   type CreateFestivalReminder,
@@ -44,10 +43,7 @@ import {
   type FestivalQuery,
   type DeviceTokenRegistration,
   type DeviceTokenRemoval,
-  type LoginRequest,
-  type RegisterRequest,
   type TripPreferences,
-  type UpdateProfileRequest,
   type UpdateNotificationPreferences,
   type UpdateBucketListItemInput,
   type UpdateCheckInInput,
@@ -128,22 +124,6 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
 
   return {
     auth: {
-      async login(input: LoginRequest) {
-        return authSessionSchema.parse(
-          await request('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify(input),
-          }),
-        );
-      },
-      async register(input: RegisterRequest) {
-        return authSessionSchema.parse(
-          await request('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify(input),
-          }),
-        );
-      },
       async google(input: GoogleLoginRequest) {
         return authSessionSchema.parse(
           await request('/auth/google', {
@@ -165,19 +145,6 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
           method: 'POST',
           body: JSON.stringify({ refreshToken }),
         });
-      },
-    },
-    users: {
-      async me() {
-        return userProfileSchema.parse(await request('/users/me'));
-      },
-      async updateMe(input: UpdateProfileRequest) {
-        return userProfileSchema.parse(
-          await request('/users/me', {
-            method: 'PATCH',
-            body: JSON.stringify(input),
-          }),
-        );
       },
     },
     destinations: {

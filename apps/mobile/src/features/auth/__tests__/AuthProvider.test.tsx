@@ -4,6 +4,7 @@ import { Pressable, Text } from 'react-native';
 
 import { AuthProvider, useAuth } from '../AuthProvider';
 import { authGateway } from '../gateway';
+import { getGoogleIdToken } from '../googleSignIn';
 import {
   identifyRevenueCatUser,
   resetRevenueCatUser,
@@ -12,10 +13,7 @@ import {
 jest.mock('../gateway', () => ({
   authGateway: {
     restore: jest.fn(),
-    login: jest.fn(),
-    register: jest.fn(),
     loginWithGoogle: jest.fn(),
-    updateProfile: jest.fn(),
     logout: jest.fn(),
   },
 }));
@@ -31,6 +29,7 @@ jest.mock('../../subscriptions/services/revenuecat', () => ({
 }));
 
 const gateway = authGateway as jest.Mocked<typeof authGateway>;
+const googleIdToken = getGoogleIdToken as jest.MockedFunction<typeof getGoogleIdToken>;
 const identify = identifyRevenueCatUser as jest.MockedFunction<typeof identifyRevenueCatUser>;
 const reset = resetRevenueCatUser as jest.MockedFunction<typeof resetRevenueCatUser>;
 
@@ -65,7 +64,7 @@ function Harness() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="log in"
-        onPress={() => void auth.login({ email: 'member@example.com', password: 'password' })}
+        onPress={() => void auth.loginWithGoogle()}
       />
       <Pressable
         accessibilityRole="button"
@@ -81,6 +80,7 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
     jest.clearAllMocks();
     gateway.restore.mockResolvedValue(null);
     gateway.logout.mockResolvedValue();
+    googleIdToken.mockResolvedValue('google-id-token');
     identify.mockResolvedValue();
     reset.mockResolvedValue();
   });
@@ -95,7 +95,7 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
   });
 
   it('switches RevenueCat identity whenever a different user signs in', async () => {
-    gateway.login
+    gateway.loginWithGoogle
       .mockResolvedValueOnce(session('user-one'))
       .mockResolvedValueOnce(session('user-two'));
 
@@ -111,7 +111,7 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
   });
 
   it('resets RevenueCat customer state on logout', async () => {
-    gateway.login.mockResolvedValue(session('user-one'));
+    gateway.loginWithGoogle.mockResolvedValue(session('user-one'));
 
     await render(<AuthProvider><Harness /></AuthProvider>);
     await waitFor(() => expect(screen.getByText('signed-out')).toBeTruthy());
@@ -124,5 +124,16 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
     await waitFor(() => expect(screen.getByText('signed-out')).toBeTruthy());
     expect(reset).toHaveBeenCalledTimes(1);
     expect(gateway.logout).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the user signed out when the Google chooser is cancelled', async () => {
+    googleIdToken.mockResolvedValue(null);
+
+    await render(<AuthProvider><Harness /></AuthProvider>);
+    await waitFor(() => expect(screen.getByText('signed-out')).toBeTruthy());
+    await act(async () => { fireEvent.press(screen.getByRole('button', { name: 'log in' })); });
+
+    expect(screen.getByText('signed-out')).toBeTruthy();
+    expect(gateway.loginWithGoogle).not.toHaveBeenCalled();
   });
 });

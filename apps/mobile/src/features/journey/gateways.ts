@@ -10,7 +10,9 @@ import { ApiClientError, createApiClient } from '@saraya/api-client';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 
+import { getApiBaseUrl } from '@/core/config';
 import { destinationGateway } from '@/features/discovery/gateways';
+import { sessionStore } from '@/features/auth/sessionStore';
 
 export interface JourneyGateway {
   timeline(): Promise<JourneyEntry[]>;
@@ -93,9 +95,12 @@ class MockJourneyGateway implements JourneyGateway {
   async uploadPhoto(uri: string) { return uri; }
 }
 
-class ApiJourneyGateway implements JourneyGateway {
-  private readonly baseUrl = (process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
-  private readonly client = createApiClient(this.baseUrl);
+export class ApiJourneyGateway implements JourneyGateway {
+  private readonly baseUrl = getApiBaseUrl().replace(/\/$/, '');
+  private readonly client = createApiClient(
+    this.baseUrl,
+    async () => (await sessionStore.read())?.accessToken ?? null,
+  );
 
   timeline() { return this.client.checkIns.timeline(); }
   statistics() { return this.client.checkIns.statistics(); }
@@ -105,8 +110,10 @@ class ApiJourneyGateway implements JourneyGateway {
   async uploadPhoto(uri: string, mimeType?: string | null, fileName?: string | null) {
     const normalizedMimeType = mimeType === 'image/jpg' ? 'image/jpeg' : (mimeType ?? 'image/jpeg');
     if (Platform.OS !== 'web') {
+      const accessToken = (await sessionStore.read())?.accessToken;
       const response = await FileSystem.uploadAsync(`${this.baseUrl}/check-ins/photos`, uri, {
         fieldName: 'photo',
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
         httpMethod: 'POST',
         mimeType: normalizedMimeType,
         uploadType: FileSystem.FileSystemUploadType.MULTIPART,
@@ -150,5 +157,5 @@ export const journeyGateway: JourneyGateway = process.env.EXPO_PUBLIC_DATA_MODE 
 
 export function resolvePhotoUrl(photoUrl: string | null) {
   if (!photoUrl || !photoUrl.startsWith('/')) return photoUrl;
-  return `${(process.env.EXPO_PUBLIC_API_BASE_URL ?? 'http://localhost:3000').replace(/\/$/, '')}${photoUrl}`;
+  return `${getApiBaseUrl().replace(/\/$/, '')}${photoUrl}`;
 }

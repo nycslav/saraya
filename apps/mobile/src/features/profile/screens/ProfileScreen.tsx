@@ -10,6 +10,11 @@ export function ProfileScreen() {
   const router = useRouter();
   const { user, restoring, logout } = useAuth();
 
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/(tabs)/discover');
+  };
+
   if (restoring) return <Screen><LoadingState label="Restoring your profile…" /></Screen>;
 
   if (!user) {
@@ -17,8 +22,8 @@ export function ProfileScreen() {
       <Screen contentContainerStyle={styles.signedOut}>
         <View style={styles.avatar}><UserRound color={colors.blue} size={44} /></View>
         <Text accessibilityRole="header" style={styles.title}>Your travel profile</Text>
-        <Text style={styles.subtitle}>Sign in to save preferences and connect your travel progress when those services are ready.</Text>
-        <Button label="Log in or sign up" onPress={() => router.push('/(auth)/login' as Href)} />
+        <Text style={styles.subtitle}>Sign in to keep your Journey and Bucket List across devices.</Text>
+        <Button label="Continue with Google" onPress={() => router.push('/(auth)/login' as Href)} />
         <StatusPanel
           message="Journey totals, badges, journals, safety settings, and premium status will appear only after their real services are integrated."
           title="No sample profile data"
@@ -36,7 +41,7 @@ export function ProfileScreen() {
           <Text style={styles.name}>{user.displayName}</Text>
           <Text style={styles.email}>{user.email}</Text>
           <View style={styles.identityBadge}>
-            <Text style={styles.identityBadgeText}>{user.travelStyle ?? 'Travel style not set'}</Text>
+            <Text style={styles.identityBadgeText}>Google account</Text>
           </View>
         </View>
       </View>
@@ -62,13 +67,13 @@ export function ProfileScreen() {
           onPress={() => router.push('/notifications/preferences' as Href)}
         />
         <ToolRow icon={Sparkles} label="Saraya Plus" status="Service unavailable" />
-        <ToolRow icon={ShieldCheck} label="Privacy and preferences" status="Coming next" last />
+        <ToolRow icon={ShieldCheck} label="Privacy and account" status="Coming next" last />
       </Card>
 
       <Button
         icon={LogOut}
         label="Log out"
-        onPress={() => void logout()}
+        onPress={() => void handleLogout()}
         variant="secondary"
       />
     </Screen>
