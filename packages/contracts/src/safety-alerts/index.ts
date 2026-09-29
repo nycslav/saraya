@@ -28,7 +28,7 @@ export const affectedAreaSchema = z.object({
 export const safetySourceSchema = z.object({
   provider: z.string().trim().min(1),
   name: z.string().trim().min(1),
-  url: z.url().optional(),
+  url: z.string().url().optional(),
   isDemo: z.boolean(),
 });
 
@@ -44,11 +44,11 @@ export const safetyAlertSchema = z.object({
   affectedRegions: z.array(z.string().trim().min(1)).min(1),
   affectedAreaDescription: z.string().trim().min(1),
   affectedArea: affectedAreaSchema.optional(),
-  startsAt: z.iso.datetime({ offset: true }),
-  endsAt: z.iso.datetime({ offset: true }).nullable(),
+  startsAt: z.string().datetime({ offset: true }),
+  endsAt: z.string().datetime({ offset: true }).nullable(),
   source: safetySourceSchema,
-  createdAt: z.iso.datetime({ offset: true }),
-  updatedAt: z.iso.datetime({ offset: true }),
+  createdAt: z.string().datetime({ offset: true }),
+  updatedAt: z.string().datetime({ offset: true }),
 });
 
 const optionalQueryText = z.preprocess(
@@ -126,8 +126,8 @@ export const weatherResponseSchema = z.object({
   windDirectionDegrees: z.number().min(0).max(360).nullable(),
   warningState: z.enum(['no-warning', 'advisory', 'unavailable']),
   summary: z.string().trim().min(1),
-  observedAt: z.iso.datetime({ offset: true }).nullable(),
-  fetchedAt: z.iso.datetime({ offset: true }).nullable(),
+  observedAt: z.string().datetime({ offset: true }).nullable(),
+  fetchedAt: z.string().datetime({ offset: true }).nullable(),
   providerStatus: z.enum(['fresh', 'stale', 'unavailable']),
   source: safetySourceSchema,
 });

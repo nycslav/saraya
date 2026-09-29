@@ -4,7 +4,7 @@ import './load-env';
 
 const weatherConfigurationSchema = z.object({
   WEATHER_PROVIDER: z.enum(['open_meteo', 'mock']),
-  OPEN_METEO_BASE_URL: z.url().default('https://api.open-meteo.com/v1'),
+  OPEN_METEO_BASE_URL: z.string().url().default('https://api.open-meteo.com/v1'),
 });
 
 export interface WeatherConfiguration {
