@@ -19,6 +19,7 @@ import {
   View,
 } from 'react-native';
 
+import { useAuth } from '@/features/auth/AuthProvider';
 import { destinationGateway } from '@/features/discovery/gateways';
 import { Button, Chip, LoadingState, Screen, SearchField, StatusPanel } from '@/ui/components';
 import { colors, radius, spacing, type } from '@/ui/theme';
@@ -37,6 +38,7 @@ const filters: { id: Filter; label: string }[] = [
 
 export function BucketListScreen() {
   const router = useRouter();
+  const { restoring, user } = useAuth();
   const [items, setItems] = useState<DisplayItem[]>([]);
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
@@ -49,10 +51,13 @@ export function BucketListScreen() {
     setLoading(true);
     setError(null);
     try {
-      const [bucketItems, destinationOptions] = await Promise.all([
-        bucketListGateway.list(),
-        destinationGateway.list({ search: '' }),
-      ]);
+      const destinationOptions = await destinationGateway.list({ search: '' });
+      setDestinations(destinationOptions);
+      if (!user) {
+        setItems([]);
+        return;
+      }
+      const bucketItems = await bucketListGateway.list();
       const details = await Promise.all(
         bucketItems.map(async (item) => ({
           item,
@@ -62,17 +67,17 @@ export function BucketListScreen() {
       setItems(details.filter(
         (entry): entry is DisplayItem => entry.destination !== null,
       ));
-      setDestinations(destinationOptions);
     } catch {
       setError('Your saved places could not be loaded. Check the API connection and try again.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(useCallback(() => {
+    if (restoring) return;
     void load();
-  }, [load]));
+  }, [load, restoring]));
 
   const visibleItems = useMemo(() => items.filter(({ item }) => {
     if (filter === 'planned') return item.status === 'planned';
@@ -83,6 +88,10 @@ export function BucketListScreen() {
   const plannedCount = items.filter(({ item }) => item.status === 'planned').length;
 
   const toggleVisited = async ({ item }: DisplayItem) => {
+    if (!user) {
+      router.push('/(auth)/login');
+      return;
+    }
     setSavingId(item.id);
     try {
       await bucketListGateway.update(item.id, {
@@ -132,7 +141,14 @@ export function BucketListScreen() {
         ))}
       </ScrollView>
 
-      {loading ? <LoadingState label="Opening your saved places..." /> : null}
+      {!restoring && !user ? (
+        <StatusPanel
+          message="Explore and choose destinations freely. Sign in only when you are ready to save one."
+          title="Sign in to keep your bucket list"
+        />
+      ) : null}
+
+      {restoring || loading ? <LoadingState label="Opening your saved places..." /> : null}
       {error ? (
         <StatusPanel
           action={<Button label="Try again" onPress={() => void load()} variant="secondary" />}
@@ -235,10 +251,15 @@ export function BucketListScreen() {
           destinations={destinations}
           entry={editorItem}
           onClose={() => setEditorItem(undefined)}
+          onRequireSignIn={() => {
+            setEditorItem(undefined);
+            router.push('/(auth)/login');
+          }}
           onSaved={async () => {
             setEditorItem(undefined);
             await load();
           }}
+          signedIn={Boolean(user)}
         />
       ) : null}
     </Screen>
@@ -249,12 +270,16 @@ function BucketItemEditor({
   destinations,
   entry,
   onClose,
+  onRequireSignIn,
   onSaved,
+  signedIn,
 }: {
   destinations: DestinationSummary[];
   entry: DisplayItem | null | undefined;
   onClose: () => void;
+  onRequireSignIn: () => void;
   onSaved: () => Promise<void>;
+  signedIn: boolean;
 }) {
   const [search, setSearch] = useState('');
   const [destinationId, setDestinationId] = useState(entry?.item.destinationId ?? '');
@@ -274,6 +299,10 @@ function BucketItemEditor({
   const save = async () => {
     if (!entry && !destinationId) {
       setError('Choose a destination first.');
+      return;
+    }
+    if (!signedIn) {
+      onRequireSignIn();
       return;
     }
     setSaving(true);
@@ -341,6 +370,7 @@ function BucketItemEditor({
                 <View style={styles.destinationOptions}>
                   {options.map((destination) => (
                     <Pressable
+                      accessibilityLabel={destination.name}
                       accessibilityRole="radio"
                       accessibilityState={{ selected: destinationId === destination.id }}
                       key={destination.id}

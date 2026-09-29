@@ -13,12 +13,14 @@ import {
   StatusPanel,
 } from '@/ui/components';
 import { colors, radius, spacing, type } from '@/ui/theme';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { destinationGateway } from '@/features/discovery/gateways';
 import { bucketListGateway } from '@/features/bucket-list/gateways';
 
 export function DestinationDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { restoring, user } = useAuth();
   const [destination, setDestination] = useState<DestinationDetail | null>();
   const [error, setError] = useState<string | null>(null);
   const [bucketSaved, setBucketSaved] = useState(false);
@@ -38,6 +40,15 @@ export function DestinationDetailScreen() {
             'The destination service is unavailable. Check the API connection and try again.',
           );
       });
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let active = true;
+    if (restoring) return () => { active = false; };
+    if (!user) return () => { active = false; };
     void bucketListGateway
       .list()
       .then((bucketItems) => {
@@ -46,13 +57,16 @@ export function DestinationDetailScreen() {
       .catch(() => {
         if (active) setBucketError('Your bucket-list status could not be loaded.');
       });
-    return () => {
-      active = false;
-    };
-  }, [id]);
+    return () => { active = false; };
+  }, [id, restoring, user]);
 
   const saveToBucket = async () => {
-    if (!destination || bucketSaved) return;
+    if (!destination) return;
+    if (!user) {
+      router.push('/(auth)/login');
+      return;
+    }
+    if (bucketSaved) return;
     setBucketSaving(true);
     setBucketError(null);
     try {
@@ -64,6 +78,8 @@ export function DestinationDetailScreen() {
       setBucketSaving(false);
     }
   };
+
+  const bucketAppearsSaved = Boolean(user && bucketSaved);
 
   if (error) {
     return (
@@ -142,14 +158,14 @@ export function DestinationDetailScreen() {
         </View>
       </View>
 
-      {bucketError ? (
+      {user && bucketError ? (
         <StatusPanel message={bucketError} title="Bucket list unavailable" tone="error" />
       ) : null}
       <View style={styles.actions}>
         <Button
-          disabled={bucketSaved}
+          disabled={bucketAppearsSaved || restoring}
           icon={Heart}
-          label={bucketSaved ? 'Saved to Bucket' : 'Save to Bucket'}
+          label={bucketAppearsSaved ? 'Saved to Bucket' : 'Save to Bucket'}
           loading={bucketSaving}
           onPress={() => void saveToBucket()}
           style={styles.action}
