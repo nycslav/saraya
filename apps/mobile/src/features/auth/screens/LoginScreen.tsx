@@ -13,9 +13,13 @@ import { AuthShell, FormField, GoogleAuthButton, OrDivider } from '../components
 const emailSchema = z.string().trim().email('Enter a valid email address.');
 
 function messageFor(error: unknown) {
-  if (error instanceof Error && error.message.includes('development build')) return error.message;
-  if (error instanceof Error && error.message.includes('EXPO_PUBLIC')) return error.message;
-  return 'Sign-in is unavailable. Check that the Saraya API is running, then try again.';
+  if (error instanceof Error) {
+    console.error('Authentication error:', error);
+    return error.message;
+  }
+
+  console.error('Unknown authentication error:', error);
+  return 'Sign-in could not be completed.';
 }
 
 export function LoginScreen() {

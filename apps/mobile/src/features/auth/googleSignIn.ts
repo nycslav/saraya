@@ -16,6 +16,8 @@ export async function getGoogleIdToken() {
     );
   }
 
+  console.log('[GoogleSignIn] Loading native module');
+
   const {
     GoogleOneTapSignIn,
     isCancelledResponse,
@@ -23,20 +25,43 @@ export async function getGoogleIdToken() {
     isSuccessResponse,
   } = await import('react-native-nitro-google-signin');
 
+  console.log('[GoogleSignIn] Configuring');
+
   GoogleOneTapSignIn.configure({
     webClientId: getGoogleWebClientId(),
     autoSelectOnSignIn: false,
   });
+
+  console.log('[GoogleSignIn] Checking Play Services');
   await GoogleOneTapSignIn.checkPlayServices(true);
 
+  console.log('[GoogleSignIn] Starting sign-in');
   let response = await GoogleOneTapSignIn.signIn();
+
+  console.log('[GoogleSignIn] Sign-in response type received');
+
   if (isNoSavedCredentialFoundResponse(response)) {
+    console.log('[GoogleSignIn] No saved credential; creating account');
     response = await GoogleOneTapSignIn.createAccount();
   }
-  if (isCancelledResponse(response)) return null;
-  if (!isSuccessResponse(response)) {
-    throw new GoogleSignInUnavailableError('Google sign-in could not be completed.');
+
+  if (isCancelledResponse(response)) {
+    console.log('[GoogleSignIn] Cancelled');
+    return null;
   }
+
+  if (!isSuccessResponse(response)) {
+    console.error('[GoogleSignIn] Unsuccessful response:', response);
+    throw new GoogleSignInUnavailableError(
+      'Google sign-in could not be completed.',
+    );
+  }
+
+  console.log(
+    '[GoogleSignIn] Success; ID token present:',
+    Boolean(response.data.idToken),
+  );
+
   return response.data.idToken;
 }
 
