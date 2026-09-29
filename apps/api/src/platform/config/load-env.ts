@@ -7,4 +7,6 @@ const rootEnvPath =
     ? path.resolve(process.cwd(), '../../.env')
     : path.resolve(process.cwd(), '.env');
 
-config({ path: rootEnvPath, quiet: true });
+if (process.env.NODE_ENV !== 'test') {
+  config({ path: rootEnvPath, quiet: true });
+}

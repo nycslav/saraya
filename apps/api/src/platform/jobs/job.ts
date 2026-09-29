@@ -1,4 +1,4 @@
-export type JobName = 'send-reminders' | 'poll-weather';
+export type JobName = 'send-reminders' | 'poll-weather' | 'poll-warnings';
 
 export interface Job {
   name: JobName;

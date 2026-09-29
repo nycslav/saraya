@@ -1,13 +1,13 @@
-import type { ResolvedLocation, SafetyAlert, SafetySource } from '@saraya/contracts';
+import type { SafetyAlert, SafetySource } from '@saraya/contracts';
 
 export interface WarningProvider {
   readonly source: SafetySource;
-  getActiveWarnings(location: ResolvedLocation): Promise<SafetyAlert[]>;
+  getActiveWarnings(): Promise<SafetyAlert[]>;
 }
 
 export class WarningProviderUnavailableError extends Error {
-  constructor() {
-    super('Safety-warning provider data is unavailable.');
+  constructor(message = 'Safety-warning provider data is unavailable.') {
+    super(message);
     this.name = 'WarningProviderUnavailableError';
   }
 }

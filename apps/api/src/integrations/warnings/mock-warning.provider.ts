@@ -1,4 +1,4 @@
-import { safetyAlertSchema, type ResolvedLocation, type SafetyAlert } from '@saraya/contracts';
+import { safetyAlertSchema, type SafetyAlert } from '@saraya/contracts';
 
 import { WarningProviderUnavailableError, type WarningProvider } from './warning.provider';
 
@@ -32,8 +32,8 @@ export class MockWarningProvider implements WarningProvider {
 
   constructor(private readonly shouldFail = false) {}
 
-  async getActiveWarnings(location: ResolvedLocation): Promise<SafetyAlert[]> {
+  async getActiveWarnings(): Promise<SafetyAlert[]> {
     if (this.shouldFail) throw new WarningProviderUnavailableError();
-    return location.region === 'Bicol Region' ? [demoWarning] : [];
+    return [demoWarning];
   }
 }

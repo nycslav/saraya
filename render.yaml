@@ -51,3 +51,9 @@ services:
         value: "true"
       - key: SCHEDULER_BACKEND
         value: noop
+      - key: WARNING_PROVIDER
+        value: pagasa_cap
+      - key: PAGASA_CAP_FEED_URL
+        value: https://publicalert.pagasa.dost.gov.ph/feeds/
+      - key: WARNING_PROVIDER_TIMEOUT_MS
+        value: "10000"

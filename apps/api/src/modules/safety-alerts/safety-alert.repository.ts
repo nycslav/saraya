@@ -6,6 +6,7 @@ import type {
 } from '@saraya/contracts';
 
 import { hasDatabaseConfiguration } from '../../platform/database/pool';
+import { demoSafetyAlertsEnabled } from '../../platform/config/warning-config';
 import { seedDestinations } from '../destinations/destination.seed';
 import { PostgresSafetyAlertRepository } from './safety-alert.postgres-repository';
 import { seedSafetyAlerts } from './safety-alert.seed';
@@ -16,7 +17,18 @@ export interface SafetyAlertRepository {
   resolveDestination(id: string): Promise<ResolvedLocation | null>;
   resolveRegion(region: string): Promise<ResolvedLocation>;
   resolveCoordinates(coordinates: Coordinates): Promise<ResolvedLocation>;
+  upsertFromProvider(alert: SafetyAlert): Promise<boolean>;
+  expireMissing(provider: string, activeIds: string[], now: Date): Promise<number>;
+  recordProviderSuccess(provider: string, checkedAt: Date): Promise<void>;
+  recordProviderFailure(provider: string, checkedAt: Date, errorCode: string): Promise<void>;
+  getWarningProviderStatus(provider: string): Promise<WarningProviderStatus>;
 }
+
+export type WarningProviderStatus = {
+  status: 'fresh' | 'unavailable';
+  lastCheckedAt: string | null;
+  lastSucceededAt: string | null;
+};
 
 function squaredDistance(left: Coordinates, right: Coordinates) {
   return (left.latitude - right.latitude) ** 2 + (left.longitude - right.longitude) ** 2;
@@ -41,7 +53,9 @@ export function affectsCoordinates(alert: SafetyAlert, coordinates: Coordinates)
 }
 
 export class InMemorySafetyAlertRepository implements SafetyAlertRepository {
-  constructor(private readonly alerts: SafetyAlert[] = seedSafetyAlerts) {}
+  private readonly providerStates = new Map<string, WarningProviderStatus>();
+
+  constructor(private readonly alerts: SafetyAlert[] = demoSafetyAlertsEnabled() ? [...seedSafetyAlerts] : []) {}
 
   async findActive(
     location: ResolvedLocation,
@@ -101,10 +115,52 @@ export class InMemorySafetyAlertRepository implements SafetyAlertRepository {
       coordinates,
     };
   }
+
+  async upsertFromProvider(alert: SafetyAlert) {
+    const index = this.alerts.findIndex(({ id }) => id === alert.id);
+    if (index >= 0 && JSON.stringify(this.alerts[index]) === JSON.stringify(alert)) return false;
+    if (index >= 0) this.alerts[index] = alert;
+    else this.alerts.push(alert);
+    return true;
+  }
+
+  async expireMissing(provider: string, activeIds: string[], now: Date) {
+    const active = new Set(activeIds);
+    let expired = 0;
+    this.alerts.forEach((alert, index) => {
+      if (alert.source.provider !== provider || alert.source.isDemo || active.has(alert.id)) return;
+      if (alert.endsAt && new Date(alert.endsAt) <= now) return;
+      this.alerts[index] = { ...alert, endsAt: now.toISOString(), updatedAt: now.toISOString() };
+      expired += 1;
+    });
+    return expired;
+  }
+
+  async recordProviderSuccess(provider: string, checkedAt: Date) {
+    const timestamp = checkedAt.toISOString();
+    this.providerStates.set(provider, {
+      status: 'fresh', lastCheckedAt: timestamp, lastSucceededAt: timestamp,
+    });
+  }
+
+  async recordProviderFailure(provider: string, checkedAt: Date, _errorCode: string) {
+    const previous = this.providerStates.get(provider);
+    this.providerStates.set(provider, {
+      status: 'unavailable',
+      lastCheckedAt: checkedAt.toISOString(),
+      lastSucceededAt: previous?.lastSucceededAt ?? null,
+    });
+  }
+
+  async getWarningProviderStatus(provider: string) {
+    return this.providerStates.get(provider) ?? {
+      status: 'unavailable' as const, lastCheckedAt: null, lastSucceededAt: null,
+    };
+  }
 }
 
 export function createSafetyAlertRepository(): SafetyAlertRepository {
   return process.env.NODE_ENV !== 'test' && hasDatabaseConfiguration()
-    ? new PostgresSafetyAlertRepository()
+    ? new PostgresSafetyAlertRepository(demoSafetyAlertsEnabled())
     : new InMemorySafetyAlertRepository();
 }

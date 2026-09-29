@@ -19,10 +19,14 @@ Current weather and safety warnings are deliberately separate:
 - `WeatherProvider` supplies normalized Saraya weather data. `OpenMeteoWeatherProvider` is the
   normal development/runtime adapter; `MockWeatherProvider` remains available for deterministic
   tests and demos.
-- `WarningProvider` supplies safety warnings. The MVP retains `MockWarningProvider` because no
-  stable supported machine-readable PAGASA warning API has been identified.
-- Future authoritative government-warning ingestion must be implemented as another warning
-  adapter. Open-Meteo conditions must never be treated as official PAGASA warnings.
+- `WarningProvider` supplies safety warnings. Production uses `PagasaCapWarningProvider` against
+  PAGASA's public Common Alerting Protocol (CAP) feed registered in the
+  [WMO Register of Alerting Authorities](https://alertingauthority.wmo.int/authorities.php?recId=127).
+  WMO identifies PAGASA as the Philippine meteorological alerting authority. Saraya does not scrape
+  PAGASA web pages or PDFs.
+- `MockWarningProvider` remains test/demo-only. Production rejects demo mode, and ingestion refuses
+  to persist or notify from a provider marked `isDemo`.
+- Open-Meteo conditions are never converted into PAGASA or government warnings.
 
 Set `WEATHER_PROVIDER=open_meteo` or `WEATHER_PROVIDER=mock`. Outside tests the default is
 `open_meteo`; Jest defaults to `mock` so automated tests make no network calls. Unsupported values
@@ -52,9 +56,18 @@ be returned as `stale` after provider failure. The repository currently has no o
 Redis cache, so runtime composition uses a no-op implementation. Redis integration remains deferred
 platform work rather than introducing a competing cache system.
 
-There is no job-runner abstraction in the current API, so background polling remains deferred.
-Persisted and mock safety warnings continue to work independently of weather-provider availability.
-Weather API/client support remains ready for Member 1's Discover integration.
+The `poll-warnings` job runs every 15 minutes when the existing scheduler is enabled. It validates
+CAP XML at the provider boundary, normalizes public/actual alerts, atomically upserts changed
+records, expires records absent from a successful active feed, and dispatches notifications only
+for changed active alerts. A failed or malformed poll records an unavailable provider state and
+does not expire valid stored alerts. Repeated identical polls do not re-notify users.
+
+Set `WARNING_PROVIDER=pagasa_cap` (the non-test default), `demo`, or `unavailable`.
+`PAGASA_CAP_FEED_URL` defaults to the WMO-registered HTTPS feed and
+`WARNING_PROVIDER_TIMEOUT_MS` defaults to 10000. Production fails closed if the feed is
+unreachable or malformed: stored non-demo alerts remain available until their stated expiry, the
+provider status is `unavailable`, and no synthetic replacement is generated. `demo` is rejected
+when `NODE_ENV=production`.
 
 For mobile, `EXPO_PUBLIC_DATA_MODE=fixture` uses the clearly labeled offline dataset and
 `EXPO_PUBLIC_DATA_MODE=api` uses the Saraya API. This choice is explicit; there is no silent

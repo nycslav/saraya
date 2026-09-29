@@ -93,7 +93,7 @@ describe('RevenueCatWebhookVerifier', () => {
   it('rejects stale signed requests', () => {
     const body = Buffer.from('{}');
     const signature = createHmac('sha256', 'secret').update('1.{}').digest('hex');
-    const verifier = new RevenueCatWebhookVerifier(undefined, 'secret', () => 1000, 300);
+    const verifier = new RevenueCatWebhookVerifier('', 'secret', () => 1000, 300);
 
     expect(() => verifier.verify({ rawBody: body, signature: `t=1,v1=${signature}` })).toThrow(
       'expired',

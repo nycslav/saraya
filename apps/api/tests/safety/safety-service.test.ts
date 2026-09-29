@@ -1,4 +1,3 @@
-import { MockWarningProvider } from '../../src/integrations/warnings';
 import { MockWeatherProvider, type WeatherProvider } from '../../src/integrations/weather';
 import {
   InMemorySafetyAlertRepository,
@@ -28,19 +27,19 @@ describe('safety alert repository and service', () => {
     );
   });
 
-  it('orders merged alerts by severity then recency', async () => {
+  it('returns persisted active alerts without a runtime mock-provider fallback', async () => {
     const service = new SafetyAlertService(
-      new InMemorySafetyAlertRepository(), new MockWeatherProvider(), new MockWarningProvider(), now,
+      new InMemorySafetyAlertRepository(), new MockWeatherProvider(), now,
     );
     const result = await service.list({ region: 'Bicol Region' });
 
     expect(result.alerts[0]?.severity).toBe('red');
-    expect(result.alerts[1]?.severity).toBe('yellow');
+    expect(result.alerts).toHaveLength(1);
   });
 
   it('keeps persisted alerts when the provider fails and marks weather unavailable', async () => {
     const service = new SafetyAlertService(
-      new InMemorySafetyAlertRepository(), new MockWeatherProvider(true), new MockWarningProvider(true), now,
+      new InMemorySafetyAlertRepository(), new MockWeatherProvider(true), now,
     );
     const alerts = await service.list({ region: 'Davao Region' });
     const weather = await service.weather({ region: 'Davao Region' });
@@ -58,7 +57,7 @@ describe('safety alert repository and service', () => {
       },
     };
     const service = new SafetyAlertService(
-      new InMemorySafetyAlertRepository(), staleProvider, new MockWarningProvider(), now,
+      new InMemorySafetyAlertRepository(), staleProvider, now,
     );
 
     await expect(service.weather({ destinationId: 'cebu-city' })).resolves.toEqual(
@@ -71,7 +70,7 @@ describe('safety alert repository and service', () => {
 
   it('uses the existing destination catalog and rejects an unknown destination', async () => {
     const service = new SafetyAlertService(
-      new InMemorySafetyAlertRepository(), new MockWeatherProvider(), new MockWarningProvider(), now,
+      new InMemorySafetyAlertRepository(), new MockWeatherProvider(), now,
     );
     await expect(service.list({ destinationId: 'cebu-city' })).resolves.toEqual(
       expect.objectContaining({ location: expect.objectContaining({ destinationId: 'cebu-city' }) }),

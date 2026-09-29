@@ -111,10 +111,16 @@ request and are not persisted.
 
 ### `GET /safety-alerts`
 
-Returns `{ location, alerts }` for active persisted alerts plus normalized provider warnings.
+Returns `{ location, alerts }` for active persisted warnings. Authoritative provider access occurs
+only in the scheduled ingestion boundary, not during an HTTP request.
 Optional `severity` (`green`, `yellow`, or `red`) and `alertType` filters are available. Results are
 ordered by severity (red first), then most recently updated, then title. Provider failure does not
-discard valid persisted alerts.
+discard valid persisted alerts. Production queries exclude `isDemo` records even if development
+fixtures were seeded into the database.
+
+`GET /destinations/:id/conditions` also returns `warningProviderStatus` with `status`,
+`lastCheckedAt`, and `lastSucceededAt`. `unavailable` means Saraya could not verify the current
+authoritative feed; an empty alert list must not be interpreted as an all-clear.
 
 ### `GET /safety-alerts/:id`
 

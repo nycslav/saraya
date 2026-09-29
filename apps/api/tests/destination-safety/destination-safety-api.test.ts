@@ -2,7 +2,6 @@ import express, { type ErrorRequestHandler, type RequestHandler } from 'express'
 import request from 'supertest';
 import { ZodError } from 'zod';
 
-import { MockWarningProvider } from '../../src/integrations/warnings';
 import { MockWeatherProvider } from '../../src/integrations/weather';
 import { createDestinationSafetyController } from '../../src/modules/destination-safety/destination-safety.controller';
 import { createDestinationSafetyRouter } from '../../src/modules/destination-safety/destination-safety.route';
@@ -26,7 +25,6 @@ function createTestApp(authenticated = true) {
   const safety = new SafetyAlertService(
     new InMemorySafetyAlertRepository(),
     new MockWeatherProvider(),
-    new MockWarningProvider(),
     () => new Date('2026-09-28T00:00:00.000Z'),
   );
   const service = new DestinationSafetyService(

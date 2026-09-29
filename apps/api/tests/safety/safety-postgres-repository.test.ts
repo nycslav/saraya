@@ -51,6 +51,7 @@ describe('PostgresSafetyAlertRepository', () => {
     expect(result[0]).toEqual(expect.objectContaining({ id: 'demo-row', source: expect.objectContaining({ isDemo: true }) }));
     expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('ST_Covers'), [
       '2026-09-22T12:00:00.000Z', 'yellow', 'weather', 14.6, 121, 'National Capital Region',
+      false,
     ]);
     expect(mockQuery.mock.calls[0]?.[0]).toEqual(expect.stringContaining('ends_at > $1'));
   });
@@ -70,7 +71,36 @@ describe('PostgresSafetyAlertRepository', () => {
     await expect(new PostgresSafetyAlertRepository().findById('demo-row')).resolves.toEqual(
       expect.objectContaining({ id: 'demo-row' }),
     );
-    expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('WHERE id = $1'), ['demo-row']);
+    expect(mockQuery).toHaveBeenCalledWith(expect.stringContaining('WHERE id = $1'), ['demo-row', false]);
+  });
+
+  it('atomically reports changed provider alerts and expires only missing non-demo alerts', async () => {
+    mockQuery.mockResolvedValueOnce({ rows: [{ id: row.id }], rowCount: 1 });
+    const repository = new PostgresSafetyAlertRepository();
+    const alert = {
+      id: row.id,
+      alertType: 'weather' as const,
+      severity: 'yellow' as const,
+      title: row.title,
+      summary: row.summary,
+      details: row.details,
+      advice: row.advice,
+      alternatives: row.alternatives,
+      affectedRegions: row.affected_regions,
+      affectedAreaDescription: row.affected_area_description,
+      startsAt: row.starts_at,
+      endsAt: row.ends_at,
+      source: { provider: 'pagasa-cap', name: 'DOST-PAGASA', isDemo: false },
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+    await expect(repository.upsertFromProvider(alert)).resolves.toBe(true);
+    expect(mockQuery.mock.calls[0]?.[0]).toEqual(expect.stringContaining('IS DISTINCT FROM'));
+
+    mockQuery.mockResolvedValueOnce({ rows: [], rowCount: 2 });
+    await expect(repository.expireMissing('pagasa-cap', [row.id], new Date(row.updated_at)))
+      .resolves.toBe(2);
+    expect(mockQuery.mock.calls[1]?.[0]).toEqual(expect.stringContaining('AND NOT is_demo'));
   });
 
   it('resolves manual regions to representative catalog coordinates for weather', async () => {
