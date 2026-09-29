@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     overflow: 'hidden',
   },
-  compact: { width: 98, height: 112, borderRadius: radius.md },
+  compact: { height: 104, borderRadius: radius.md, padding: spacing.md },
   glowOne: {
     position: 'absolute',
     width: 130,
