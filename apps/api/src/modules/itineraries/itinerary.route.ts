@@ -11,9 +11,12 @@ export function createItineraryRouter(
   controller: ItineraryController = createItineraryController(),
 ) {
   const router = Router();
-  router.post('/generate', authenticate, controller.generate);
+  router.use(authenticate);
+  router.post('/generate', controller.generate);
+  router.get('/', controller.list);
   router.post('/', controller.save);
   router.get('/:id', controller.get);
+  router.delete('/:id', controller.delete);
   return router;
 }
 

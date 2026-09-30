@@ -3,7 +3,9 @@ import express, { type ErrorRequestHandler, type RequestHandler } from 'express'
 import { ZodError } from 'zod';
 
 import { app } from '../src/app';
+import { createItineraryController } from '../src/modules/itineraries/itinerary.controller';
 import { createItineraryRouter } from '../src/modules/itineraries/itinerary.route';
+import { ItineraryService } from '../src/modules/itineraries/itinerary.service';
 
 const authenticate: RequestHandler = (_request, response, next) => {
   response.locals.authenticatedUserId = 'itinerary-test-user';
@@ -11,7 +13,8 @@ const authenticate: RequestHandler = (_request, response, next) => {
 };
 const authenticatedApp = express();
 authenticatedApp.use(express.json());
-authenticatedApp.use('/itineraries', createItineraryRouter(authenticate));
+const itineraryController = createItineraryController(new ItineraryService());
+authenticatedApp.use('/itineraries', createItineraryRouter(authenticate, itineraryController));
 const validationErrors: ErrorRequestHandler = (error, _request, response, _next) => {
   if (error instanceof ZodError) {
     response.status(400).json({ error: { code: 'VALIDATION_ERROR' } });
@@ -20,6 +23,17 @@ const validationErrors: ErrorRequestHandler = (error, _request, response, _next)
   response.status(500).json({ error: { code: 'INTERNAL_ERROR' } });
 };
 authenticatedApp.use(validationErrors);
+
+const otherUserApp = express();
+otherUserApp.use(express.json());
+otherUserApp.use('/itineraries', createItineraryRouter(
+  (_request, response, next) => {
+    response.locals.authenticatedUserId = 'other-itinerary-user';
+    next();
+  },
+  itineraryController,
+));
+otherUserApp.use(validationErrors);
 
 const preferences = {
   destinationId: 'siargao',
@@ -52,11 +66,32 @@ describe('itinerary API', () => {
   it('saves and retrieves a generated itinerary', async () => {
     const generated = await request(authenticatedApp).post('/itineraries/generate').send(preferences);
     const saved = await request(authenticatedApp).post('/itineraries').send(generated.body);
+    const listed = await request(authenticatedApp).get('/itineraries');
     const retrieved = await request(authenticatedApp).get(`/itineraries/${generated.body.id}`);
 
     expect(saved.status).toBe(201);
+    expect(listed.status).toBe(200);
+    expect(listed.body).toContainEqual(expect.objectContaining({
+      id: generated.body.id,
+      destinationId: 'siargao',
+      durationDays: 3,
+      budget: 'Comfort',
+    }));
     expect(retrieved.status).toBe(200);
     expect(retrieved.body).toEqual(generated.body);
+
+    const otherList = await request(otherUserApp).get('/itineraries');
+    const otherGet = await request(otherUserApp).get(`/itineraries/${generated.body.id}`);
+    const otherDelete = await request(otherUserApp).delete(`/itineraries/${generated.body.id}`);
+    expect(otherList.body).not.toContainEqual(expect.objectContaining({ id: generated.body.id }));
+    expect(otherGet.status).toBe(404);
+    expect(otherDelete.status).toBe(404);
+
+    const removed = await request(authenticatedApp).delete(`/itineraries/${generated.body.id}`);
+    const afterDelete = await request(authenticatedApp).get(`/itineraries/${generated.body.id}`);
+
+    expect(removed.status).toBe(204);
+    expect(afterDelete.status).toBe(404);
   });
 
   it('rejects an unavailable destination', async () => {

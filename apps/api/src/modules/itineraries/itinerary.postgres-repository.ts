@@ -1,8 +1,10 @@
 import {
   generatedItinerarySchema,
+  savedItinerarySummarySchema,
   tripPreferencesSchema,
   type GeneratedItinerary,
   type ItineraryDay,
+  type SavedItinerarySummary,
   type ItineraryStop,
 } from '@saraya/contracts';
 import type { PoolClient, QueryResultRow } from 'pg';
@@ -17,6 +19,16 @@ interface ItineraryRow extends QueryResultRow {
   title: string;
   subtitle: string;
   preferences: unknown;
+  generated_at: Date | string;
+}
+
+interface ItinerarySummaryRow extends QueryResultRow {
+  id: string;
+  destination_id: string;
+  title: string;
+  subtitle: string;
+  duration_days: string | number;
+  budget: string;
   generated_at: Date | string;
 }
 
@@ -42,15 +54,15 @@ interface ItineraryStopRow extends QueryResultRow {
 }
 
 export class PostgresItineraryRepository implements ItineraryRepository {
-  async save(itinerary: GeneratedItinerary): Promise<void> {
+  async save(userId: string, itinerary: GeneratedItinerary): Promise<boolean> {
     const client = await getPool().connect();
 
     try {
       await client.query('BEGIN');
-      await client.query(
+      const saved = await client.query<{ id: string }>(
         `INSERT INTO itineraries (
-          id, destination_id, generation_source, title, subtitle, preferences, generated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7)
+          id, user_id, destination_id, generation_source, title, subtitle, preferences, generated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
         ON CONFLICT (id) DO UPDATE SET
           destination_id = EXCLUDED.destination_id,
           generation_source = EXCLUDED.generation_source,
@@ -58,9 +70,12 @@ export class PostgresItineraryRepository implements ItineraryRepository {
           subtitle = EXCLUDED.subtitle,
           preferences = EXCLUDED.preferences,
           generated_at = EXCLUDED.generated_at,
-          updated_at = now()`,
+          updated_at = now()
+        WHERE itineraries.user_id = EXCLUDED.user_id
+        RETURNING itineraries.id`,
         [
           itinerary.id,
+          userId,
           itinerary.destinationId,
           itinerary.generationSource,
           itinerary.title,
@@ -69,6 +84,10 @@ export class PostgresItineraryRepository implements ItineraryRepository {
           itinerary.generatedAt,
         ],
       );
+      if (!saved.rows[0]) {
+        await client.query('ROLLBACK');
+        return false;
+      }
       await client.query('DELETE FROM itinerary_days WHERE itinerary_id = $1', [itinerary.id]);
 
       for (const day of itinerary.days) {
@@ -76,6 +95,7 @@ export class PostgresItineraryRepository implements ItineraryRepository {
       }
 
       await client.query('COMMIT');
+      return true;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -84,12 +104,34 @@ export class PostgresItineraryRepository implements ItineraryRepository {
     }
   }
 
-  async findById(id: string): Promise<GeneratedItinerary | null> {
+  async findAll(userId: string): Promise<SavedItinerarySummary[]> {
+    const result = await getPool().query<ItinerarySummaryRow>(
+      `SELECT id, destination_id, title, subtitle,
+              preferences->>'durationDays' AS duration_days,
+              preferences->>'budget' AS budget,
+              generated_at
+       FROM itineraries
+       WHERE user_id = $1
+       ORDER BY generated_at DESC`,
+      [userId],
+    );
+    return result.rows.map((row) => savedItinerarySummarySchema.parse({
+      id: row.id,
+      destinationId: row.destination_id,
+      title: row.title,
+      subtitle: row.subtitle,
+      durationDays: Number(row.duration_days),
+      budget: row.budget,
+      generatedAt: new Date(row.generated_at).toISOString(),
+    }));
+  }
+
+  async findById(userId: string, id: string): Promise<GeneratedItinerary | null> {
     const pool = getPool();
     const itineraryResult = await pool.query<ItineraryRow>(
       `SELECT id, destination_id, generation_source, title, subtitle, preferences, generated_at
-       FROM itineraries WHERE id = $1`,
-      [id],
+       FROM itineraries WHERE user_id = $1 AND id = $2`,
+      [userId, id],
     );
     const itinerary = itineraryResult.rows[0];
     if (!itinerary) {
@@ -150,6 +192,14 @@ export class PostgresItineraryRepository implements ItineraryRepository {
       })),
       generatedAt: new Date(itinerary.generated_at).toISOString(),
     });
+  }
+
+  async delete(userId: string, id: string): Promise<boolean> {
+    const result = await getPool().query(
+      'DELETE FROM itineraries WHERE user_id = $1 AND id = $2',
+      [userId, id],
+    );
+    return result.rowCount === 1;
   }
 }
 

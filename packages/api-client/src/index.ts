@@ -26,6 +26,7 @@ import {
   festivalQuerySchema,
   festivalSummarySchema,
   generatedItinerarySchema,
+  savedItinerarySummarySchema,
   deviceTokenRegistrationResponseSchema,
   deviceTokenRegistrationSchema,
   deviceTokenRemovalSchema,
@@ -433,6 +434,9 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
       },
     },
     itineraries: {
+      async list() {
+        return z.array(savedItinerarySummarySchema).parse(await request('/itineraries'));
+      },
       async generate(preferences: TripPreferences, signal?: AbortSignal) {
         return generatedItinerarySchema.parse(
           await request('/itineraries/generate', {
@@ -449,6 +453,9 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
         return generatedItinerarySchema.parse(
           await request(`/itineraries/${encodeURIComponent(id)}`),
         );
+      },
+      async delete(id: string) {
+        await request(`/itineraries/${encodeURIComponent(id)}`, { method: 'DELETE' });
       },
     },
   };

@@ -46,18 +46,23 @@ const itinerary = generatedItinerarySchema.parse({
 describe('PostgresItineraryRepository', () => {
   beforeEach(() => {
     mockQuery.mockReset();
-    mockQuery.mockResolvedValue({ rows: [], rowCount: 0 });
+    mockQuery.mockImplementation((sql: string) => Promise.resolve({
+      rows: sql.includes('INSERT INTO itineraries') ? [{ id: itinerary.id }] : [],
+      rowCount: sql.includes('INSERT INTO itineraries') ? 1 : 0,
+    }));
     mockConnect.mockClear();
     mockRelease.mockClear();
   });
 
   it('saves itinerary metadata, days, and stops in one transaction', async () => {
-    await new PostgresItineraryRepository().save(itinerary);
+    await expect(
+      new PostgresItineraryRepository().save('itinerary-test-user', itinerary),
+    ).resolves.toBe(true);
 
     expect(mockQuery.mock.calls[0]?.[0]).toBe('BEGIN');
     expect(mockQuery).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO itineraries'),
-      expect.arrayContaining(['itinerary-1', 'siargao', 'gemini']),
+      expect.arrayContaining(['itinerary-1', 'itinerary-test-user', 'siargao', 'gemini']),
     );
     expect(mockQuery).toHaveBeenCalledWith(
       expect.stringContaining('INSERT INTO itinerary_days'),

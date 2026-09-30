@@ -74,6 +74,33 @@ describe('itinerary API gateway', () => {
     );
   });
 
+  it('lists and removes saved itineraries through the API', async () => {
+    jest.mocked(globalThis.fetch)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{
+          id: itinerary.id,
+          destinationId: itinerary.destinationId,
+          title: itinerary.title,
+          subtitle: itinerary.subtitle,
+          durationDays: itinerary.preferences.durationDays,
+          budget: itinerary.preferences.budget,
+          generatedAt: itinerary.generatedAt,
+        }],
+      } as Response)
+      .mockResolvedValueOnce({ ok: true, status: 204 } as Response);
+
+    const gateway = new ApiItineraryGateway();
+    await expect(gateway.list()).resolves.toEqual([
+      expect.objectContaining({ id: itinerary.id, durationDays: 5 }),
+    ]);
+    await expect(gateway.delete(itinerary.id)).resolves.toBeUndefined();
+    expect(globalThis.fetch).toHaveBeenLastCalledWith(
+      `https://api.saraya.test/itineraries/${itinerary.id}`,
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
   it('rejects invalid preferences before an API call is made', () => {
     expect(() => tripPreferencesSchema.parse({ ...preferences, interests: [] })).toThrow();
     expect(globalThis.fetch).not.toHaveBeenCalled();

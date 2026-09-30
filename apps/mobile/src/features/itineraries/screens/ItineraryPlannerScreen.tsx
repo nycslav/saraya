@@ -355,8 +355,18 @@ export function ItineraryPlannerScreen() {
         })}
         {saved ? (
           <StatusPanel
-            message="Your itinerary is saved to your account."
-            title="Itinerary saved"
+            action={(
+              <Button
+                label="Open Trip plans"
+                onPress={() => router.push({
+                  pathname: '/(tabs)/bucket-list',
+                  params: { view: 'plans' },
+                })}
+                variant="secondary"
+              />
+            )}
+            message="You can reopen this itinerary under Trip plans in your Bucket."
+            title="Saved to Bucket"
             tone="success"
           />
         ) : null}
@@ -371,8 +381,9 @@ export function ItineraryPlannerScreen() {
         ) : null}
         <View style={styles.actions}>
           <Button
+            disabled={saved}
             icon={Check}
-            label="Save itinerary"
+            label={saved ? 'Saved to Bucket' : 'Save itinerary'}
             loading={saving}
             onPress={() => {
               setSaving(true);

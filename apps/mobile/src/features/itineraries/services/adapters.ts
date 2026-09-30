@@ -21,12 +21,24 @@ export class ApiItineraryGateway implements ItineraryGateway {
     );
   }
 
+  list() {
+    return this.client.itineraries.list();
+  }
+
   generate(preferences: TripPreferences, signal?: AbortSignal) {
     return this.client.itineraries.generate(preferences, signal);
   }
 
   save(itinerary: GeneratedItinerary) {
     return this.client.itineraries.save(itinerary);
+  }
+
+  getById(id: string) {
+    return this.client.itineraries.getById(id);
+  }
+
+  delete(id: string) {
+    return this.client.itineraries.delete(id);
   }
 }
 

@@ -17,6 +17,7 @@ const mockDestinationById = jest.fn();
 const mockBucketList = jest.fn();
 const mockBucketCreate = jest.fn();
 const mockBucketUpdate = jest.fn();
+const mockItineraryList = jest.fn();
 const mockJourneyCreate = jest.fn();
 const mockJourneyTimeline = jest.fn();
 const mockJourneyStatistics = jest.fn();
@@ -29,10 +30,12 @@ jest.mock('lucide-react-native', () => {
     ArrowLeft: Icon,
     Award: Icon,
     Camera: Icon,
+    CalendarDays: Icon,
     Check: Icon,
     Heart: Icon,
     Image: Icon,
     MapPin: Icon,
+    MapPinned: Icon,
     MoreVertical: Icon,
     NotebookPen: Icon,
     Plus: Icon,
@@ -55,6 +58,7 @@ jest.mock('expo-router', () => {
       canGoBack: () => true,
       push: mockPush,
       replace: mockReplace,
+      setParams: jest.fn(),
     }),
   };
 });
@@ -76,6 +80,13 @@ jest.mock('@/features/bucket-list/gateways', () => ({
     delete: jest.fn(),
     list: (...args: unknown[]) => mockBucketList(...args),
     update: (...args: unknown[]) => mockBucketUpdate(...args),
+  },
+}));
+
+jest.mock('@/features/itineraries/services/adapters', () => ({
+  itineraryGateway: {
+    delete: jest.fn(),
+    list: (...args: unknown[]) => mockItineraryList(...args),
   },
 }));
 
@@ -137,6 +148,7 @@ describe('mobile sign-in gates', () => {
     mockDestinationList.mockResolvedValue([destinationSummary]);
     mockDestinationById.mockResolvedValue(destinationDetail);
     mockBucketList.mockResolvedValue([]);
+    mockItineraryList.mockResolvedValue([]);
     mockBucketCreate.mockResolvedValue({});
     mockBucketUpdate.mockResolvedValue({});
     mockJourneyCreate.mockResolvedValue({ checkIn: {}, newlyUnlockedAchievements: [] });
@@ -240,6 +252,29 @@ describe('mobile sign-in gates', () => {
       status: 'planned',
     }));
     expect(mockPush).not.toHaveBeenCalledWith('/(auth)/login');
+  });
+
+  it('shows a saved itinerary under Trip plans and opens its detail screen', async () => {
+    mockAuthUser = signedInUser;
+    mockParams = { view: 'plans' };
+    mockItineraryList.mockResolvedValue([{
+      id: 'itinerary-batanes',
+      destinationId: 'batanes',
+      title: 'Batanes mindful escape',
+      subtitle: 'A three-day island plan',
+      durationDays: 3,
+      budget: 'Comfort',
+      generatedAt: '2026-09-30T00:00:00.000Z',
+    }]);
+
+    await render(<BucketListScreen />);
+
+    expect(await screen.findByText('Batanes mindful escape')).toBeTruthy();
+    fireEvent.press(screen.getByRole('button', { name: 'Open Batanes mindful escape' }));
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/itineraries/[id]',
+      params: { id: 'itinerary-batanes' },
+    });
   });
 
   it('shows guest-safe Journey content without loading personal records or redirecting', async () => {

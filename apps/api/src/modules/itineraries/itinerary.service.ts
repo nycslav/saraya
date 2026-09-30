@@ -28,6 +28,7 @@ import { SubscriptionService } from '../subscriptions/subscription.service';
 
 export class ItineraryDestinationNotFoundError extends Error {}
 export class InvalidGeneratedItineraryError extends Error {}
+export class SavedItineraryNotFoundError extends Error {}
 
 export class ItineraryService {
   constructor(
@@ -94,7 +95,11 @@ export class ItineraryService {
     });
   }
 
-  async save(rawItinerary: unknown): Promise<GeneratedItinerary> {
+  list(userId: string) {
+    return this.itineraries.findAll(userId);
+  }
+
+  async save(userId: string, rawItinerary: unknown): Promise<GeneratedItinerary> {
     const itinerary = generatedItinerarySchema.parse(rawItinerary);
     if (itinerary.destinationId !== itinerary.preferences.destinationId) {
       throw new InvalidGeneratedItineraryError(
@@ -112,12 +117,20 @@ export class ItineraryService {
       throw new InvalidGeneratedItineraryError('Itinerary stop IDs must be unique.');
     }
 
-    await this.itineraries.save(itinerary);
+    if (!(await this.itineraries.save(userId, itinerary))) {
+      throw new SavedItineraryNotFoundError('Saved itinerary not found.');
+    }
     return itinerary;
   }
 
-  getById(id: string) {
-    return this.itineraries.findById(id);
+  getById(userId: string, id: string) {
+    return this.itineraries.findById(userId, id);
+  }
+
+  async delete(userId: string, id: string) {
+    if (!(await this.itineraries.delete(userId, id))) {
+      throw new SavedItineraryNotFoundError('Saved itinerary not found.');
+    }
   }
 }
 

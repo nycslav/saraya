@@ -52,6 +52,16 @@ export const generatedItinerarySchema = z.object({
   generatedAt: z.string().datetime(),
 });
 
+export const savedItinerarySummarySchema = z.object({
+  id: z.string().min(1),
+  destinationId: z.string().min(1),
+  title: z.string().min(1),
+  subtitle: z.string().min(1),
+  durationDays: z.number().int().positive(),
+  budget: budgetSchema,
+  generatedAt: z.string().datetime(),
+});
+
 export const itineraryStatusSchema = z.enum([
   'idle',
   'checking-access',
@@ -70,4 +80,5 @@ export type TripPreferences = z.infer<typeof tripPreferencesSchema>;
 export type ItineraryStop = z.infer<typeof itineraryStopSchema>;
 export type ItineraryDay = z.infer<typeof itineraryDaySchema>;
 export type GeneratedItinerary = z.infer<typeof generatedItinerarySchema>;
+export type SavedItinerarySummary = z.infer<typeof savedItinerarySummarySchema>;
 export type ItineraryStatus = z.infer<typeof itineraryStatusSchema>;

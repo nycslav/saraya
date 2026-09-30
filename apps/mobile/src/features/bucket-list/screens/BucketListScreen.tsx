@@ -4,9 +4,10 @@ import type {
   BucketListStatus,
   DestinationDetail,
   DestinationSummary,
+  SavedItinerarySummary,
 } from '@saraya/contracts';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { Check, Heart, MoreVertical, Plus, Route, Trash2, X } from 'lucide-react-native';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { CalendarDays, Check, Heart, MapPinned, MoreVertical, Plus, Route, Trash2, X } from 'lucide-react-native';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
@@ -21,12 +22,14 @@ import {
 
 import { useAuth } from '@/features/auth/AuthProvider';
 import { destinationGateway } from '@/features/discovery/gateways';
+import { itineraryGateway } from '@/features/itineraries/services/adapters';
 import { Button, Chip, LoadingState, Screen, SearchField, StatusPanel } from '@/ui/components';
 import { colors, radius, spacing, type } from '@/ui/theme';
 
 import { bucketListGateway } from '../gateways';
 
 type Filter = 'all' | 'planned' | 'visited' | 'high';
+type BucketView = 'places' | 'plans';
 type DisplayItem = { item: BucketListItem; destination: DestinationDetail };
 
 const filters: { id: Filter; label: string }[] = [
@@ -38,9 +41,12 @@ const filters: { id: Filter; label: string }[] = [
 
 export function BucketListScreen() {
   const router = useRouter();
+  const { view: requestedView } = useLocalSearchParams<{ view?: string }>();
   const { restoring, user } = useAuth();
   const [items, setItems] = useState<DisplayItem[]>([]);
+  const [plans, setPlans] = useState<SavedItinerarySummary[]>([]);
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
+  const view: BucketView = requestedView === 'plans' ? 'plans' : 'places';
   const [filter, setFilter] = useState<Filter>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,9 +61,13 @@ export function BucketListScreen() {
       setDestinations(destinationOptions);
       if (!user) {
         setItems([]);
+        setPlans([]);
         return;
       }
-      const bucketItems = await bucketListGateway.list();
+      const [bucketItems, savedPlans] = await Promise.all([
+        bucketListGateway.list(),
+        itineraryGateway.list(),
+      ]);
       const details = await Promise.all(
         bucketItems.map(async (item) => ({
           item,
@@ -67,8 +77,9 @@ export function BucketListScreen() {
       setItems(details.filter(
         (entry): entry is DisplayItem => entry.destination !== null,
       ));
+      setPlans(savedPlans);
     } catch {
-      setError('We could not open your saved places. Check your internet connection and try again.');
+      setError('We could not open your Bucket. Check your internet connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -105,6 +116,28 @@ export function BucketListScreen() {
     }
   };
 
+  const removePlan = (plan: SavedItinerarySummary) => {
+    Alert.alert(
+      'Remove trip plan?',
+      `${plan.title} will be removed from your Bucket.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            setSavingId(plan.id);
+            void itineraryGateway
+              .delete(plan.id)
+              .then(load)
+              .catch(() => setError('That trip plan could not be removed.'))
+              .finally(() => setSavingId(null));
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.header}>
@@ -113,20 +146,50 @@ export function BucketListScreen() {
           <Text style={styles.subtitle}>Small plans, big island stories.</Text>
         </View>
         <View style={styles.savedBadge}>
-          <Heart color={colors.coral} size={17} />
-          <Text style={styles.savedText}>{items.length} saved</Text>
+          {view === 'places'
+            ? <Heart color={colors.coral} size={17} />
+            : <CalendarDays color={colors.coral} size={17} />}
+          <Text style={styles.savedText}>
+            {view === 'places' ? `${items.length} places` : `${plans.length} plans`}
+          </Text>
         </View>
-        <Pressable
-          accessibilityLabel="Add destination"
-          accessibilityRole="button"
-          onPress={() => setEditorItem(null)}
-          style={styles.addButton}
-        >
-          <Plus color={colors.navy} size={26} />
-        </Pressable>
+        {view === 'places' ? (
+          <Pressable
+            accessibilityLabel="Add destination"
+            accessibilityRole="button"
+            onPress={() => setEditorItem(null)}
+            style={styles.addButton}
+          >
+            <Plus color={colors.navy} size={26} />
+          </Pressable>
+        ) : null}
       </View>
 
-      <ScrollView
+      <View accessibilityRole="tablist" style={styles.viewTabs}>
+        {([
+          { id: 'places', label: 'Saved places', icon: Heart },
+          { id: 'plans', label: 'Trip plans', icon: CalendarDays },
+        ] as const).map((option) => {
+          const Icon = option.icon;
+          const selected = view === option.id;
+          return (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              key={option.id}
+              onPress={() => router.setParams({ view: option.id })}
+              style={[styles.viewTab, selected && styles.viewTabSelected]}
+            >
+              <Icon color={selected ? colors.blue : colors.muted} size={17} />
+              <Text style={[styles.viewTabText, selected && styles.viewTabTextSelected]}>
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {view === 'places' ? <ScrollView
         contentContainerStyle={styles.filters}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -139,7 +202,7 @@ export function BucketListScreen() {
             selected={filter === option.id}
           />
         ))}
-      </ScrollView>
+      </ScrollView> : null}
 
       {!restoring && !user ? (
         <StatusPanel
@@ -148,7 +211,7 @@ export function BucketListScreen() {
         />
       ) : null}
 
-      {restoring || loading ? <LoadingState label="Opening your saved places..." /> : null}
+      {restoring || loading ? <LoadingState label="Opening your Bucket..." /> : null}
       {error ? (
         <StatusPanel
           action={<Button label="Try again" onPress={() => void load()} variant="secondary" />}
@@ -158,7 +221,7 @@ export function BucketListScreen() {
         />
       ) : null}
 
-      {!loading && !error && items.length === 0 ? (
+      {view === 'places' && !loading && !error && items.length === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyIcon}><Heart color={colors.blue} size={30} /></View>
           <Text style={styles.emptyTitle}>Start your Philippine wish list</Text>
@@ -167,7 +230,7 @@ export function BucketListScreen() {
         </View>
       ) : null}
 
-      {!loading && !error && items.length > 0 && visibleItems.length === 0 ? (
+      {view === 'places' && !loading && !error && items.length > 0 && visibleItems.length === 0 ? (
         <StatusPanel
           message="Choose another filter to see the rest of your saved places."
           title="No matching places"
@@ -175,7 +238,7 @@ export function BucketListScreen() {
         />
       ) : null}
 
-      {!loading && !error ? visibleItems.map((entry) => (
+      {view === 'places' && !loading && !error ? visibleItems.map((entry) => (
         <View key={entry.item.id} style={styles.itemCard}>
           <Pressable
             accessibilityLabel={
@@ -236,7 +299,7 @@ export function BucketListScreen() {
         </View>
       )) : null}
 
-      {!loading && !error && plannedCount >= 2 ? (
+      {view === 'places' && !loading && !error && plannedCount >= 2 ? (
         <View style={styles.routePanel}>
           <Route color={colors.blue} size={25} />
           <View style={styles.routeCopy}>
@@ -246,7 +309,61 @@ export function BucketListScreen() {
         </View>
       ) : null}
 
-      {editorItem !== undefined ? (
+      {view === 'plans' && !loading && !error && plans.length === 0 ? (
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIcon}><MapPinned color={colors.blue} size={30} /></View>
+          <Text style={styles.emptyTitle}>Your trip plans will live here</Text>
+          <Text style={styles.emptyBody}>
+            Generate an itinerary from a destination, then save it to your Bucket.
+          </Text>
+          <Button
+            label="Explore destinations"
+            onPress={() => router.push('/(tabs)/discover')}
+            variant="quiet"
+          />
+        </View>
+      ) : null}
+
+      {view === 'plans' && !loading && !error ? plans.map((plan) => {
+        const destination = destinations.find(({ id }) => id === plan.destinationId);
+        return (
+          <View key={plan.id} style={styles.planCard}>
+            <Pressable
+              accessibilityLabel={`Open ${plan.title}`}
+              accessibilityRole="button"
+              onPress={() => router.push({
+                pathname: '/itineraries/[id]' as never,
+                params: { id: plan.id },
+              } as never)}
+              style={styles.planCopy}
+            >
+              <View style={styles.planIcon}>
+                <MapPinned color={colors.blue} size={22} />
+              </View>
+              <View style={styles.planText}>
+                <Text style={styles.planDestination}>
+                  {destination?.name ?? plan.destinationId}
+                </Text>
+                <Text numberOfLines={2} style={styles.planTitle}>{plan.title}</Text>
+                <Text style={styles.planMeta}>
+                  {plan.durationDays} days · {plan.budget} · {formatPlanDate(plan.generatedAt)}
+                </Text>
+              </View>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={`Remove ${plan.title}`}
+              accessibilityRole="button"
+              disabled={savingId === plan.id}
+              onPress={() => removePlan(plan)}
+              style={styles.moreButton}
+            >
+              <Trash2 color={colors.muted} size={20} />
+            </Pressable>
+          </View>
+        );
+      }) : null}
+
+      {view === 'places' && editorItem !== undefined ? (
         <BucketItemEditor
           destinations={destinations}
           entry={editorItem}
@@ -462,6 +579,14 @@ function EditorChips({
   );
 }
 
+function formatPlanDate(value: string) {
+  return new Intl.DateTimeFormat('en-PH', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(value));
+}
+
 const styles = StyleSheet.create({
   screen: { paddingTop: spacing.lg },
   header: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
@@ -471,6 +596,11 @@ const styles = StyleSheet.create({
   savedBadge: { minHeight: 38, paddingHorizontal: spacing.md, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: spacing.xs, backgroundColor: colors.coralSoft },
   savedText: { color: colors.navy, fontFamily: type.bold, fontSize: 12 },
   addButton: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.coral },
+  viewTabs: { minHeight: 46, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: 3, flexDirection: 'row' },
+  viewTab: { flex: 1, minWidth: 0, borderRadius: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, paddingHorizontal: spacing.sm },
+  viewTabSelected: { backgroundColor: colors.blueSoft },
+  viewTabText: { color: colors.muted, fontFamily: type.bold, fontSize: 13 },
+  viewTabTextSelected: { color: colors.blue },
   filters: { flexDirection: 'row', gap: spacing.sm, paddingRight: spacing.xl },
   itemCard: { minHeight: 112, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: spacing.lg, flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   checkButton: { width: 27, height: 27, borderRadius: 14, borderWidth: 2, borderColor: colors.border, alignItems: 'center', justifyContent: 'center', marginTop: 2 },
@@ -492,6 +622,13 @@ const styles = StyleSheet.create({
   routeCopy: { flex: 1 },
   routeTitle: { color: colors.navy, fontFamily: type.black, fontSize: 14 },
   routeText: { color: colors.blue, fontFamily: type.bold, fontSize: 12 },
+  planCard: { minHeight: 112, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, padding: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  planCopy: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  planIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.blueSoft, alignItems: 'center', justifyContent: 'center' },
+  planText: { flex: 1, minWidth: 0, gap: 2 },
+  planDestination: { color: colors.blue, fontFamily: type.black, fontSize: 11 },
+  planTitle: { color: colors.navy, fontFamily: type.black, fontSize: 16 },
+  planMeta: { color: colors.muted, fontFamily: type.medium, fontSize: 11 },
   modalScrim: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.scrim },
   modalSheet: { maxHeight: '90%', borderTopLeftRadius: 20, borderTopRightRadius: 20, backgroundColor: colors.background, paddingTop: spacing.lg },
   modalHeader: { paddingHorizontal: spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.md },

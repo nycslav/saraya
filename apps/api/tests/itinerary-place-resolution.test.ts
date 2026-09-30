@@ -1,4 +1,4 @@
-import type { DestinationDetail, GeneratedItinerary, TripPreferences } from '@saraya/contracts';
+import type { DestinationDetail, TripPreferences } from '@saraya/contracts';
 
 import type { PlaceCandidate, PlacesProvider } from '../src/integrations/places/places.provider';
 import type { DestinationRepository } from '../src/modules/destinations/destination.repository';
@@ -84,7 +84,9 @@ describe('ItineraryService place resolution', () => {
     };
     const itineraries: ItineraryRepository = {
       save: jest.fn(),
-      findById: jest.fn<Promise<GeneratedItinerary | null>, [string]>(),
+      findAll: jest.fn(),
+      findById: jest.fn(),
+      delete: jest.fn(),
     };
     const places: PlacesProvider = {
       findNearby: jest.fn().mockResolvedValue([candidate]),
@@ -131,7 +133,9 @@ describe('ItineraryService place resolution', () => {
     };
     const itineraries: ItineraryRepository = {
       save: jest.fn(),
-      findById: jest.fn<Promise<GeneratedItinerary | null>, [string]>(),
+      findAll: jest.fn(),
+      findById: jest.fn(),
+      delete: jest.fn(),
     };
     const places: PlacesProvider = {
       findNearby: jest.fn().mockResolvedValue([hotelCandidate]),
