@@ -384,13 +384,13 @@ export function ComingSoonScreen({ title }: { title: string; owner: string }) {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background }, fill: { flex: 1 },
   screenContent: { padding: spacing.xl, paddingBottom: 120, gap: spacing.lg },
-  screenContentWithFloatingBack: { paddingTop: 68 },
-  floatingBackWrap: { position: 'absolute', left: spacing.xl, top: spacing.md, zIndex: 20 },
+  screenContentWithFloatingBack: { paddingTop: 60 },
+  floatingBackWrap: { position: 'absolute', left: spacing.xl, top: spacing.sm, zIndex: 20 },
   floatingBackReducedMotion: { opacity: 1, transform: [{ translateY: 0 }] },
   floatingBack: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.surface,

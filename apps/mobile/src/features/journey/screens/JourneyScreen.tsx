@@ -46,7 +46,7 @@ export function JourneyScreen() {
   return (
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.header}>
-        <View style={styles.headerCopy}><Text style={styles.title}>My Journey</Text><Text style={styles.subtitle}>Your Cebu story so far.</Text></View>
+        <View style={styles.headerCopy}><Text style={styles.title}>My Journey</Text><Text style={styles.subtitle}>Your journey so far.</Text></View>
         <Pressable accessibilityLabel="Record a visit" onPress={() => router.push('/check-ins/create' as never)} style={styles.addButton}><Plus color={colors.white} size={25} /></Pressable>
       </View>
       {!restoring && !user ? (

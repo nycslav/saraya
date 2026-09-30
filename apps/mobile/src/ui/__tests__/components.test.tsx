@@ -84,6 +84,6 @@ describe('shared UI controls', () => {
     );
 
     const style = StyleSheet.flatten(screen.getByTestId('safe-area-detail-scroll').props.contentContainerStyle);
-    expect(style.paddingTop).toBe(68);
+    expect(style.paddingTop).toBe(60);
   });
 });
