@@ -4,7 +4,7 @@
     "slug": "saraya",
     "version": "0.1.0",
     "description": "A personalized travel companion for discovering the Philippines.",
-    "icon": "./assets/images/saraya-wave.png",
+    "icon": "./assets/images/saraya-app-icon.png",
     "orientation": "portrait",
     "scheme": "saraya",
     "userInterfaceStyle": "light",
@@ -56,9 +56,10 @@
     },
     "android": {
       "package": "com.teamsaraya.saraya",
+      "icon": "./assets/images/saraya-app-icon.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/saraya-wave.png",
-        "backgroundColor": "#FFF8E7"
+        "foregroundImage": "./assets/images/saraya-app-icon.png",
+        "backgroundColor": "#43CAD3"
       }
     }
   }
