@@ -74,6 +74,25 @@ describe('authenticated personal-data gateways', () => {
     );
   });
 
+  it('adds the Saraya access token to profile photo uploads', async () => {
+    upload.mockResolvedValue({
+      body: JSON.stringify({ photoUrl: '/uploads/check-ins/profile-photo.jpg' }),
+      headers: {},
+      mimeType: 'application/json',
+      status: 201,
+    });
+
+    await new ApiAuthGateway().uploadProfilePhoto('file:///profile.jpg', 'image/jpeg', 'profile.jpg');
+
+    expect(upload).toHaveBeenCalledWith(
+      'https://api.saraya.test/auth/profile/photo',
+      'file:///profile.jpg',
+      expect.objectContaining({
+        headers: { Authorization: 'Bearer saraya-access-token' },
+      }),
+    );
+  });
+
   it('refreshes a stored session when the app restores', async () => {
     const restored = {
       accessToken: 'new-access-token',

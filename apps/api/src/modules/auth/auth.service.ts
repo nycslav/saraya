@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import type { AuthSession } from '@saraya/contracts';
+import { updateProfileSchema, type AuthSession } from '@saraya/contracts';
 
 import { AuthenticationError, invalidCredentials } from './auth.errors';
 import { PostgresAuthRepository } from './auth.postgres-repository';
@@ -97,6 +97,13 @@ export class AuthService {
       identity.userId,
       hashToken(refreshToken),
     );
+  }
+
+  async updateProfile(userId: string, rawInput: unknown) {
+    const changes = updateProfileSchema.parse(rawInput);
+    const updated = await this.repository.updateProfile(userId, changes);
+    if (!updated) throw invalidCredentials('This account is no longer available.');
+    return publicUser(updated);
   }
 
   private async createSession(user: AuthUser): Promise<AuthSession> {

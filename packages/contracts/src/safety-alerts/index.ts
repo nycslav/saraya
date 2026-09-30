@@ -132,6 +132,30 @@ export const weatherResponseSchema = z.object({
   source: safetySourceSchema,
 });
 
+const destinationSubscriptionInputSchema = z.object({
+  scope: z.literal('destination'),
+  key: z.string().trim().min(1).max(200),
+}).strict();
+const regionSubscriptionInputSchema = z.object({
+  scope: z.literal('region'),
+  key: z.string().trim().min(1).max(120),
+}).strict();
+export const safetyAlertSubscriptionInputSchema = z.discriminatedUnion('scope', [
+  destinationSubscriptionInputSchema,
+  regionSubscriptionInputSchema,
+]);
+
+export const safetyAlertSubscriptionSchema = z.discriminatedUnion('scope', [
+  destinationSubscriptionInputSchema.extend({
+    subscribed: z.boolean(),
+    createdAt: z.string().datetime({ offset: true }).nullable(),
+  }),
+  regionSubscriptionInputSchema.extend({
+    subscribed: z.boolean(),
+    createdAt: z.string().datetime({ offset: true }).nullable(),
+  }),
+]);
+
 export type SafetyAlertType = z.infer<typeof safetyAlertTypeSchema>;
 export type SafetySeverity = z.infer<typeof safetySeveritySchema>;
 export type Coordinates = z.infer<typeof coordinatesSchema>;
@@ -143,3 +167,5 @@ export type WeatherQuery = z.infer<typeof weatherQuerySchema>;
 export type ResolvedLocation = z.infer<typeof resolvedLocationSchema>;
 export type SafetyAlertListResponse = z.infer<typeof safetyAlertListResponseSchema>;
 export type WeatherResponse = z.infer<typeof weatherResponseSchema>;
+export type SafetyAlertSubscriptionInput = z.infer<typeof safetyAlertSubscriptionInputSchema>;
+export type SafetyAlertSubscription = z.infer<typeof safetyAlertSubscriptionSchema>;

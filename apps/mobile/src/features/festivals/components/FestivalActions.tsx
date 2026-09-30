@@ -102,10 +102,10 @@ export function FestivalActions({
           tone: 'success',
         });
       }
-    } catch (error) {
+    } catch {
       setMessage({
         title: 'Reminder unchanged',
-        text: error instanceof Error ? error.message : 'The reminder could not be updated.',
+        text: 'The reminder could not be updated. Check your internet connection and try again.',
         tone: 'error',
       });
     } finally {

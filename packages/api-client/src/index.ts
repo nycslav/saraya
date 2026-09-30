@@ -1,6 +1,11 @@
 import {
   achievementProgressSchema,
+  accountReauthenticationRequestSchema,
+  accountReauthenticationResponseSchema,
   authSessionSchema,
+  photoUploadResultSchema,
+  updateProfileSchema,
+  userProfileSchema,
   bucketListItemSchema,
   checkInSchema,
   createBucketListItemSchema,
@@ -10,6 +15,9 @@ import {
   destinationDetailSchema,
   destinationConditionsSchema,
   destinationSafetySubscriptionSchema,
+  deleteAccountRequestSchema,
+  safetyAlertSubscriptionInputSchema,
+  safetyAlertSubscriptionSchema,
   destinationSummarySchema,
   festivalDetailWithCultureSchema,
   festivalReminderListSchema,
@@ -23,7 +31,6 @@ import {
   deviceTokenRemovalSchema,
   journeyEntrySchema,
   journeyStatisticsSchema,
-  photoUploadResultSchema,
   notificationPreferencesSchema,
   subscriptionStateSchema,
   safetyAlertListResponseSchema,
@@ -35,6 +42,8 @@ import {
   weatherQuerySchema,
   weatherResponseSchema,
   type CreateBucketListItemInput,
+  type AccountReauthenticationRequest,
+  type DeleteAccountRequest,
   type CreateCheckInInput,
   type CreateFestivalReminder,
   type GoogleLoginRequest,
@@ -44,11 +53,13 @@ import {
   type DeviceTokenRegistration,
   type DeviceTokenRemoval,
   type TripPreferences,
+  type UpdateProfileInput,
   type UpdateNotificationPreferences,
   type UpdateBucketListItemInput,
   type UpdateCheckInInput,
   type SafetyAlertQuery,
   type WeatherQuery,
+  type SafetyAlertSubscriptionInput,
 } from '@saraya/contracts';
 import { z } from 'zod';
 
@@ -122,6 +133,19 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
     if (!response.ok) throw new ApiClientError('Saraya API request failed.', response.status);
   };
 
+  const requestBinary = async (path: string, init?: RequestInit) => {
+    const token = await getAccessToken?.();
+    const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
+      ...init,
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init?.headers,
+      },
+    });
+    if (!response.ok) throw new ApiClientError(await readErrorMessage(response), response.status);
+    return response.blob();
+  };
+
   return {
     auth: {
       async google(input: GoogleLoginRequest) {
@@ -144,6 +168,37 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
         await requestWithoutResponse('/auth/logout', {
           method: 'POST',
           body: JSON.stringify({ refreshToken }),
+        });
+      },
+      async updateProfile(input: UpdateProfileInput) {
+        const changes = updateProfileSchema.parse(input);
+        return userProfileSchema.parse(
+          await request('/auth/profile', {
+            method: 'PATCH',
+            body: JSON.stringify(changes),
+          }),
+        );
+      },
+      async uploadProfilePhoto(form: FormData) {
+        return photoUploadResultSchema.parse(await upload('/auth/profile/photo', form));
+      },
+      async reauthenticateAccount(input: AccountReauthenticationRequest) {
+        return accountReauthenticationResponseSchema.parse(
+          await request('/account/reauthenticate', {
+            method: 'POST',
+            body: JSON.stringify(accountReauthenticationRequestSchema.parse(input)),
+          }),
+        );
+      },
+      exportAccountData(accountActionToken: string) {
+        return requestBinary('/account/export', {
+          headers: { 'x-account-action-token': accountActionToken },
+        });
+      },
+      async deleteAccount(input: DeleteAccountRequest) {
+        await requestWithoutResponse('/account', {
+          method: 'DELETE',
+          body: JSON.stringify(deleteAccountRequestSchema.parse(input)),
         });
       },
     },
@@ -285,6 +340,27 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
         return weatherResponseSchema.parse(
           await request(`/weather?${locationParams(query).toString()}`),
         );
+      },
+      async getSubscription(input: SafetyAlertSubscriptionInput) {
+        const value = safetyAlertSubscriptionInputSchema.parse(input);
+        const params = new URLSearchParams({ scope: value.scope, key: value.key });
+        return safetyAlertSubscriptionSchema.parse(
+          await request(`/safety-alert-subscriptions?${params.toString()}`),
+        );
+      },
+      async subscribe(input: SafetyAlertSubscriptionInput) {
+        const value = safetyAlertSubscriptionInputSchema.parse(input);
+        return safetyAlertSubscriptionSchema.parse(
+          await request('/safety-alert-subscriptions', {
+            method: 'POST', body: JSON.stringify(value),
+          }),
+        );
+      },
+      async unsubscribe(input: SafetyAlertSubscriptionInput) {
+        const value = safetyAlertSubscriptionInputSchema.parse(input);
+        await requestWithoutResponse('/safety-alert-subscriptions', {
+          method: 'DELETE', body: JSON.stringify(value),
+        });
       },
     },
     bucketList: {

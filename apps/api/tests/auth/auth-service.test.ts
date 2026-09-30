@@ -63,6 +63,12 @@ class InMemoryAuthRepository implements AuthRepository {
     return this.user;
   }
 
+  async updateProfile(userId: string, changes: { displayName: string; avatarUrl?: string | null }) {
+    if (!this.user || this.user.id !== userId) return null;
+    this.user = { ...this.user, ...changes };
+    return this.user;
+  }
+
   async storeRefreshToken(token: StoredRefreshToken) {
     this.refreshTokens.set(token.id, { ...token, revoked: false });
   }
@@ -172,5 +178,22 @@ describe('AuthService', () => {
     await expect(service.refresh(session.refreshToken)).rejects.toMatchObject({
       code: 'INVALID_AUTHENTICATION',
     });
+  });
+
+  it('updates the authenticated profile without changing its account identity', async () => {
+    const { repository, service } = createService();
+
+    const updated = await service.updateProfile(profile.id, {
+      displayName: 'Maya Explorer',
+      avatarUrl: '/uploads/check-ins/profile-photo.jpg',
+    });
+
+    expect(updated).toEqual(expect.objectContaining({
+      id: profile.id,
+      email: profile.email,
+      displayName: 'Maya Explorer',
+      avatarUrl: '/uploads/check-ins/profile-photo.jpg',
+    }));
+    expect(repository.user?.googleSubject).toBeNull();
   });
 });

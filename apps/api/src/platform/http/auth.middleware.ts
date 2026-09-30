@@ -1,10 +1,11 @@
 import type { RequestHandler } from 'express';
 
-import { AuthenticationError } from '../../modules/auth/auth.errors';
+import { AuthenticationError, invalidCredentials } from '../../modules/auth/auth.errors';
 import {
   createAuthTokenServiceFromEnvironment,
   type AuthTokenService,
 } from '../../modules/auth/auth.tokens';
+import { getPool } from '../database/pool';
 
 declare global {
   namespace Express {
@@ -19,7 +20,10 @@ function bearerToken(header: string | undefined) {
   return match?.[1] ?? null;
 }
 
-export function createAuthenticationMiddleware(tokens: AuthTokenService): RequestHandler {
+export function createAuthenticationMiddleware(
+  tokens: AuthTokenService,
+  userExists: (userId: string) => Promise<boolean> = async () => true,
+): RequestHandler {
   return async (request, response, next) => {
     const token = bearerToken(request.header('authorization'));
     if (!token) {
@@ -30,7 +34,9 @@ export function createAuthenticationMiddleware(tokens: AuthTokenService): Reques
     }
 
     try {
-      response.locals.authenticatedUserId = await tokens.verifyAccessToken(token);
+      const userId = await tokens.verifyAccessToken(token);
+      if (!await userExists(userId)) throw invalidCredentials('Please sign in again.');
+      response.locals.authenticatedUserId = userId;
       next();
     } catch (error) {
       if (!(error instanceof AuthenticationError)) return next(error);
@@ -39,7 +45,7 @@ export function createAuthenticationMiddleware(tokens: AuthTokenService): Reques
   };
 }
 
-let defaultTokens: AuthTokenService | undefined;
+let defaultMiddleware: RequestHandler | undefined;
 
 export const requireAuthenticatedUser: RequestHandler = (request, response, next) => {
   if (!bearerToken(request.header('authorization'))) {
@@ -50,8 +56,13 @@ export const requireAuthenticatedUser: RequestHandler = (request, response, next
   }
 
   try {
-    defaultTokens ??= createAuthTokenServiceFromEnvironment();
-    return createAuthenticationMiddleware(defaultTokens)(request, response, next);
+    defaultMiddleware ??= createAuthenticationMiddleware(
+      createAuthTokenServiceFromEnvironment(),
+      async (userId) => !process.env.DATABASE_URL?.trim() || Boolean(
+        (await getPool().query('SELECT 1 FROM users WHERE id = $1', [userId])).rowCount,
+      ),
+    );
+    return defaultMiddleware(request, response, next);
   } catch (error) {
     next(error);
   }

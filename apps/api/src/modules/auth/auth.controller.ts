@@ -10,6 +10,7 @@ export type AuthController = {
   google: RequestHandler;
   refresh: RequestHandler;
   logout: RequestHandler;
+  updateProfile: RequestHandler;
 };
 
 export function createAuthController(providedService?: AuthService): AuthController {
@@ -38,6 +39,15 @@ export function createAuthController(providedService?: AuthService): AuthControl
         const input = refreshTokenRequestSchema.parse(request.body);
         await getService().logout(input.refreshToken);
         response.status(204).send();
+      } catch (error) {
+        next(error);
+      }
+    },
+    updateProfile: async (request, response, next) => {
+      try {
+        response.json(
+          await getService().updateProfile(response.locals.authenticatedUserId, request.body),
+        );
       } catch (error) {
         next(error);
       }

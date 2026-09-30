@@ -56,4 +56,19 @@ describe('SupabasePhotoStorage', () => {
       }),
     );
   });
+
+  it('deletes an object through the storage object route', async () => {
+    global.fetch = jest.fn().mockResolvedValue(new Response('{}', { status: 200 }));
+    const storage = new SupabasePhotoStorage();
+
+    await storage.delete('memory.jpg');
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://example.supabase.co/storage/v1/object/journey-photos/check-ins/memory.jpg',
+      expect.objectContaining({
+        method: 'DELETE',
+        headers: expect.objectContaining({ authorization: 'Bearer test-service-key' }),
+      }),
+    );
+  });
 });

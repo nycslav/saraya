@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { AccessibilityInfo, Text } from 'react-native';
+import { AccessibilityInfo, StyleSheet, Text } from 'react-native';
 
 import { Button, Chip, DestinationArtwork, Screen } from '../components';
 
@@ -74,5 +74,16 @@ describe('shared UI controls', () => {
       nativeEvent: { contentOffset: { y: 80 } },
     });
     expect(screen.getByTestId('scroll-aware-back-container').props.accessibilityElementsHidden).toBe(false);
+  });
+
+  it('reserves only the back control height beneath the safe area', async () => {
+    await render(
+      <Screen backAction={{ onPress: jest.fn() }} testID="safe-area-detail-scroll">
+        <Text>Detail content</Text>
+      </Screen>,
+    );
+
+    const style = StyleSheet.flatten(screen.getByTestId('safe-area-detail-scroll').props.contentContainerStyle);
+    expect(style.paddingTop).toBe(68);
   });
 });

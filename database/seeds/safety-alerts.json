@@ -19,7 +19,7 @@
     },
     "startsAt": "2026-01-01T00:00:00.000Z",
     "endsAt": "2030-12-31T23:59:59.000Z",
-    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "source": {"provider": "saraya-demo", "name": "Saraya sample safety information", "isDemo": true},
     "createdAt": "2026-09-22T00:00:00.000Z",
     "updatedAt": "2026-09-22T00:00:00.000Z"
   },
@@ -40,7 +40,7 @@
     },
     "startsAt": "2026-01-01T00:00:00.000Z",
     "endsAt": "2030-12-31T23:59:59.000Z",
-    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "source": {"provider": "saraya-demo", "name": "Saraya sample safety information", "isDemo": true},
     "createdAt": "2026-09-22T00:00:00.000Z",
     "updatedAt": "2026-09-22T00:00:00.000Z"
   },
@@ -61,7 +61,7 @@
     },
     "startsAt": "2026-01-01T00:00:00.000Z",
     "endsAt": "2030-12-31T23:59:59.000Z",
-    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "source": {"provider": "saraya-demo", "name": "Saraya sample safety information", "isDemo": true},
     "createdAt": "2026-09-22T00:00:00.000Z",
     "updatedAt": "2026-09-22T00:00:00.000Z"
   },
@@ -82,7 +82,7 @@
     },
     "startsAt": "2026-01-01T00:00:00.000Z",
     "endsAt": "2030-12-31T23:59:59.000Z",
-    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "source": {"provider": "saraya-demo", "name": "Saraya sample safety information", "isDemo": true},
     "createdAt": "2026-09-22T00:00:00.000Z",
     "updatedAt": "2026-09-22T00:00:00.000Z"
   },
@@ -103,7 +103,7 @@
     },
     "startsAt": "2026-01-01T00:00:00.000Z",
     "endsAt": "2030-12-31T23:59:59.000Z",
-    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "source": {"provider": "saraya-demo", "name": "Saraya sample safety information", "isDemo": true},
     "createdAt": "2026-09-22T00:00:00.000Z",
     "updatedAt": "2026-09-22T00:00:00.000Z"
   },
@@ -124,7 +124,7 @@
     },
     "startsAt": "2025-01-01T00:00:00.000Z",
     "endsAt": "2025-01-02T00:00:00.000Z",
-    "source": {"provider": "saraya-demo", "name": "Saraya synthetic safety dataset", "isDemo": true},
+    "source": {"provider": "saraya-demo", "name": "Saraya sample safety information", "isDemo": true},
     "createdAt": "2025-01-01T00:00:00.000Z",
     "updatedAt": "2025-01-01T00:00:00.000Z"
   }

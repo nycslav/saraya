@@ -26,7 +26,7 @@ export function JourneyScreen() {
       const [timeline, stats] = await Promise.all([journeyGateway.timeline(), journeyGateway.statistics()]);
       setEntries(timeline);
       setStatistics(stats);
-    } catch { setError('Your Journey could not be loaded. Check the API connection and try again.'); }
+    } catch { setError('We could not open your Journey. Check your internet connection and try again.'); }
     finally { setLoading(false); }
   }, []);
 

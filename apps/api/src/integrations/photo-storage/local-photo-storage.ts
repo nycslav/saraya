@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { PhotoNotFoundError, type PhotoStorage } from './photo-storage.types';
@@ -43,6 +43,15 @@ export class LocalPhotoStorage implements PhotoStorage {
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new PhotoNotFoundError();
       throw error;
+    }
+  }
+
+  async delete(fileName: string) {
+    if (path.basename(fileName) !== fileName) throw new PhotoNotFoundError();
+    try {
+      await unlink(path.join(uploadRoot, 'check-ins', fileName));
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
     }
   }
 }

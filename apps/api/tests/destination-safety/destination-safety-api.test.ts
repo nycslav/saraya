@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { MockWeatherProvider } from '../../src/integrations/weather';
 import { createDestinationSafetyController } from '../../src/modules/destination-safety/destination-safety.controller';
 import { createDestinationSafetyRouter } from '../../src/modules/destination-safety/destination-safety.route';
+import { createSafetySubscriptionRouter } from '../../src/modules/destination-safety/safety-subscription.route';
 import { InMemoryDestinationSafetySubscriptionRepository } from '../../src/modules/destination-safety/destination-safety-subscription.repository';
 import { DestinationSafetyService } from '../../src/modules/destination-safety/destination-safety.service';
 import { InMemoryDestinationRepository } from '../../src/modules/destinations/destination.repository';
@@ -38,6 +39,7 @@ function createTestApp(authenticated = true) {
     authenticate,
     createDestinationSafetyController(service),
   ));
+  app.use('/safety-alert-subscriptions', createSafetySubscriptionRouter(authenticate, service));
   const errors: ErrorRequestHandler = (error, _request, response, _next) => {
     if (error instanceof ZodError) {
       response.status(400).json({ error: { code: 'VALIDATION_ERROR' } });
@@ -81,5 +83,22 @@ describe('destination safety API', () => {
     const missing = await request(createTestApp()).post('/destinations/missing/safety-subscription');
     expect(missing.status).toBe(404);
     expect(missing.body.error.code).toBe('DESTINATION_NOT_FOUND');
+  });
+
+  it('follows regions without accepting or storing coordinates', async () => {
+    const app = createTestApp();
+    const path = '/safety-alert-subscriptions';
+    const created = await request(app).post(path).send({ scope: 'region', key: 'Bicol Region' });
+    const status = await request(app).get(path).query({ scope: 'region', key: 'Bicol Region' });
+    const coordinatesAreRejected = await request(app).post(path).send({
+      scope: 'region', key: 'Bicol Region', latitude: 13.4, longitude: 123.4,
+    });
+    const removed = await request(app).delete(path).send({ scope: 'region', key: 'Bicol Region' });
+
+    expect(created.status).toBe(201);
+    expect(created.body).toMatchObject({ scope: 'region', key: 'Bicol Region', subscribed: true });
+    expect(status.body.subscribed).toBe(true);
+    expect(coordinatesAreRejected.status).toBe(400);
+    expect(removed.status).toBe(204);
   });
 });

@@ -1,8 +1,8 @@
 import type { SafetyAlert } from '@saraya/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, RefreshCw, ShieldCheck } from 'lucide-react-native';
+import { RefreshCw, ShieldCheck } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { Button, LoadingState, Screen, SectionTitle, StatusPanel } from '@/ui/components';
 import { colors, radius, spacing, type } from '@/ui/theme';
@@ -38,27 +38,28 @@ export function SafetyAlertDetailScreen({ gateway = safetyAlertGateway }: { gate
     setError(false);
     setAttempt((value) => value + 1);
   };
+  const backAction = {
+    accessibilityLabel: 'Back to safety alerts',
+    onPress: () => router.canGoBack() ? router.back() : router.replace('/alerts'),
+  };
 
-  if (alert === undefined && !error) return <Screen><LoadingState label="Loading safety alert…" /></Screen>;
+  if (alert === undefined && !error) return <Screen backAction={backAction}><LoadingState label="Loading safety alert…" /></Screen>;
   if (error) return (
-    <Screen contentContainerStyle={styles.centered}>
+    <Screen backAction={backAction} contentContainerStyle={styles.centered}>
       <StatusPanel title="Safety alert unavailable" message="The alert could not be loaded. Try again before making a travel decision." tone="error" />
       <Button icon={RefreshCw} label="Try again" onPress={retry} />
     </Screen>
   );
   if (!alert) return (
-    <Screen contentContainerStyle={styles.centered}>
+    <Screen backAction={backAction} contentContainerStyle={styles.centered}>
       <StatusPanel title="Alert not found" message="This safety alert is unavailable or may have expired." tone="warning" />
-      <Button label="Back to safety alerts" onPress={() => router.back()} />
+      <Button label="Back to safety alerts" onPress={backAction.onPress} />
     </Screen>
   );
 
   const severity = safetySeverityCopy[alert.severity];
   return (
-    <Screen>
-      <Pressable accessibilityLabel="Back to safety alerts" accessibilityRole="button" onPress={() => router.back()} style={styles.back}>
-        <ArrowLeft color={colors.navy} size={24} />
-      </Pressable>
+    <Screen backAction={backAction}>
       <View style={[styles.hero, styles[alert.severity]]}>
         <ShieldCheck color={colors.navy} size={30} />
         <Text style={styles.severity}>{severity.label} · {severity.meaning}</Text>
@@ -67,7 +68,7 @@ export function SafetyAlertDetailScreen({ gateway = safetyAlertGateway }: { gate
         <Text style={styles.summary}>{alert.summary}</Text>
       </View>
       {alert.source.isDemo ? (
-        <StatusPanel title="Synthetic demonstration alert" message="This is not a live PAGASA or government warning. Verify current official information before travel." tone="warning" />
+        <StatusPanel title="Sample safety information" message="This is not a live PAGASA or government warning. Check current official information before travel." tone="warning" />
       ) : null}
       <DetailSection title="Affected area" items={[alert.affectedAreaDescription, ...alert.affectedRegions]} />
       <DetailSection title="Active period" items={[
@@ -79,9 +80,9 @@ export function SafetyAlertDetailScreen({ gateway = safetyAlertGateway }: { gate
       <DetailSection title="Traveler recommendations" items={alert.advice} />
       {alert.alternatives.length ? <DetailSection title="Alternatives" items={alert.alternatives} /> : null}
       <View style={styles.source}>
-        <Text style={styles.sourceLabel}>SOURCE CONTEXT</Text>
+        <Text style={styles.sourceLabel}>ABOUT THIS INFORMATION</Text>
         <Text style={styles.sourceName}>{alert.source.name}</Text>
-        <Text style={styles.body}>Provider: {alert.source.provider}</Text>
+        <Text style={styles.body}>{alert.source.isDemo ? 'This example is included to show how safety alerts work.' : 'Check the named source for the latest official update.'}</Text>
       </View>
     </Screen>
   );
@@ -93,7 +94,6 @@ function DetailSection({ title, items }: { title: string; items: string[] }) {
 
 const styles = StyleSheet.create({
   centered: { minHeight: '100%', justifyContent: 'center' },
-  back: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   hero: { gap: spacing.sm, padding: spacing.xl, borderWidth: 2, borderRadius: radius.lg },
   green: { borderColor: colors.green, backgroundColor: colors.greenSoft },
   yellow: { borderColor: colors.yellow, backgroundColor: colors.yellowSoft },

@@ -6,12 +6,14 @@ import { ZodError } from 'zod';
 import { PhotoNotFoundError } from './integrations/photo-storage/photo-storage.types';
 import { AuthenticationError } from './modules/auth/auth.errors';
 import { authRouter } from './modules/auth/auth.route';
+import { accountManagementRouter } from './modules/account-management/account-management.route';
 import { bucketListRouter } from './modules/bucket-list/bucket-list.route';
 import { achievementRouter, userAchievementRouter } from './modules/achievements/achievement.route';
 import { serveCheckInPhoto } from './modules/check-ins/check-in.photo';
 import { checkInRouter } from './modules/check-ins/check-in.route';
 import { destinationRouter } from './modules/destinations/destination.route';
 import { destinationSafetyRouter } from './modules/destination-safety/destination-safety.route';
+import { safetySubscriptionRouter } from './modules/destination-safety/safety-subscription.route';
 import { festivalRouter } from './modules/festivals/festival.route';
 import {
   festivalReminderListRouter,
@@ -47,6 +49,7 @@ app.get('/health', (_request, response) => {
 });
 
 app.use('/auth', authRouter);
+app.use('/account', accountManagementRouter);
 app.use('/achievements', achievementRouter);
 app.use('/bucket-list', bucketListRouter);
 app.use('/check-ins', checkInRouter);
@@ -58,6 +61,7 @@ app.use('/festivals', festivalRouter);
 app.use('/itineraries', itineraryRouter);
 app.use('/notifications', notificationRouter);
 app.use('/safety-alerts', safetyAlertRouter);
+app.use('/safety-alert-subscriptions', safetySubscriptionRouter);
 app.use('/subscriptions', subscriptionRouter);
 app.use('/alerts', regionalAlertRouter);
 app.use('/weather', weatherRouter);

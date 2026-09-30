@@ -57,7 +57,7 @@ export function PaywallScreen() {
   }, []);
 
   const handleLoadError = useCallback(() => {
-    setMessage('Purchase options could not be loaded. Check your connection and RevenueCat configuration.');
+    setMessage('Purchase options could not be loaded. Check your internet connection and try again.');
     setState('error');
   }, []);
 
@@ -205,7 +205,7 @@ export function PaywallScreen() {
       {products.length === 0 ? (
         <StatusPanel
           action={<Button icon={RefreshCw} label="Try again" onPress={reload} variant="secondary" />}
-          message="RevenueCat returned neither configured package from the default offering."
+          message="Purchase options are temporarily unavailable. Check your internet connection and try again."
           title="No purchase options available"
           tone="warning"
         />

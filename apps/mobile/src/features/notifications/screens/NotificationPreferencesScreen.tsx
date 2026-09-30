@@ -1,4 +1,5 @@
 import type { NotificationPreferences } from '@saraya/contracts';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
 
@@ -8,10 +9,15 @@ import { colors, radius, spacing, type } from '@/ui/theme';
 import { notificationGateway } from '../gateway';
 
 export function NotificationPreferencesScreen() {
+  const router = useRouter();
   const { user, restoring } = useAuth();
   const [preferences, setPreferences] = useState<NotificationPreferences>();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
+  const backAction = {
+    accessibilityLabel: 'Back to profile',
+    onPress: () => router.canGoBack() ? router.back() : router.replace('/(tabs)/profile'),
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -22,8 +28,12 @@ export function NotificationPreferencesScreen() {
     return () => { active = false; };
   }, [user]);
 
-  if (restoring || (user && !preferences && !error)) return <Screen><LoadingState label="Loading notification preferences…" /></Screen>;
-  if (!user) return <Screen><StatusPanel title="Sign in required" message="Sign in before enabling notifications so Saraya can associate this device only with your account." /></Screen>;
+  if (restoring || (user && !preferences && !error)) {
+    return <Screen backAction={backAction}><LoadingState label="Loading notification preferences…" /></Screen>;
+  }
+  if (!user) {
+    return <Screen backAction={backAction}><StatusPanel title="Sign in required" message="Sign in before enabling notifications so Saraya can associate this device only with your account." /></Screen>;
+  }
 
   const toggle = async (key: keyof NotificationPreferences, enabled: boolean) => {
     const previous = preferences!;
@@ -36,13 +46,13 @@ export function NotificationPreferencesScreen() {
         : await notificationGateway.updatePreferences({ [key]: false });
       setPreferences(updated);
       if (enabled && !updated[key]) setError('Permission was not granted. Saraya remains usable without notifications.');
-    } catch (caught) {
+    } catch {
       setPreferences(previous);
-      setError(caught instanceof Error ? caught.message : 'The preference could not be saved.');
+      setError('Your notification choice could not be saved. Check your internet connection and try again.');
     } finally { setSaving(false); }
   };
 
-  return <Screen>
+  return <Screen backAction={backAction}>
     <Text accessibilityRole="header" style={styles.title}>Notifications</Text>
     <Text style={styles.description}>Choose what Saraya may send. Permission is requested only when you turn a category on.</Text>
     <View style={styles.card}>
