@@ -42,7 +42,8 @@
           "photosPermission": "Allow Saraya to add a travel photo to your Journey.",
           "cameraPermission": "Allow Saraya to take a travel photo for your Journey."
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true
