@@ -73,11 +73,11 @@ export function getDemoWeather(query: WeatherQuery) {
     windSpeedKilometersPerHour: 12,
     windDirectionDegrees: 90,
     warningState: location.region === 'National Capital Region' || location.region === 'Bicol Region' ? 'advisory' : 'no-warning',
-    summary: 'DEMO weather from Saraya’s deterministic offline provider. Verify real conditions before travel.',
+    summary: 'Example weather for previewing this screen. Check a live forecast before travel.',
     observedAt: '2026-09-22T08:00:00.000Z',
     fetchedAt: '2026-09-22T08:01:00.000Z',
     providerStatus: 'fresh',
-    source: { provider: 'saraya-mobile-demo', name: 'Saraya deterministic mobile fixture', isDemo: true },
+    source: { provider: 'saraya-mobile-demo', name: 'Saraya sample weather information', isDemo: true },
   });
 }
 

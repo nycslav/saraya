@@ -62,6 +62,17 @@ export class SupabasePhotoStorage implements PhotoStorage {
     };
   }
 
+  async delete(fileName: string) {
+    if (path.basename(fileName) !== fileName) throw new PhotoNotFoundError();
+    const response = await fetch(this.objectUrl(fileName), {
+      method: 'DELETE',
+      headers: this.authorizationHeaders(),
+    });
+    if (!response.ok && response.status !== 404) {
+      throw new Error(`Supabase photo deletion failed (${response.status}).`);
+    }
+  }
+
   private objectUrl(fileName: string, authenticated = false) {
     const route = authenticated ? 'authenticated' : '';
     const segments = [this.bucket, 'check-ins', fileName].map(encodeURIComponent).join('/');

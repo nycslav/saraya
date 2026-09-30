@@ -37,7 +37,7 @@ export function DestinationDetailScreen() {
       .catch(() => {
         if (active)
           setError(
-            'The destination service is unavailable. Check the API connection and try again.',
+            'We could not open this destination. Check your internet connection and try again.',
           );
       });
     return () => {

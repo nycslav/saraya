@@ -100,6 +100,19 @@ export class PostgresAuthRepository implements AuthRepository {
     return result.rows[0] ? toUser(result.rows[0]) : null;
   }
 
+  async updateProfile(userId: string, changes: { displayName: string; avatarUrl?: string | null }) {
+    const result = await getPool().query<UserRow>(
+      `UPDATE users
+       SET display_name = $2,
+           avatar_url = CASE WHEN $3::boolean THEN $4 ELSE avatar_url END,
+           updated_at = now()
+       WHERE id = $1
+       RETURNING ${userColumns}`,
+      [userId, changes.displayName, 'avatarUrl' in changes, changes.avatarUrl ?? null],
+    );
+    return result.rows[0] ? toUser(result.rows[0]) : null;
+  }
+
   async storeRefreshToken(token: StoredRefreshToken) {
     await getPool().query(
       `INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at)

@@ -76,7 +76,7 @@ export function ItineraryPlannerScreen() {
       })
       .catch(() =>
         setDestinationError(
-          'The destination service is unavailable. Check the API configuration and try again.',
+          'Destinations could not be loaded. Check your internet connection and try again.',
         ),
       );
     void pendingItineraryStore.load().then((pending) => {
@@ -227,7 +227,7 @@ export function ItineraryPlannerScreen() {
       <Screen contentContainerStyle={styles.centeredScreen}>
         <StatusPanel
           message={destinationError}
-          title="Destination service unavailable"
+          title="Destination details unavailable"
           tone="error"
         />
         <Button label="Back to Discover" onPress={() => router.replace('/(tabs)/discover')} />
@@ -294,7 +294,7 @@ export function ItineraryPlannerScreen() {
           message={
             status === 'cancelled'
               ? 'Your preferences are still available.'
-              : 'The itinerary service could not finish this request. Check the API connection and try again.'
+              : 'Saraya could not finish your itinerary. Check your internet connection and try again.'
           }
           title={status === 'cancelled' ? 'Generation cancelled' : 'We hit a detour'}
           tone={status === 'cancelled' ? 'warning' : 'error'}
@@ -314,16 +314,14 @@ export function ItineraryPlannerScreen() {
     const isDeterministic = itinerary.generationSource === 'deterministic';
     const SourceIcon = isDeterministic ? WifiOff : Sparkles;
     const sourceLabel = isDeterministic
-      ? 'Deterministic fallback'
-      : itinerary.generationSource === 'gemini'
-        ? 'Gemini generated'
-        : 'OpenAI generated';
+      ? 'Offline plan'
+      : 'Personalized plan';
     return (
       <Screen backAction={{ onPress: () => setStatus('idle') }}>
         <View style={styles.resultHero}>
           <View
             accessible
-            accessibilityLabel={`Itinerary source: ${sourceLabel}`}
+            accessibilityLabel={`Plan type: ${sourceLabel}`}
             accessibilityRole="text"
             style={[styles.sourceMarker, isDeterministic && styles.sourceMarkerFallback]}
           >
@@ -376,7 +374,7 @@ export function ItineraryPlannerScreen() {
         })}
         {saved ? (
           <StatusPanel
-            message="Your itinerary was saved through the Saraya API."
+            message="Your itinerary is saved to your account."
             title="Itinerary saved"
             tone="success"
           />

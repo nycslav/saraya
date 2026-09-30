@@ -9,13 +9,8 @@ import { useAuth } from '../AuthProvider';
 import { AuthShell, GoogleAuthButton } from '../components';
 
 function messageFor(error: unknown) {
-  if (error instanceof Error) {
-    console.error('Authentication error:', error);
-    return error.message;
-  }
-
-  console.error('Unknown authentication error:', error);
-  return 'Sign-in could not be completed.';
+  console.error('Authentication error:', error);
+  return 'Sign-in could not be completed. Check your internet connection and try again.';
 }
 
 export function LoginScreen() {
@@ -46,7 +41,7 @@ export function LoginScreen() {
 
       {requestError ? <StatusPanel message={requestError} title="Could not sign in" tone="error" /> : null}
       <GoogleAuthButton loading={loading} onPress={() => void submitGoogle()} />
-      <Text style={styles.note}>Google sign-in works in the Android development build, not Expo Go.</Text>
+      <Text style={styles.note}>Saraya uses your Google account to keep your saved travel details connected to you.</Text>
     </AuthShell>
   );
 }

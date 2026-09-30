@@ -384,3 +384,23 @@ CREATE TABLE generation_quota_reservations (
 
 CREATE INDEX generation_quota_reservations_user_status_idx
   ON generation_quota_reservations (user_id, status);
+
+CREATE TABLE destination_safety_subscriptions (
+  user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  destination_id text NOT NULL REFERENCES destinations(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, destination_id)
+);
+
+CREATE INDEX destination_safety_subscriptions_destination_idx
+  ON destination_safety_subscriptions (destination_id, user_id);
+
+CREATE TABLE region_safety_subscriptions (
+  user_id text NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  region text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, region)
+);
+
+CREATE INDEX region_safety_subscriptions_region_idx
+  ON region_safety_subscriptions (region, user_id);

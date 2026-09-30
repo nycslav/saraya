@@ -87,9 +87,8 @@ export function CreateCheckInScreen() {
         params: { unlocked: result.newlyUnlockedAchievements.map((item) => item.title).join(', ') },
       });
     } catch (caught) {
-      setError(caught instanceof ApiClientError
-        ? caught.message
-        : 'This travel memory could not be saved. Check the API connection and try again.');
+      if (caught instanceof ApiClientError) console.error('Travel memory save failed:', caught);
+      setError('This travel memory could not be saved. Check your internet connection and try again.');
     } finally { setSaving(false); }
   };
 

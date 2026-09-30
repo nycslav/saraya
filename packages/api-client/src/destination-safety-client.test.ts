@@ -81,4 +81,29 @@ describe('destination safety API client', () => {
     await expect(createApiClient('https://api.saraya.test').destinations
       .getSafetySubscription('cebu-city')).rejects.toThrow();
   });
+
+  it('uses the region-capable safety subscription contract', async () => {
+    const regionSubscription = {
+      scope: 'region' as const,
+      key: 'Bicol Region',
+      subscribed: true,
+      createdAt: '2026-09-28T00:00:00.000Z',
+    };
+    const fetchMock = jest.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(Response.json(regionSubscription, { status: 201 }))
+      .mockResolvedValueOnce(Response.json(regionSubscription))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    const client = createApiClient('https://api.saraya.test', async () => 'token');
+
+    await expect(client.safety.subscribe({ scope: 'region', key: 'Bicol Region' }))
+      .resolves.toEqual(regionSubscription);
+    await expect(client.safety.getSubscription({ scope: 'region', key: 'Bicol Region' }))
+      .resolves.toEqual(regionSubscription);
+    await expect(client.safety.unsubscribe({ scope: 'region', key: 'Bicol Region' }))
+      .resolves.toBeUndefined();
+
+    expect(fetchMock.mock.calls[1]?.[0]).toBe(
+      'https://api.saraya.test/safety-alert-subscriptions?scope=region&key=Bicol+Region',
+    );
+  });
 });

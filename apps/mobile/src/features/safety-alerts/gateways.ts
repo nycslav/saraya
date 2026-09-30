@@ -4,10 +4,13 @@ import type {
   SafetyAlertQuery,
   WeatherQuery,
   WeatherResponse,
+  SafetyAlertSubscription,
+  SafetyAlertSubscriptionInput,
 } from '@saraya/contracts';
 import { createApiClient } from '@saraya/api-client';
 
 import { getApiBaseUrl } from '@/core/config';
+import { sessionStore } from '@/features/auth/sessionStore';
 
 import { findDemoAlert, getDemoWeather, listDemoAlerts } from './data/demoSafety';
 
@@ -63,3 +66,20 @@ export const safetyAlertGateway: SafetyAlertGateway =
   process.env.EXPO_PUBLIC_DATA_MODE === 'api'
     ? new ApiSafetyAlertGateway()
     : new FixtureSafetyAlertGateway();
+
+export interface SafetySubscriptionGateway {
+  get(input: SafetyAlertSubscriptionInput): Promise<SafetyAlertSubscription>;
+  subscribe(input: SafetyAlertSubscriptionInput): Promise<SafetyAlertSubscription>;
+  unsubscribe(input: SafetyAlertSubscriptionInput): Promise<void>;
+}
+
+export class ApiSafetySubscriptionGateway implements SafetySubscriptionGateway {
+  private get client() {
+    return createApiClient(getApiBaseUrl(), async () => (await sessionStore.read())?.accessToken ?? null);
+  }
+  get(input: SafetyAlertSubscriptionInput) { return this.client.safety.getSubscription(input); }
+  subscribe(input: SafetyAlertSubscriptionInput) { return this.client.safety.subscribe(input); }
+  unsubscribe(input: SafetyAlertSubscriptionInput) { return this.client.safety.unsubscribe(input); }
+}
+
+export const safetySubscriptionGateway: SafetySubscriptionGateway = new ApiSafetySubscriptionGateway();

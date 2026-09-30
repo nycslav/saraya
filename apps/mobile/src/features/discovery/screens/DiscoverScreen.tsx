@@ -1,4 +1,5 @@
 import type { DestinationSummary, IslandGroup } from '@saraya/contracts';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
@@ -19,6 +20,7 @@ import { PhilippinesHeroMap } from '../components/PhilippinesHeroMap';
 import { destinationGateway } from '../gateways';
 
 export const islandGroups: IslandGroup[] = ['Luzon', 'Visayas', 'Mindanao'];
+export const discoverTipCompletedKey = 'saraya:discover:island-tip-completed';
 
 export function groupDestinations(destinations: DestinationSummary[]) {
   return Object.fromEntries(
@@ -52,6 +54,7 @@ export function DiscoverScreen() {
   const [destinations, setDestinations] = useState<DestinationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showIslandTip, setShowIslandTip] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -60,7 +63,7 @@ export function DiscoverScreen() {
       setDestinations(await destinationGateway.list({ search }));
     } catch {
       setError(
-        'Destinations could not be loaded. Check the API address and your connection, then try again.',
+        'Destinations could not be loaded. Check your internet connection and try again.',
       );
     } finally {
       setLoading(false);
@@ -81,6 +84,18 @@ export function DiscoverScreen() {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    void AsyncStorage.getItem(discoverTipCompletedKey)
+      .then((completed) => {
+        if (active) setShowIslandTip(completed !== 'true');
+      })
+      .catch(() => {
+        if (active) setShowIslandTip(true);
+      });
+    return () => { active = false; };
+  }, []);
+
   const grouped = groupDestinations(destinations);
   const carouselCardWidth = getCarouselCardWidth(viewportWidth);
   const carouselSnapInterval = carouselCardWidth + spacing.md;
@@ -97,6 +112,8 @@ export function DiscoverScreen() {
     const y = sectionY[region];
     if (y === undefined) return;
     scrollToMeasuredSection(scrollViewRef.current, y, reducedMotion);
+    setShowIslandTip(false);
+    void AsyncStorage.setItem(discoverTipCompletedKey, 'true').catch(() => undefined);
   };
 
   return (
@@ -119,7 +136,6 @@ export function DiscoverScreen() {
         </View>
 
         <PhilippinesHeroMap enabled={enabled} onSelect={scrollToRegion} />
-        <Text style={styles.mapHint}>Tap a labeled island group to jump to its destinations.</Text>
 
         <SearchField
           onChangeText={setSearch}
@@ -127,18 +143,23 @@ export function DiscoverScreen() {
           value={search}
         />
 
-        {loading ? <LoadingState label="Loading destinations from the Saraya API…" /> : null}
+        {loading ? <LoadingState label="Finding destinations…" /> : null}
         {error ? (
           <StatusPanel
             action={<Button label="Try again" onPress={() => void load()} variant="secondary" />}
             message={error}
-            title="Destination service unavailable"
+            title="Destinations could not load"
             tone="error"
           />
         ) : null}
 
         {islandGroups.map((region) => (
-          <View key={region} onLayout={saveSectionPosition(region)} style={styles.section}>
+          <View
+            key={region}
+            onLayout={saveSectionPosition(region)}
+            style={styles.section}
+            testID={`destination-section-${region.toLowerCase()}`}
+          >
             <View style={styles.sectionHeading}>
               <View
                 style={[styles.regionBar, styles[region.toLowerCase() as Lowercase<IslandGroup>]]}
@@ -154,7 +175,7 @@ export function DiscoverScreen() {
                 message={
                   search
                     ? `No ${region} destinations match “${search}”.`
-                    : `The API returned no ${region} destinations.`
+                    : `No ${region} destinations are available right now.`
                 }
                 title={`No ${region} results`}
                 tone="warning"
@@ -186,6 +207,20 @@ export function DiscoverScreen() {
           </View>
         ))}
       </ScrollView>
+      {showIslandTip ? (
+        <View style={styles.tipFloat} testID="discover-tip-float">
+          <Text style={styles.tipText}>
+            Tap a labeled island group to jump to its destinations.
+          </Text>
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={styles.tipMascot}
+          >
+            <Mascot mood="star" size={72} />
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -203,13 +238,25 @@ const styles = StyleSheet.create({
   brand: { color: colors.blue, fontFamily: type.black, fontSize: 28 },
   greeting: { color: colors.navy, fontFamily: type.black, fontSize: 20 },
   subtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 14 },
-  mapHint: {
-    color: colors.muted,
-    fontFamily: type.medium,
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: 'center',
+  tipFloat: {
+    minHeight: 80,
+    pointerEvents: 'none',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xs,
   },
+  tipText: {
+    flexShrink: 1,
+    maxWidth: 340,
+    color: colors.navy,
+    fontFamily: type.bold,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'right',
+  },
+  tipMascot: { flexShrink: 0, marginLeft: spacing.xs },
   section: { gap: spacing.md, paddingTop: spacing.lg },
   sectionHeading: { flexDirection: 'row', alignItems: 'stretch', gap: spacing.md },
   regionBar: { width: 6, borderRadius: 3 },

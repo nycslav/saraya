@@ -40,7 +40,7 @@ export function SafetyAlertCard({ alert }: { alert: SafetyAlert }) {
       </Text>
       <Text style={styles.summary}>{alert.summary}</Text>
       <Text style={styles.area}>{alert.affectedAreaDescription}</Text>
-      {alert.source.isDemo ? <Text style={styles.demo}>SYNTHETIC DEMO DATA — NOT A LIVE GOVERNMENT WARNING</Text> : null}
+      {alert.source.isDemo ? <Text style={styles.demo}>SAMPLE INFORMATION — NOT A LIVE GOVERNMENT WARNING</Text> : null}
     </Pressable>
   );
 }

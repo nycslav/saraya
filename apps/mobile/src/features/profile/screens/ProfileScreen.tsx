@@ -1,14 +1,60 @@
-import { useRouter, type Href } from 'expo-router';
-import { Bell, BookOpen, ChevronRight, LogOut, ShieldCheck, Sparkles, UserRound } from 'lucide-react-native';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
+import { Bell, BookOpen, ChevronRight, LogOut, Pencil, ShieldCheck, Sparkles, UserRound } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/features/auth/AuthProvider';
-import { Button, Card, LoadingState, Screen, StatusPanel } from '@/ui/components';
+import { bucketListGateway } from '@/features/bucket-list/gateways';
+import { journeyGateway } from '@/features/journey/gateways';
+import { Button, Card, LoadingState, Screen } from '@/ui/components';
 import { colors, radius, spacing, type } from '@/ui/theme';
+
+import { ProfileAvatar } from '../components/ProfileAvatar';
+
+type ProfileStats = {
+  places?: number;
+  saved?: number;
+  badges?: number;
+};
+
+async function loadProfileStats(): Promise<ProfileStats> {
+  const [journeyResult, bucketListResult] = await Promise.allSettled([
+    journeyGateway.statistics(),
+    bucketListGateway.list(),
+  ]);
+
+  return {
+    places: journeyResult.status === 'fulfilled'
+      ? journeyResult.value.uniqueDestinations
+      : undefined,
+    badges: journeyResult.status === 'fulfilled'
+      ? journeyResult.value.achievementsUnlocked
+      : undefined,
+    saved: bucketListResult.status === 'fulfilled'
+      ? bucketListResult.value.length
+      : undefined,
+  };
+}
 
 export function ProfileScreen() {
   const router = useRouter();
-  const { user, restoring, logout } = useAuth();
+  const { user, restoring, isDevelopmentPreview, logout } = useAuth();
+  const userId = user?.id;
+  const [stats, setStats] = useState<ProfileStats>({});
+
+  useFocusEffect(useCallback(() => {
+    if (restoring) return;
+    if (!userId) {
+      setStats({});
+      return;
+    }
+
+    let active = true;
+    void loadProfileStats().then((nextStats) => {
+      if (active) setStats(nextStats);
+    });
+    return () => { active = false; };
+  }, [restoring, userId]));
 
   const handleLogout = async () => {
     await logout();
@@ -24,10 +70,6 @@ export function ProfileScreen() {
         <Text accessibilityRole="header" style={styles.title}>Your travel profile</Text>
         <Text style={styles.subtitle}>Sign in to keep your Journey and Bucket List across devices.</Text>
         <Button label="Continue with Google" onPress={() => router.push('/(auth)/login' as Href)} />
-        <StatusPanel
-          message="Journey totals, badges, journals, safety settings, and premium status will appear only after their real services are integrated."
-          title="No sample profile data"
-        />
       </Screen>
     );
   }
@@ -36,38 +78,59 @@ export function ProfileScreen() {
     <Screen>
       <Text accessibilityRole="header" style={styles.header}>My travel profile</Text>
       <View style={styles.identityRow}>
-        <View style={styles.avatar}><UserRound color={colors.blue} size={40} /></View>
+        <ProfileAvatar avatarUrl={user.avatarUrl} label={`${user.displayName}'s profile picture`} />
         <View style={styles.identityCopy}>
           <Text style={styles.name}>{user.displayName}</Text>
           <Text style={styles.email}>{user.email}</Text>
           <View style={styles.identityBadge}>
-            <Text style={styles.identityBadgeText}>Google account</Text>
+            <Text style={styles.identityBadgeText}>
+              {isDevelopmentPreview ? 'Development preview' : 'Google account'}
+            </Text>
           </View>
         </View>
+        <Pressable
+          accessibilityLabel="Edit profile"
+          accessibilityRole="button"
+          onPress={() => router.push('/account/edit-profile' as Href)}
+          style={({ pressed }) => [styles.editButton, pressed && styles.toolRowPressed]}
+        >
+          <Pencil color={colors.blue} size={20} />
+        </Pressable>
       </View>
 
       <View style={styles.statsRow}>
-        <UnavailableStat label="places" color={colors.blueSoft} />
-        <UnavailableStat label="saved" color={colors.coralSoft} />
-        <UnavailableStat label="badges" color={colors.yellowSoft} />
+        <ProfileStat value={stats.places} label="places" color={colors.blueSoft} />
+        <ProfileStat value={stats.saved} label="saved" color={colors.coralSoft} />
+        <ProfileStat value={stats.badges} label="badges" color={colors.yellowSoft} />
       </View>
-
-      <StatusPanel
-        message="Member 2’s journey service will supply places, saved items, badges, and journal counts after integration."
-        title="Travel progress not connected"
-      />
 
       <Text accessibilityRole="header" style={styles.sectionTitle}>Travel tools</Text>
       <Card>
-        <ToolRow icon={BookOpen} label="Journal highlights" status="Not connected" />
+        <ToolRow
+          icon={BookOpen}
+          label="My Journey"
+          status="View"
+          onPress={() => router.push('/(tabs)/journey' as Href)}
+        />
         <ToolRow
           icon={Bell}
           label="Notifications"
           status="Manage"
           onPress={() => router.push('/notifications/preferences' as Href)}
         />
-        <ToolRow icon={Sparkles} label="Saraya Plus" status="Service unavailable" />
-        <ToolRow icon={ShieldCheck} label="Privacy and account" status="Coming next" last />
+        <ToolRow
+          icon={Sparkles}
+          label="Saraya Premium"
+          status="View plans"
+          onPress={() => router.push('/premium/paywall' as Href)}
+        />
+        <ToolRow
+          icon={ShieldCheck}
+          label="Privacy & Account"
+          status="View details"
+          last
+          onPress={() => router.push('/account/privacy' as Href)}
+        />
       </Card>
 
       <Button
@@ -80,10 +143,11 @@ export function ProfileScreen() {
   );
 }
 
-function UnavailableStat({ label, color }: { label: string; color: string }) {
+function ProfileStat({ value, label, color }: { value?: number; label: string; color: string }) {
+  const displayValue = value ?? '—';
   return (
-    <View style={[styles.stat, { backgroundColor: color }]}>
-      <Text style={styles.statValue}>—</Text>
+    <View accessible accessibilityLabel={`${displayValue} ${label}`} style={[styles.stat, { backgroundColor: color }]}>
+      <Text style={styles.statValue}>{displayValue}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   );
@@ -109,7 +173,11 @@ function ToolRow({
       accessibilityState={{ disabled: !onPress }}
       disabled={!onPress}
       onPress={onPress}
-      style={[styles.toolRow, !last && styles.toolBorder]}
+      style={({ pressed }) => [
+        styles.toolRow,
+        !last && styles.toolBorder,
+        pressed && onPress && styles.toolRowPressed,
+      ]}
     >
       <Icon color={colors.blue} size={21} />
       <Text style={styles.toolLabel}>{label}</Text>
@@ -127,6 +195,7 @@ const styles = StyleSheet.create({
   identityRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   avatar: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.blueSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center' },
   identityCopy: { flex: 1, alignItems: 'flex-start', gap: spacing.xs },
+  editButton: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
   name: { color: colors.navy, fontFamily: type.black, fontSize: 20 },
   email: { color: colors.muted, fontFamily: type.medium, fontSize: 13 },
   identityBadge: { paddingVertical: spacing.xs, paddingHorizontal: spacing.md, borderRadius: radius.pill, backgroundColor: colors.violetSoft },
@@ -137,6 +206,7 @@ const styles = StyleSheet.create({
   statLabel: { color: colors.muted, fontFamily: type.bold, fontSize: 12 },
   sectionTitle: { color: colors.navy, fontFamily: type.black, fontSize: 19 },
   toolRow: { minHeight: 62, flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingHorizontal: spacing.lg },
+  toolRowPressed: { backgroundColor: colors.blueSoft },
   toolBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   toolLabel: { flex: 1, color: colors.navy, fontFamily: type.bold, fontSize: 14 },
   toolStatus: { color: colors.muted, fontFamily: type.medium, fontSize: 11 },

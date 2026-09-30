@@ -68,7 +68,7 @@ export function BucketListScreen() {
         (entry): entry is DisplayItem => entry.destination !== null,
       ));
     } catch {
-      setError('Your saved places could not be loaded. Check the API connection and try again.');
+      setError('We could not open your saved places. Check your internet connection and try again.');
     } finally {
       setLoading(false);
     }

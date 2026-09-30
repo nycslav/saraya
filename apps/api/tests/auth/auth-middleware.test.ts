@@ -10,9 +10,9 @@ const tokens = new JwtAuthTokenService(
   'refresh-secret-that-is-at-least-32-characters',
 );
 
-function createTestApp() {
+function createTestApp(userExists: (userId: string) => Promise<boolean> = async () => true) {
   const app = express();
-  app.get('/protected', createAuthenticationMiddleware(tokens), (_request, response) => {
+  app.get('/protected', createAuthenticationMiddleware(tokens, userExists), (_request, response) => {
     response.json({ userId: response.locals.authenticatedUserId });
   });
   const errors: ErrorRequestHandler = (error, _request, response, _next) => {
@@ -44,5 +44,14 @@ describe('authentication middleware', () => {
       .toBe(401);
     expect((await request(createTestApp()).get('/protected')
       .set('Authorization', `Bearer ${refreshToken}`)).status).toBe(401);
+  });
+
+  it('rejects a valid access token after its account no longer exists', async () => {
+    const accessToken = await tokens.issueAccessToken('deleted-user');
+    const response = await request(createTestApp(async () => false))
+      .get('/protected')
+      .set('Authorization', `Bearer ${accessToken}`);
+
+    expect(response.status).toBe(401);
   });
 });

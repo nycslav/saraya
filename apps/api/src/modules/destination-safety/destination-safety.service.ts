@@ -2,6 +2,8 @@ import {
   destinationIdParamsSchema,
   destinationSafetySubscriptionSchema,
   destinationSafetySubscriptionRequestSchema,
+  safetyAlertSubscriptionInputSchema,
+  safetyAlertSubscriptionSchema,
   type SafetyAlert,
 } from '@saraya/contracts';
 
@@ -75,6 +77,42 @@ export class DestinationSafetyService {
   async unsubscribe(userId: string, rawDestinationId: unknown) {
     const destinationId = await this.requireDestination(rawDestinationId);
     await this.subscriptions.unsubscribe(userId, destinationId);
+  }
+
+  async subscribeScope(userId: string, rawInput: unknown) {
+    const input = safetyAlertSubscriptionInputSchema.parse(rawInput);
+    if (input.scope === 'destination') {
+      const result = await this.subscribe(userId, input.key);
+      return safetyAlertSubscriptionSchema.parse({
+        scope: input.scope, key: input.key, subscribed: result.subscribed,
+        createdAt: result.createdAt,
+      });
+    }
+    const result = await this.subscriptions.subscribeRegion(
+      userId, input.key, this.now().toISOString(),
+    );
+    return safetyAlertSubscriptionSchema.parse({
+      scope: input.scope, key: result.region, subscribed: true, createdAt: result.createdAt,
+    });
+  }
+
+  async scopeStatus(userId: string, rawInput: unknown) {
+    const input = safetyAlertSubscriptionInputSchema.parse(rawInput);
+    const result = input.scope === 'destination'
+      ? await this.subscriptions.find(userId, await this.requireDestination(input.key))
+      : await this.subscriptions.findRegion(userId, input.key);
+    return safetyAlertSubscriptionSchema.parse({
+      ...input, subscribed: Boolean(result), createdAt: result?.createdAt ?? null,
+    });
+  }
+
+  async unsubscribeScope(userId: string, rawInput: unknown) {
+    const input = safetyAlertSubscriptionInputSchema.parse(rawInput);
+    if (input.scope === 'destination') {
+      await this.unsubscribe(userId, input.key);
+    } else {
+      await this.subscriptions.unsubscribeRegion(userId, input.key);
+    }
   }
 
   async notifySubscribers(alert: SafetyAlert) {

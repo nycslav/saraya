@@ -144,7 +144,7 @@ describe('FestivalActions', () => {
       await Promise.resolve();
       await Promise.resolve();
     });
-    expect(await screen.findByText('API unavailable')).toBeTruthy();
+    expect(await screen.findByText('The reminder could not be updated. Check your internet connection and try again.')).toBeTruthy();
     expect(screen.getByText('Plan this festival')).toBeTruthy();
   });
 

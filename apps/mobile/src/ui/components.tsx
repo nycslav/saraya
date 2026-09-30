@@ -365,17 +365,17 @@ export function LoadingState({ label }: { label: string }) {
   );
 }
 
-export function ComingSoonScreen({ title, owner }: { title: string; owner: string }) {
+export function ComingSoonScreen({ title }: { title: string; owner: string }) {
   return (
     <Screen contentContainerStyle={styles.comingSoon}>
       <Mascot mood="wave" size={142} />
       <Text accessibilityRole="header" style={styles.comingTitle}>{title}</Text>
       <Text style={styles.comingBody}>
-        This navigation slot is ready. {owner} owns the feature implementation that will connect here.
+        This feature is not available yet. More travel tools are on the way.
       </Text>
       <StatusPanel
-        message="The shell is intentionally lightweight so teammates can replace it without undoing shared navigation work."
-        title="Team boundary preserved"
+        message="You can continue exploring the rest of Saraya while this feature is being prepared."
+        title="Coming soon"
       />
     </Screen>
   );
@@ -384,7 +384,7 @@ export function ComingSoonScreen({ title, owner }: { title: string; owner: strin
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: colors.background }, fill: { flex: 1 },
   screenContent: { padding: spacing.xl, paddingBottom: 120, gap: spacing.lg },
-  screenContentWithFloatingBack: { paddingTop: 76 },
+  screenContentWithFloatingBack: { paddingTop: 68 },
   floatingBackWrap: { position: 'absolute', left: spacing.xl, top: spacing.md, zIndex: 20 },
   floatingBackReducedMotion: { opacity: 1, transform: [{ translateY: 0 }] },
   floatingBack: {
