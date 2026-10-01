@@ -1,0 +1,115 @@
+import cors from 'cors';
+import express, { type ErrorRequestHandler } from 'express';
+import multer from 'multer';
+import { ZodError } from 'zod';
+
+import { PhotoNotFoundError } from './integrations/photo-storage/photo-storage.types';
+import { AuthenticationError } from './modules/auth/auth.errors';
+import { authRouter } from './modules/auth/auth.route';
+import { accountManagementRouter } from './modules/account-management/account-management.route';
+import { bucketListRouter } from './modules/bucket-list/bucket-list.route';
+import { achievementRouter, userAchievementRouter } from './modules/achievements/achievement.route';
+import { serveCheckInPhoto } from './modules/check-ins/check-in.photo';
+import { checkInRouter } from './modules/check-ins/check-in.route';
+import { destinationRouter } from './modules/destinations/destination.route';
+import { destinationSafetyRouter } from './modules/destination-safety/destination-safety.route';
+import { safetySubscriptionRouter } from './modules/destination-safety/safety-subscription.route';
+import { festivalRouter } from './modules/festivals/festival.route';
+import {
+  festivalReminderListRouter,
+  festivalReminderRouter,
+} from './modules/festival-reminders/festival-reminder.route';
+import { itineraryRouter } from './modules/itineraries/itinerary.route';
+import { notificationRouter } from './modules/notifications/notification.route';
+import {
+  regionalAlertRouter,
+  safetyAlertRouter,
+  weatherRouter,
+} from './modules/safety-alerts/safety-alert.route';
+import { uploadRoot } from './integrations/photo-storage/local-photo-storage';
+import {
+  revenueCatWebhookRouter,
+  subscriptionRouter,
+} from './modules/subscriptions/subscription.route';
+
+export const app = express();
+
+app.disable('x-powered-by');
+app.use(cors());
+app.use(
+  '/webhooks/revenuecat',
+  express.raw({ type: 'application/json', limit: '1mb' }),
+  revenueCatWebhookRouter,
+);
+app.use(express.json({ limit: '1mb' }));
+app.get('/uploads/check-ins/:fileName', serveCheckInPhoto);
+
+app.get('/health', (_request, response) => {
+  response.json({ status: 'ok' });
+});
+
+app.use('/auth', authRouter);
+app.use('/account', accountManagementRouter);
+app.use('/achievements', achievementRouter);
+app.use('/bucket-list', bucketListRouter);
+app.use('/check-ins', checkInRouter);
+app.use('/destinations', destinationSafetyRouter);
+app.use('/destinations', destinationRouter);
+app.use('/festival-reminders', festivalReminderListRouter);
+app.use('/festivals', festivalReminderRouter);
+app.use('/festivals', festivalRouter);
+app.use('/itineraries', itineraryRouter);
+app.use('/notifications', notificationRouter);
+app.use('/safety-alerts', safetyAlertRouter);
+app.use('/safety-alert-subscriptions', safetySubscriptionRouter);
+app.use('/subscriptions', subscriptionRouter);
+app.use('/alerts', regionalAlertRouter);
+app.use('/weather', weatherRouter);
+app.use('/user/achievements', userAchievementRouter);
+
+app.use((_request, response) => {
+  response.status(404).json({
+    error: { code: 'ROUTE_NOT_FOUND', message: 'The requested API route does not exist.' },
+  });
+});
+
+const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+  if (error instanceof AuthenticationError) {
+    response.status(error.status).json({
+      error: { code: error.code, message: error.message },
+    });
+    return;
+  }
+
+  if (error instanceof PhotoNotFoundError) {
+    response.status(404).json({
+      error: { code: 'PHOTO_NOT_FOUND', message: 'The requested travel photo does not exist.' },
+    });
+    return;
+  }
+
+  if (error instanceof ZodError) {
+    response.status(400).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'The request contains invalid values.',
+        issues: error.issues,
+      },
+    });
+    return;
+  }
+
+  if (error instanceof multer.MulterError || error?.message === 'Use a JPEG, PNG, or WebP image.') {
+    response.status(400).json({
+      error: { code: 'INVALID_PHOTO', message: error.message },
+    });
+    return;
+  }
+
+  console.error(error);
+  response.status(500).json({
+    error: { code: 'INTERNAL_ERROR', message: 'The server could not complete the request.' },
+  });
+};
+
+app.use(errorHandler);

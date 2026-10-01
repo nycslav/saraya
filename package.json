@@ -1,5 +1,5 @@
 {
-  "name": "pantastour",
+  "name": "saraya",
   "version": "0.1.0",
   "private": true,
   "workspaces": [
@@ -11,11 +11,27 @@
   },
   "scripts": {
     "bootstrap": "npm install",
-    "dev:mobile": "npm run start --workspace=@pantastour/mobile",
-    "dev:api": "npm run dev --workspace=@pantastour/api",
+    "dev:mobile": "npm run start:dev-client --workspace=@saraya/mobile",
+    "dev:mobile:client": "npm run start:dev-client --workspace=@saraya/mobile",
+    "dev:mobile:go": "npm run start:go --workspace=@saraya/mobile",
+    "android:check": "npm run check:android --workspace=@saraya/mobile",
+    "android:build:development": "npm run build:android:development --workspace=@saraya/mobile",
+    "android:build:preview": "npm run build:android:preview --workspace=@saraya/mobile",
+    "android:build:production": "npm run build:android:production --workspace=@saraya/mobile",
+    "android:submit:production": "npm run submit:android:production --workspace=@saraya/mobile",
+    "dev:api": "npm run dev --workspace=@saraya/api",
+    "db:migrate": "npm run db:migrate --workspace=@saraya/api",
+    "db:seed": "npm run db:seed --workspace=@saraya/api",
+    "culture:audit": "node scripts/audit-cultural-guides.mjs --summary",
+    "culture:audit:full": "node scripts/audit-cultural-guides.mjs",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@expo/ngrok": "^4.1.0"
+  },
+  "dependencies": {
+    "expo-sharing": "~57.0.22"
   }
 }
-

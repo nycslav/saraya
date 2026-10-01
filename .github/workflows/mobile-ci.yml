@@ -1,0 +1,74 @@
+name: Mobile CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/mobile-ci.yml'
+      - 'apps/mobile/**'
+      - 'packages/api-client/**'
+      - 'packages/contracts/**'
+      - '.env.example'
+      - '.prettierrc'
+      - 'eslint.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.base.json'
+  push:
+    branches: [main, develop]
+    paths:
+      - '.github/workflows/mobile-ci.yml'
+      - 'apps/mobile/**'
+      - 'packages/api-client/**'
+      - 'packages/contracts/**'
+      - '.env.example'
+      - '.prettierrc'
+      - 'eslint.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.base.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, type-check, and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+      EXPO_NO_TELEMETRY: 1
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Check Expo dependency compatibility
+        run: npm run doctor --workspace=@saraya/mobile
+
+      - name: Validate Android delivery configuration
+        run: npm run android:check
+
+      - name: Lint mobile application
+        run: npm run lint --workspace=@saraya/mobile
+
+      - name: Type-check mobile application
+        run: npm run typecheck --workspace=@saraya/mobile
+
+      - name: Test mobile application
+        run: npm run test --workspace=@saraya/mobile -- --ci --coverage

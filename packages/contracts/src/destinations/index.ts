@@ -1,0 +1,88 @@
+import { z } from 'zod';
+
+import { resolvedLocationSchema, safetyAlertSchema, weatherResponseSchema } from '../safety-alerts';
+
+export const islandGroupSchema = z.enum(['Luzon', 'Visayas', 'Mindanao']);
+export const destinationCategorySchema = z.enum([
+  'Beach',
+  'Culture',
+  'Food',
+  'Heritage',
+  'Mountain',
+  'Nature',
+]);
+
+export const destinationSummarySchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  province: z.string().min(1),
+  region: z.string().min(1),
+  islandGroup: islandGroupSchema,
+  category: destinationCategorySchema,
+  rating: z.number().min(0).max(5),
+  summary: z.string().min(1),
+  thumbnailImageUrl: z.string().url().optional(),
+  heroTone: z.enum(['sky', 'sunset', 'forest', 'lagoon', 'violet', 'gold']),
+  tags: z.array(z.string().min(1)).min(1),
+});
+
+export const culturalGuideSchema = z.object({
+  historicalContext: z.string().min(1),
+  etiquette: z.array(z.string().min(1)).min(1),
+  localPhrase: z.string().min(1),
+});
+
+export const destinationDetailSchema = destinationSummarySchema.extend({
+  description: z.string().min(1),
+  highlights: z.array(z.string().min(1)).min(1),
+  bestFor: z.array(z.string().min(1)).min(1),
+  coordinates: z.object({
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
+  }),
+  culturalGuide: culturalGuideSchema,
+});
+
+export const discoveryQuerySchema = z.object({
+  search: z.string().trim().default(''),
+  islandGroup: islandGroupSchema.optional(),
+  interest: z.string().trim().optional(),
+});
+
+export const destinationIdParamsSchema = z.object({
+  id: z.string().trim().min(1).max(200),
+}).strict();
+
+export const destinationConditionsSchema = z.object({
+  destination: resolvedLocationSchema.extend({
+    kind: z.literal('destination'),
+    destinationId: z.string().trim().min(1),
+  }),
+  weather: weatherResponseSchema,
+  safetyAlerts: z.array(safetyAlertSchema),
+  warningProviderStatus: z.object({
+    status: z.enum(['fresh', 'unavailable']),
+    lastCheckedAt: z.iso.datetime({ offset: true }).nullable(),
+    lastSucceededAt: z.iso.datetime({ offset: true }).nullable(),
+  }).strict(),
+  fetchedAt: z.iso.datetime({ offset: true }),
+}).strict();
+
+export const destinationSafetySubscriptionSchema = z.object({
+  destinationId: z.string().trim().min(1).max(200),
+  subscribed: z.boolean(),
+  createdAt: z.iso.datetime({ offset: true }).nullable(),
+}).strict();
+
+export const destinationSafetySubscriptionRequestSchema = z.preprocess(
+  (value) => value ?? {},
+  z.object({}).strict(),
+);
+
+export type IslandGroup = z.infer<typeof islandGroupSchema>;
+export type DestinationCategory = z.infer<typeof destinationCategorySchema>;
+export type DestinationSummary = z.infer<typeof destinationSummarySchema>;
+export type DestinationDetail = z.infer<typeof destinationDetailSchema>;
+export type DiscoveryQuery = z.infer<typeof discoveryQuerySchema>;
+export type DestinationConditions = z.infer<typeof destinationConditionsSchema>;
+export type DestinationSafetySubscription = z.infer<typeof destinationSafetySubscriptionSchema>;

@@ -1,0 +1,166 @@
+import type {
+  Coordinates,
+  ResolvedLocation,
+  SafetyAlert,
+  SafetyAlertQuery,
+} from '@saraya/contracts';
+
+import { hasDatabaseConfiguration } from '../../platform/database/pool';
+import { demoSafetyAlertsEnabled } from '../../platform/config/warning-config';
+import { seedDestinations } from '../destinations/destination.seed';
+import { PostgresSafetyAlertRepository } from './safety-alert.postgres-repository';
+import { seedSafetyAlerts } from './safety-alert.seed';
+
+export interface SafetyAlertRepository {
+  findActive(location: ResolvedLocation, filters: Pick<SafetyAlertQuery, 'severity' | 'alertType'>, now: Date): Promise<SafetyAlert[]>;
+  findById(id: string): Promise<SafetyAlert | null>;
+  resolveDestination(id: string): Promise<ResolvedLocation | null>;
+  resolveRegion(region: string): Promise<ResolvedLocation>;
+  resolveCoordinates(coordinates: Coordinates): Promise<ResolvedLocation>;
+  upsertFromProvider(alert: SafetyAlert): Promise<boolean>;
+  expireMissing(provider: string, activeIds: string[], now: Date): Promise<number>;
+  recordProviderSuccess(provider: string, checkedAt: Date): Promise<void>;
+  recordProviderFailure(provider: string, checkedAt: Date, errorCode: string): Promise<void>;
+  getWarningProviderStatus(provider: string): Promise<WarningProviderStatus>;
+}
+
+export type WarningProviderStatus = {
+  status: 'fresh' | 'unavailable';
+  lastCheckedAt: string | null;
+  lastSucceededAt: string | null;
+};
+
+function squaredDistance(left: Coordinates, right: Coordinates) {
+  return (left.latitude - right.latitude) ** 2 + (left.longitude - right.longitude) ** 2;
+}
+
+function pointInRing(point: Coordinates, ring: [number, number][]) {
+  let inside = false;
+  for (let current = 0, previous = ring.length - 1; current < ring.length; previous = current++) {
+    const [currentX = 0, currentY = 0] = ring[current] ?? [];
+    const [previousX = 0, previousY = 0] = ring[previous] ?? [];
+    const intersects = currentY > point.latitude !== previousY > point.latitude &&
+      point.longitude < ((previousX - currentX) * (point.latitude - currentY)) / (previousY - currentY) + currentX;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
+export function affectsCoordinates(alert: SafetyAlert, coordinates: Coordinates) {
+  return alert.affectedArea?.coordinates.some((polygon) =>
+    polygon[0] ? pointInRing(coordinates, polygon[0]) : false,
+  ) ?? false;
+}
+
+export class InMemorySafetyAlertRepository implements SafetyAlertRepository {
+  private readonly providerStates = new Map<string, WarningProviderStatus>();
+
+  constructor(private readonly alerts: SafetyAlert[] = demoSafetyAlertsEnabled() ? [...seedSafetyAlerts] : []) {}
+
+  async findActive(
+    location: ResolvedLocation,
+    filters: Pick<SafetyAlertQuery, 'severity' | 'alertType'>,
+    now: Date,
+  ) {
+    return this.alerts.filter((alert) => {
+      const isActive = new Date(alert.startsAt) <= now && (!alert.endsAt || new Date(alert.endsAt) > now);
+      const matchesLocation = location.coordinates
+        ? alert.affectedArea
+          ? affectsCoordinates(alert, location.coordinates)
+          : alert.affectedRegions.includes(location.region)
+        : alert.affectedRegions.includes(location.region);
+      return isActive && matchesLocation &&
+        (!filters.severity || alert.severity === filters.severity) &&
+        (!filters.alertType || alert.alertType === filters.alertType);
+    });
+  }
+
+  async findById(id: string) {
+    return this.alerts.find((alert) => alert.id === id) ?? null;
+  }
+
+  async resolveDestination(id: string): Promise<ResolvedLocation | null> {
+    const destination = seedDestinations.find((item) => item.id === id);
+    return destination ? {
+      kind: 'destination',
+      label: destination.name,
+      region: destination.region,
+      destinationId: destination.id,
+      coordinates: destination.coordinates,
+    } : null;
+  }
+
+  async resolveRegion(region: string): Promise<ResolvedLocation> {
+    const destinations = seedDestinations.filter((item) => item.region === region);
+    const coordinates = destinations.length > 0 ? {
+      latitude: destinations.reduce((sum, item) => sum + item.coordinates.latitude, 0) / destinations.length,
+      longitude: destinations.reduce((sum, item) => sum + item.coordinates.longitude, 0) / destinations.length,
+    } : undefined;
+    return {
+      kind: 'region',
+      label: region,
+      region,
+      ...(coordinates ? { coordinates } : {}),
+    };
+  }
+
+  async resolveCoordinates(coordinates: Coordinates): Promise<ResolvedLocation> {
+    const nearest = [...seedDestinations].sort(
+      (left, right) => squaredDistance(left.coordinates, coordinates) - squaredDistance(right.coordinates, coordinates),
+    )[0];
+    return {
+      kind: 'coordinates',
+      label: 'your current location',
+      region: nearest?.region ?? 'Unknown region',
+      coordinates,
+    };
+  }
+
+  async upsertFromProvider(alert: SafetyAlert) {
+    const index = this.alerts.findIndex(({ id }) => id === alert.id);
+    if (index >= 0 && JSON.stringify(this.alerts[index]) === JSON.stringify(alert)) return false;
+    if (index >= 0) this.alerts[index] = alert;
+    else this.alerts.push(alert);
+    return true;
+  }
+
+  async expireMissing(provider: string, activeIds: string[], now: Date) {
+    const active = new Set(activeIds);
+    let expired = 0;
+    this.alerts.forEach((alert, index) => {
+      if (alert.source.provider !== provider || alert.source.isDemo || active.has(alert.id)) return;
+      if (alert.endsAt && new Date(alert.endsAt) <= now) return;
+      this.alerts[index] = { ...alert, endsAt: now.toISOString(), updatedAt: now.toISOString() };
+      expired += 1;
+    });
+    return expired;
+  }
+
+  async recordProviderSuccess(provider: string, checkedAt: Date) {
+    const timestamp = checkedAt.toISOString();
+    this.providerStates.set(provider, {
+      status: 'fresh', lastCheckedAt: timestamp, lastSucceededAt: timestamp,
+    });
+  }
+
+  async recordProviderFailure(provider: string, checkedAt: Date, _errorCode: string) {
+    const previous = this.providerStates.get(provider);
+    this.providerStates.set(provider, {
+      status: 'unavailable',
+      lastCheckedAt: checkedAt.toISOString(),
+      lastSucceededAt: previous?.lastSucceededAt ?? null,
+    });
+  }
+
+  async getWarningProviderStatus(provider: string) {
+    return this.providerStates.get(provider) ?? {
+      status: 'unavailable' as const, lastCheckedAt: null, lastSucceededAt: null,
+    };
+  }
+}
+
+export function createSafetyAlertRepository(): SafetyAlertRepository {
+  return process.env.NODE_ENV !== 'test' && hasDatabaseConfiguration()
+    ? new PostgresSafetyAlertRepository(demoSafetyAlertsEnabled())
+    : new InMemorySafetyAlertRepository();
+}

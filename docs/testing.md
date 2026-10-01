@@ -7,5 +7,139 @@ Required cross-feature flows:
 1. Onboarding to discovery
 2. Destination to bucket list to check-in
 3. Festival reminder and safety alert
-4. Free, expired, and active premium entitlement behavior
+4. Free quota, lifetime Premium, monthly included quota, and purchased generation credits
 
+## Monetization acceptance coverage
+
+Automated mobile tests use provider fakes and cover Free's 3 lifetime generations, success-only
+consumption, exhaustion gating, lifetime Premium activation/restoration, the 10-credit monthly UTC
+calendar reset, top-up persistence, included-before-top-up consumption, transaction deduplication,
+purchase cancellation/failure, preference preservation, and prevention of generation calls when no
+credit remains.
+
+API mode uses authenticated account identity and server-authoritative quota persistence. API tests
+prove concurrent requests cannot overspend quota, generation failures release reservations,
+webhook redelivery does not duplicate top-ups, and ownership remains isolated. The local mobile
+quota adapter is retained only for fixture tests and offline demonstrations.
+
+The Shipaton 2026 Next Gen manual acceptance run uses RevenueCat Test Store and must cover paywall
+presentation, lifetime purchase, consumable top-up, cancellation/failure, restore, application
+restart, account switching, webhook synchronization, and the resulting authoritative quota. It does
+not require Google Play Billing, a licensed Play tester, or a Play internal-testing release.
+
+## Mobile continuous integration
+
+`.github/workflows/mobile-ci.yml` runs for relevant pull requests, pushes to `main` or `develop`,
+and manual dispatches. It installs the exact dependency graph from `package-lock.json`, checks Expo
+SDK compatibility and Android delivery configuration, then runs the mobile linter, TypeScript
+compiler, and Jest suite with coverage.
+
+The workflow intentionally does not receive RevenueCat, Expo, or EAS credentials. Purchase
+tests use mocked gateways, and Android cloud builds remain an explicitly invoked delivery step.
+
+## Festival data acceptance coverage
+
+Festival tests are fully offline. They parse the canonical seed through the shared contract and cover
+list rendering, search, region and typical-month filters, deterministic recurring ordering,
+list/calendar modes, detail content, loading/empty/error states, and source provenance.
+
+Contract tests reject malformed, Google, or Bing search-result source URLs, invalid verification timestamps, confirmed
+dates on non-confirmed records, and confirmed records without an appropriate official schedule
+source. Presentation tests distinguish recurring, confirmed, estimated, and cancelled occurrences.
+The calendar eligibility helper returns true only when an occurrence is confirmed and has an exact
+start and end date. Tests must never call a live government or organizer website.
+
+Expanded-catalog integrity checks also enforce unique IDs, unique normalized name/locality pairs,
+valid occurrence-to-source references, at least one source per record, absence of exact dates on
+non-confirmed records, search against newly added records, and filtering across the larger regional
+and monthly result sets.
+
+The cultural-guide suite enforces a 151-to-151 ID mapping, shared-schema parsing, unique IDs,
+category-to-source integrity, direct non-search URLs, valid review dates and verification statuses,
+and zero opaque citation placeholders. Screen tests cover verified, partially verified, general
+guidance, and insufficient-evidence presentation for Ati-Atihan, Sinulog, Kadayawan, and a smaller
+catalog festival. Tests also require each fallback to name its festival and give the reader a useful
+next step, and verify the source links for the September 22 enrichment batch. `npm run culture:audit`
+emits the machine-readable summary;
+`npm run culture:audit:full` adds the per-festival research inventory.
+
+Festival backend tests additionally cover query coercion and rejection, deterministic seed joins,
+in-memory and PostgreSQL repository mapping, parameterized filtering, cyclic upcoming ordering,
+detail/not-found responses, Supertest routes, typed API-client request and response validation, and
+the mobile `ApiFestivalGateway`. Database and fetch boundaries are mocked; no test requires a live
+PostgreSQL server or remote festival source.
+
+## Safety, weather, and foreground-location coverage
+
+Safety tests are offline and deterministic. Shared-contract cases cover valid alerts/weather, each
+exclusive location context, coordinate bounds, invalid filters, timestamps, and context
+combinations. API tests cover coordinate, region, and destination lookup; empty and invalid
+results; detail retrieval; weather metadata; and stable errors. Repository tests cover active and
+expired filtering, affected-area matching, type/severity filters, alert lookup, ordering, destination
+reuse, and generated SQL containing the PostGIS `ST_Covers` boundary. Provider tests cover known
+weather, known/empty warnings, determinism, and failure without network access.
+
+Mobile tests replace the native location provider and cover granted, denied, unavailable, and
+acquisition-error outcomes. Screen tests prove location is not requested on startup, manual region
+and destination fallback remains available, the one-time explicit action works, and alert
+list/detail loading, empty, error, retry, navigation, severity labels, and demo disclosures render.
+Gateway tests cover API success/failure and deterministic fixture mode. Open-Meteo adapter tests use
+mocked `fetch` responses and cover exact current variables and units, normalization, attribution,
+timestamps, WMO groups, malformed payloads, timeout, HTTP 4xx/5xx, network failure, unknown codes,
+fresh caching, stale fallback, and unavailable behavior without a cache. Provider-selection and
+CAP-provider tests use local XML responses and cover normalization, provenance, polygons, test-alert
+rejection, and malformed XML. Ingestion tests cover idempotent upsert, repeated polling, expiry only
+after a successful poll, provider failure without deletion, notification dispatch, and demo-provider
+isolation. No test requires GPS, PAGASA, Open-Meteo, or internet access.
+
+Run the same required checks locally before opening a pull request:
+
+```powershell
+npm.cmd ci
+npm.cmd run doctor --workspace=@saraya/mobile
+npm.cmd run android:check
+npm.cmd run lint --workspace=@saraya/mobile
+npm.cmd run typecheck --workspace=@saraya/mobile
+npm.cmd run test --workspace=@saraya/mobile -- --ci --coverage
+```
+# Push notification testing
+
+Notification tests cover runtime contracts, repository ownership/upsert behavior, preferences,
+authenticated API routes, provider batching and failure normalization, permission handling, listener
+cleanup, foreground/background taps, and cold-start routing. Expo native APIs and provider transport
+are mocked; automated tests send zero real pushes and require no FCM credentials.
+
+Festival reminder tests cover strict ownership-free request contracts, supported timing, repository
+ownership isolation, active-reminder uniqueness, cancellation, atomic due claiming, authenticated
+Supertest routes, typed API-client bearer transport, mobile gateway behavior, and dispatch through
+the existing notification service. Preference-disabled delivery is explicitly skipped without
+calling the provider.
+
+Festival calendar tests inject a native provider and local event-ID store. They cover existing and
+contextually requested permission, denial, unavailable writable calendars, confirmed all-day date
+mapping, exclusive end dates, recurring/past rejection, duplicate prevention, and native failures.
+No automated test creates a real calendar event or sends a real push.
+
+## RevenueCat backend tests
+
+Backend subscription tests use in-memory or mocked PostgreSQL and RevenueCat boundaries. They cover
+Authorization and raw-body HMAC validation, malformed payloads, duplicate event and transaction
+delivery, entitlement activation/deactivation/transfer, restore synchronization, Free and Premium
+quota rules, UTC rollover, top-up persistence, ownership isolation, concurrent reservations, and
+release after failed or cancelled generation. Tests never perform real purchases, send webhooks to
+RevenueCat, or mutate shared Supabase.
+
+## Background job boundary tests
+
+Job entry points are thin and tested with injected fakes — no live scheduling, Redis, or provider
+calls. Tests cover:
+
+- **send-reminders** — delegates to `FestivalReminderService.dispatchDueReminders`, uses default
+  limit of 100, logs results only when reminders are claimed, suppresses logging on idle runs.
+- **poll-weather** — delegates to `WeatherProvider.getWeather` for each location, continues when
+  individual locations fail, logs aggregate success/failure counts.
+- **JobScheduler** — `NoopJobScheduler` (no-op schedule/cancel), `RedisJobScheduler` (writes
+  schedule + membership to Redis-like client, removes on cancel), `createJobScheduler` factory
+  (selects backend, warns and falls back to noop when Redis backend configured without a client).
+- **InMemoryJobRunner** — schedules next run with correct delay, calls `scheduler.schedule` per job,
+  stops and clears timers cleanly.

@@ -1,0 +1,59 @@
+services:
+  - type: web
+    name: saraya-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build --workspace=@saraya/api
+    startCommand: npm run start --workspace=@saraya/api
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_SSL
+        value: "true"
+      - key: GOOGLE_WEB_CLIENT_ID
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: PHOTO_STORAGE_PROVIDER
+        value: supabase
+      - key: PHOTO_STORAGE_BUCKET
+        value: journey-photos
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: gemini
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: GEOAPIFY_API_KEY
+        sync: false
+      - key: REVENUECAT_WEBHOOK_AUTHORIZATION
+        sync: false
+      - key: REVENUECAT_WEBHOOK_SIGNING_SECRET
+        sync: false
+      - key: REVENUECAT_SECRET_API_KEY
+        sync: false
+      - key: REVENUECAT_ENTITLEMENT_ID
+        value: saraya_premium
+      - key: REVENUECAT_LIFETIME_PRODUCT_ID
+        value: saraya_premium_lifetime
+      - key: REVENUECAT_TOP_UP_PRODUCT_ID
+        value: saraya_generations_10
+      - key: SCHEDULER_ENABLED
+        value: "true"
+      - key: SCHEDULER_BACKEND
+        value: noop
+      - key: WARNING_PROVIDER
+        value: pagasa_cap
+      - key: PAGASA_CAP_FEED_URL
+        value: https://publicalert.pagasa.dost.gov.ph/feeds/
+      - key: WARNING_PROVIDER_TIMEOUT_MS
+        value: "10000"

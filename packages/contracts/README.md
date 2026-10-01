@@ -11,3 +11,6 @@ contracts <- api
 
 This package must not import from either application.
 
+The `monetization` export defines provider-neutral lifetime Premium access and generation-quota
+snapshots. RevenueCat SDK objects must not appear in these shared API contracts.
+

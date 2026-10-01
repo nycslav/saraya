@@ -3,6 +3,7 @@
 ## A Personalized Guide for Planning and Travelling to the Philippines
 
 ### Product Documentation & Workflow Specification
+
 ### Hackathon Project
 
 ---
@@ -52,7 +53,7 @@ Premium features unlock advanced capabilities including offline functionality, A
 - **Caching:** Redis for sessions, weather and safety lookups, rate limiting, and background work
 - **Maps:** Google Maps behind a backend adapter; an alternative provider may be substituted
 - **Notifications:** Firebase Cloud Messaging
-- **Subscriptions:** RevenueCat
+- **Monetization:** RevenueCat lifetime Premium and consumable generation packs
 - **Cloud:** AWS, Google Cloud, or Firebase for hosting and storage
 
 The repository is organized as an npm-workspace monorepo. Executable applications live in `apps/`, shared HTTP contracts and client code live in `packages/`, database assets live in `database/`, and engineering documentation lives in `docs/`. See [Architecture](architecture.md) and [Ownership](ownership.md) for the current boundaries.
@@ -71,6 +72,20 @@ Full access to MVP features including personalized discovery, bucket lists, trav
 
 **Premium Users:**
 Access to all features including offline mode, AI itinerary generation, hidden gems database, and ad-free experience.
+
+### Monetization and itinerary quotas
+
+- Free registered accounts receive 3 successful itinerary generations for the lifetime of the account.
+- Premium is a one-time lifetime purchase. Ownership does not expire or renew.
+- Lifetime Premium includes 10 successful itinerary generations per UTC calendar month and enables
+  Premium-only features, including itinerary regeneration.
+- A consumable pack adds 10 generation credits without granting Premium. Its intended Test Store
+  configuration is USD $5 for the Next Gen demonstration, while the app displays the price returned
+  by RevenueCat. Future real-money stores must configure their own localized prices.
+- Included credits are consumed before purchased credits. Purchased credits survive calendar-month
+  resets. Failed or cancelled generation requests do not consume a credit.
+- Authentication and the API must enforce quota atomically per account. Mobile-local quota storage
+  is acceptable only for the current demonstration and is not a security boundary.
 
 ### Authentication Methods:
 
@@ -144,13 +159,18 @@ The app requests foreground location permission only when the user opens weather
 ### 4.5 Festival & Event Tracker
 
 **Description:**
-Comprehensive database of Philippine festivals with regional filters and event survival guides.
+Curated database of Philippine festivals with source-backed cultural information, explicitly
+verified annual schedules, location-based recommendations, and Saraya-authored survival guides.
 
 **Key Features:**
 
-- Calendar view of festivals by region and date
+- Calendar view by region and typical month, with exact dates only for verified occurrences
 - Filter by region, month, or interest
-- Detailed event information (dates, location, traditions)
+- Detailed event information with recurring, confirmed, estimated, cancelled, or unknown schedule status
+- Direct provenance links and a visible last-verification date on festival details
+- A six-part cultural guide joined one-to-one by festival ID, with category-level verification and
+  source disclosure
+- Clear labeling when content is general Saraya traveler guidance or evidence is still insufficient
 - Survival guides for major events (Sinulog, Ati-Atihan, Panagbenga)
 - Push notifications for upcoming events within user's itinerary
 - Accommodation and dining tips during peak festival periods
@@ -159,7 +179,7 @@ Comprehensive database of Philippine festivals with regional filters and event s
 
 ## 5. PREMIUM AND STRETCH FEATURES
 
-The features in this section are post-MVP stretch goals unless a feature is explicitly listed in the MVP deliverables. RevenueCat sandbox entitlement and a basic paywall remain part of the required MVP, but the advanced premium capabilities they unlock must not delay the core product flows.
+The features in this section are post-MVP stretch goals unless a feature is explicitly listed in the MVP deliverables. RevenueCat Test Store entitlement and a basic paywall remain part of the required MVP, but the advanced premium capabilities they unlock must not delay the core product flows.
 
 ### 5.1 Complete Offline Mode
 
@@ -183,6 +203,8 @@ Generates optimized multi-destination itineraries based on:
 - Ferry/flight schedules and travel times
 
 Output includes daily breakdown with recommended accommodations, dining, and activities.
+Generated results identify whether the configured AI provider or the deterministic fallback
+produced the itinerary so users and demo operators can verify provider availability.
 
 ### 5.3 Hidden Gem Database
 
@@ -234,7 +256,7 @@ Access to off-the-beaten-path locations including:
 Landing screen showing personalized recommendations in feed or map view. Quick filters for category and region. Search bar for specific destinations. Weather widget can request the user's current location or accept a manually selected destination.
 
 **Tab 2: My Journey (Travel Journal)**
-Travel timeline showing manual check-ins and journal entries with photos. Map view of visited destinations. Statistics dashboard (islands visited, places checked in, achievements). Check-ins are manually recorded and linked to a selected destination.
+Travel timeline showing manual check-ins and journal entries with photos. Map view of visited destinations using their catalog coordinates. Statistics dashboard (islands visited, places checked in, achievements). Add-visit button for manual check-ins.
 
 **Tab 3: Bucket List**
 Curated list of saved destinations and activities. Organizable by region, priority, or type. Filtering and sorting options. Quick add/remove functionality.
@@ -243,7 +265,7 @@ Curated list of saved destinations and activities. Organizable by region, priori
 Calendar view of Philippines festivals. Regional filters. Event detail cards with descriptions, dates, survival guides. Push notification settings per event.
 
 **Tab 5: Profile & Settings**
-User profile information and photo. Achievement badges and statistics. Trip history. Preferences and settings. Premium subscription management. Safety alert settings. Logout option.
+User profile information and photo. Achievement badges and statistics. Trip history. Preferences and settings. Lifetime Premium purchase and generation-balance management. Safety alert settings. Logout option.
 
 ### 6.3 Detail Screens
 
@@ -256,12 +278,12 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - Location map with directions
 - Reviews and visitor comments
 - Add to bucket list button
-- Add visit to journal button
+- Record visit button
 
 **Check-In & Journal Entry Screen**
 
 - Photo upload interface
-- Destination and visit-date selection
+- Destination and optional visit-date selection
 - Journal entry text field
 - Mood/experience emoji selector
 - Tag selection (companions, activities)
@@ -300,11 +322,11 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 1. User arrives at destination
 2. Open app → navigate to My Journey or destination detail
-3. Tap 'Check In' button
-4. User selects the destination and visit date
-5. User captures photo and writes journal entry
-6. System checks for new achievements and displays badge
-7. Manual check-in is saved to the journey timeline as a user-recorded visit
+3. Tap 'Record Visit'
+4. User confirms the destination and visit date
+5. User optionally captures a photo and writes a journal entry
+6. System checks for new achievements and displays a badge
+7. Visit is saved to the journey timeline
 
 ### 7.4 Safety Alert Flow
 
@@ -320,7 +342,8 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 2. Filter by region or date range
 3. Tap festival for detail screen
 4. Read survival guide and traditions
-5. Add to calendar → system sets notification reminders
+5. Add a confirmed occurrence to the calendar; unconfirmed recurring or estimated periods cannot
+   silently become exact calendar events
 6. View accommodation suggestions
 
 ---
@@ -353,10 +376,12 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 - PAGASA API (weather and safety alerts)
 - Google Maps API (mapping and directions)
+- Geoapify Places API behind a backend adapter for nearby itinerary establishments
 - Google/Facebook OAuth (authentication)
-- RevenueCat SDK (In-App Purchases & Subscription Management via Google Play Billing and Apple App Store)
+- RevenueCat SDK with Test Store for the Next Gen lifetime and consumable purchase demonstration;
+  Google Play Billing and Apple App Store purchases are future production integrations
 - Firebase Cloud Messaging (push notifications)
-- OpenAI API (AI itinerary generation - premium)
+- Google Gemini API behind a backend adapter (AI itinerary generation - premium)
 
 ### Performance & Security:
 
@@ -374,39 +399,54 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Core Data Models:
 
 **User**
-- id, email, password_hash, phone, first_name, last_name, profile_photo_url, travel_style, budget_range, favorite_regions, created_at, updated_at, last_login, is_premium, premium_expiry, revenuecat_app_user_id
+
+- id, email, password_hash, phone, first_name, last_name, profile_photo_url, travel_style, budget_range, favorite_regions, created_at, updated_at, last_login, is_premium, premium_acquired_at, revenuecat_app_user_id
 
 **Destination**
+
 - id, name, category, description, historical_context, location (PostGIS Point), region, latitude, longitude, thumbnail_image, photos[], rating, review_count, is_hidden_gem (premium), created_at
 
 **CheckIn**
-- id, user_id, destination_id, visited_at, photo_url, journal_entry, mood, companions[], tags[], achievement_unlocked
+
+- id, user_id, destination_id, visited_at, photo_url, journal_entry, mood, companions[], tags[], created_at, updated_at
 
 **BucketListItem**
+
 - id, user_id, destination_id, added_at, priority, personal_notes, status (planned/visited/skipped)
 
 **Festival**
-- id, name, region, start_date, end_date, description, traditions, location (PostGIS Point), survival_guide, accommodation_tips[], dining_tips[], thumbnail_image
+
+- Stable identity: id, name, region, typical_month, recurrence_description, description, traditions, and location
+- Annual occurrence: schedule_year, status, confirmed dates when applicable, official schedule,
+  verification timestamp, and source references
+- Editorial guidance: explicitly Saraya-curated survival, accommodation, dining, and travel advice
 
 **Achievement**
+
 - id, title, description, icon, unlock_criteria, category (islands, food, culture, etc.)
 
 **UserAchievement**
+
 - id, user_id, achievement_id, unlocked_at, check_in_id (which check-in unlocked it)
 
 **SafetyAlert**
+
 - id, alert_type (weather/travel_advisory/cancellation), region, severity, message, location (PostGIS geometry), start_time, end_time, created_at
 
 **Itinerary**
+
 - id, user_id, destination_id, title, preferences, generated_at, created_at, updated_at
 
 **ItineraryDay**
+
 - itinerary_id, day_number, title
 
 **ItineraryStop**
+
 - itinerary_id, day_number, stop_id, time, title, detail, kind
 
 **CulturalGuide**
+
 - id, destination_id, category (etiquette/tipping/traditions/photography), content, images[], created_at, updated_at
 
 ---
@@ -473,24 +513,35 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Maps & Location Services
 
 - Google Maps API for mapping, directions, and place details
+- Destination coordinates for maps, directions, requested local weather, and itinerary planning
 - Offline maps for premium users (downloaded tile data)
 
-### Payment & Subscription
+### Payment, Premium, and generation quota
 
-- RevenueCat SDK for cross-platform auto-renewable subscription wrapping.
-- Google Play Console & Apple App Store Connect configuration for sandbox testing.
-- RevenueCat Webhooks to automatically sync subscription states (Entitlements) with the backend database.
+- RevenueCat SDK for a non-consumable lifetime Premium purchase and a consumable 10-generation pack.
+- The `saraya_premium` entitlement represents permanent Premium ownership; the consumable does not
+  attach to that entitlement.
+- RevenueCat Test Store configuration for the Next Gen MVP: `saraya_premium_lifetime` as a
+  non-consumable, `saraya_generations_10` as a consumable, `saraya_premium` as the entitlement, and
+  both packages exposed through the `default` Offering.
+- Google Play Console or App Store Connect product configuration is required only for a future
+  real-money store release, not for the Next Gen MVP.
+- RevenueCat webhooks synchronize lifetime ownership and idempotently credit consumable purchases.
+- The authenticated itinerary endpoint atomically verifies and consumes one generation only after
+  successful generation. Premium included quota resets at 00:00 UTC on the first day of each month.
 
 ### AI Itinerary Generation
 
-- OpenAI GPT API for natural language generation
+- Google Gemini API for natural language generation, isolated behind a backend provider adapter
+- Geoapify Places API supplies nearby establishment candidates; the AI may select only candidate IDs, and the backend validates and resolves those IDs before returning or storing an itinerary
+- Deterministic backend generation when credentials are absent or the provider is unavailable
 - Input: duration, budget, style, accessibility needs
 - Output: structured day-by-day itinerary JSON
 
 ### Push Notifications
 
 - Firebase Cloud Messaging or OneSignal
-- Segmented targeting based on user preferences and location
+- Segmented targeting based on user preferences and explicitly requested local context
 - Templates for alerts, events, and promotional messages
 
 ---
@@ -525,8 +576,9 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 
 **Hours 24-36 (if extended hackathon):**
 
-- Begin the AI itinerary premium feature
-- Integrate RevenueCat SDK, configure Google Play/App Store sandbox environments, and implement a paywall screen to unlock Entitlements.
+- Continue the premium AI itinerary flow
+- Integrate RevenueCat SDK and Test Store, then validate lifetime Premium, generation top-up,
+  cancellation/failure, restore, account switching, webhook synchronization, and authoritative quota.
 - Performance optimization
 - Prepare demo and presentation materials
 
@@ -541,9 +593,10 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 - ✓ Festival/events display with basic data
 - ✓ Achievement system with 5-10 sample achievements
 - ✓ Preference and region filtering working
-- ✓ RevenueCat SDK integrated with at least one active Entitlement for sandbox testing
+- ✓ RevenueCat SDK integrated with the lifetime Premium entitlement and generation-pack Test Store products
 - ✓ Fully functional demo recording (2-3 minutes)
 - ✓ Documentation and architecture overview
+- ✓ Public open-source repository with reproducible setup instructions and a team-approved license
 
 ### Post-Hackathon Roadmap:
 
@@ -556,7 +609,7 @@ User profile information and photo. Achievement badges and statistics. Trip hist
 ### Team Responsibilities:
 
 **Backend Lead (1-2 people):**
-API development, database design, authentication, and weather/safety geospatial queries
+API development, database design, authentication, destination queries, and weather/safety geospatial queries
 
 **Frontend Lead (1-2 people):**
 Mobile/web app UI/UX, integration with APIs, photo upload, maps

@@ -1,0 +1,70 @@
+name: API CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/api-ci.yml'
+      - 'apps/api/**'
+      - 'packages/contracts/**'
+      - 'database/**'
+      - '.env.example'
+      - '.prettierrc'
+      - 'eslint.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.base.json'
+  push:
+    branches: [main, develop]
+    paths:
+      - '.github/workflows/api-ci.yml'
+      - 'apps/api/**'
+      - 'packages/contracts/**'
+      - 'database/**'
+      - '.env.example'
+      - '.prettierrc'
+      - 'eslint.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.base.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Type-check, lint, test, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Type-check API
+        run: npm run typecheck --workspace=@saraya/api
+
+      - name: Lint API
+        run: npm run lint --workspace=@saraya/api
+
+      - name: Test API
+        run: npm run test --workspace=@saraya/api -- --ci
+
+      - name: Build API for production
+        run: npm run build --workspace=@saraya/api

@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "Saraya",
+    "slug": "saraya",
+    "version": "0.1.0",
+    "description": "A personalized travel companion for discovering the Philippines.",
+    "icon": "./assets/images/saraya-app-icon.png",
+    "orientation": "portrait",
+    "scheme": "saraya",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF8E7",
+          "image": "./assets/images/saraya-wave.png",
+          "imageWidth": 220,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "Allow Saraya to add confirmed festival events to your calendar.",
+          "writeOnlyCalendarPermission": "Allow Saraya to add confirmed festival events to your calendar.",
+          "remindersPermission": false,
+          "writeOnlyAccess": true
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Saraya to use your location once to show nearby weather and safety alerts."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Saraya to add a travel photo to your Journey.",
+          "cameraPermission": "Allow Saraya to take a travel photo for your Journey."
+        }
+      ],
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0bf3f413-d9a9-4f61-962c-b6621a51e5eb"
+      }
+    },
+    "android": {
+      "package": "com.teamsaraya.saraya",
+      "icon": "./assets/images/saraya-app-icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/saraya-app-icon.png",
+        "backgroundColor": "#43CAD3"
+      }
+    }
+  }
+}

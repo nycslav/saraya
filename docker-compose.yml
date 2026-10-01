@@ -2,15 +2,15 @@ services:
   postgres:
     image: postgis/postgis:16-3.4
     environment:
-      POSTGRES_DB: pantastour
-      POSTGRES_USER: pantastour
-      POSTGRES_PASSWORD: pantastour
+      POSTGRES_DB: saraya
+      POSTGRES_USER: saraya
+      POSTGRES_PASSWORD: saraya
     ports:
       - "5432:5432"
     volumes:
-      - pantastour_postgres_data:/var/lib/postgresql/data
+      - saraya_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pantastour -d pantastour"]
+      test: ["CMD-SHELL", "pg_isready -U saraya -d saraya"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,7 +20,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - pantastour_redis_data:/data
+      - saraya_redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -28,6 +28,6 @@ services:
       retries: 10
 
 volumes:
-  pantastour_postgres_data:
-  pantastour_redis_data:
+  saraya_postgres_data:
+  saraya_redis_data:
 

@@ -1,4 +1,6 @@
-# Shared UI
+# Saraya UI system
 
-Only generic design-system elements belong here, such as buttons, fields, cards, dialogs, loading states, typography, spacing, and colors. Feature-specific components remain inside their feature folder.
+`theme.ts` is the source of truth for semantic color, spacing, radius, and type tokens.
+`components.tsx` contains generic accessible primitives. Feature-specific composition stays in the
+owning feature directory.
 

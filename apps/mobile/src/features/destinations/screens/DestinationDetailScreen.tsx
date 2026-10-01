@@ -1,0 +1,237 @@
+import type { DestinationDetail } from '@saraya/contracts';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Heart, MapPin, NotebookPen, Sparkles, Star } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+
+import {
+  Button,
+  DestinationArtwork,
+  LoadingState,
+  Screen,
+  SectionTitle,
+  StatusPanel,
+} from '@/ui/components';
+import { colors, radius, spacing, type } from '@/ui/theme';
+import { useAuth } from '@/features/auth/AuthProvider';
+import { destinationGateway } from '@/features/discovery/gateways';
+import { bucketListGateway } from '@/features/bucket-list/gateways';
+
+export function DestinationDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { restoring, user } = useAuth();
+  const [destination, setDestination] = useState<DestinationDetail | null>();
+  const [error, setError] = useState<string | null>(null);
+  const [bucketSaved, setBucketSaved] = useState(false);
+  const [bucketSaving, setBucketSaving] = useState(false);
+  const [bucketError, setBucketError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void destinationGateway
+      .getById(id)
+      .then((result) => {
+        if (active) setDestination(result);
+      })
+      .catch(() => {
+        if (active)
+          setError(
+            'We could not open this destination. Check your internet connection and try again.',
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let active = true;
+    if (restoring) return () => { active = false; };
+    if (!user) return () => { active = false; };
+    void bucketListGateway
+      .list()
+      .then((bucketItems) => {
+        if (active) setBucketSaved(bucketItems.some((item) => item.destinationId === id));
+      })
+      .catch(() => {
+        if (active) setBucketError('Your bucket-list status could not be loaded.');
+      });
+    return () => { active = false; };
+  }, [id, restoring, user]);
+
+  const saveToBucket = async () => {
+    if (!destination) return;
+    if (!user) {
+      router.push('/(auth)/login');
+      return;
+    }
+    if (bucketSaved) return;
+    setBucketSaving(true);
+    setBucketError(null);
+    try {
+      await bucketListGateway.create({ destinationId: destination.id });
+      setBucketSaved(true);
+    } catch {
+      setBucketError('This destination could not be saved. It may already be in your list.');
+    } finally {
+      setBucketSaving(false);
+    }
+  };
+
+  const bucketAppearsSaved = Boolean(user && bucketSaved);
+
+  if (error) {
+    return (
+      <Screen>
+        <StatusPanel message={error} title="Unable to load destination" tone="error" />
+        <Button label="Back to Discover" onPress={() => router.replace('/(tabs)/discover')} />
+      </Screen>
+    );
+  }
+
+  if (destination === undefined)
+    return (
+      <Screen>
+        <LoadingState label="Opening destination…" />
+      </Screen>
+    );
+  if (destination === null) {
+    return (
+      <Screen>
+        <StatusPanel
+          message="This destination is unavailable or may have moved."
+          title="Destination not found"
+          tone="error"
+        />
+        <Button label="Back to Discover" onPress={() => router.replace('/(tabs)/discover')} />
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen backAction={{ onPress: () => router.back() }} contentContainerStyle={styles.screen}>
+      <DestinationArtwork
+        imageUrl={destination.thumbnailImageUrl}
+        label={destination.name}
+        tone={destination.heroTone}
+      />
+      <View style={styles.titleBlock}>
+        <View style={styles.eyebrowRow}>
+          <MapPin color={colors.blue} size={17} />
+          <Text style={styles.eyebrow}>
+            {destination.province} · {destination.islandGroup}
+          </Text>
+          <Star color={colors.yellow} fill={colors.yellow} size={17} />
+          <Text style={styles.rating}>{destination.rating.toFixed(1)}</Text>
+        </View>
+        <Text accessibilityRole="header" style={styles.title}>
+          {destination.name}
+        </Text>
+        <Text style={styles.description}>{destination.description}</Text>
+      </View>
+
+      <SectionTitle title="Trip highlights" />
+      <View style={styles.tagWrap}>
+        {destination.highlights.map((highlight) => (
+          <Text key={highlight} style={styles.tag}>
+            {highlight}
+          </Text>
+        ))}
+      </View>
+
+      <View style={styles.guide}>
+        <View style={styles.guideTitle}>
+          <Sparkles color={colors.blue} size={22} />
+          <Text style={styles.guideHeading}>Travel with context</Text>
+        </View>
+        <Text style={styles.guideBody}>{destination.culturalGuide.historicalContext}</Text>
+        {destination.culturalGuide.etiquette.map((tip) => (
+          <View key={tip} style={styles.tipRow}>
+            <View style={styles.tipDot} />
+            <Text style={styles.tip}>{tip}</Text>
+          </View>
+        ))}
+        <View style={styles.phrase}>
+          <Text style={styles.phraseLabel}>LOCAL PHRASE</Text>
+          <Text style={styles.phraseText}>{destination.culturalGuide.localPhrase}</Text>
+        </View>
+      </View>
+
+      {user && bucketError ? (
+        <StatusPanel message={bucketError} title="Bucket list unavailable" tone="error" />
+      ) : null}
+      <View style={styles.actions}>
+        <Button
+          disabled={bucketAppearsSaved || restoring}
+          icon={Heart}
+          label={bucketAppearsSaved ? 'Saved to Bucket' : 'Save to Bucket'}
+          loading={bucketSaving}
+          onPress={() => void saveToBucket()}
+          style={styles.action}
+        />
+        <Button
+          icon={NotebookPen}
+          label="Record a visit"
+          onPress={() =>
+            router.push({
+              pathname: '/check-ins/create',
+              params: { destinationId: destination.id },
+            } as never)
+          }
+          style={styles.action}
+          variant="secondary"
+        />
+        <Button
+          icon={Sparkles}
+          label={`Plan a ${destination.name} trip`}
+          onPress={() =>
+            router.push({
+              pathname: '/premium/itinerary',
+              params: { destinationId: destination.id },
+            })
+          }
+          style={styles.action}
+          variant="quiet"
+        />
+      </View>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: { paddingTop: spacing.md },
+  titleBlock: { gap: spacing.sm },
+  eyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  eyebrow: { color: colors.blue, fontFamily: type.black, fontSize: 12, flex: 1 },
+  rating: { color: colors.navy, fontFamily: type.bold, fontSize: 13 },
+  title: { color: colors.navy, fontFamily: type.black, fontSize: 30 },
+  description: { color: colors.muted, fontFamily: type.medium, fontSize: 16, lineHeight: 24 },
+  tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  tag: {
+    color: colors.navy,
+    fontFamily: type.bold,
+    fontSize: 13,
+    backgroundColor: colors.yellowSoft,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+  },
+  guide: {
+    backgroundColor: colors.blueSoft,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
+    gap: spacing.md,
+  },
+  guideTitle: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  guideHeading: { color: colors.navy, fontFamily: type.black, fontSize: 19 },
+  guideBody: { color: colors.muted, fontFamily: type.medium, fontSize: 15, lineHeight: 23 },
+  tipRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'flex-start' },
+  tipDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.coral, marginTop: 7 },
+  tip: { flex: 1, color: colors.navy, fontFamily: type.medium, fontSize: 14, lineHeight: 21 },
+  phrase: { backgroundColor: colors.surface, padding: spacing.lg, borderRadius: radius.md, gap: 3 },
+  phraseLabel: { color: colors.blue, fontFamily: type.black, fontSize: 10, letterSpacing: 0.8 },
+  phraseText: { color: colors.navy, fontFamily: type.bold, fontSize: 15 },
+  actions: { gap: spacing.sm },
+  action: { width: '100%' },
+});

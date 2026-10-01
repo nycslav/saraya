@@ -21,6 +21,7 @@ web-build/
 build/
 coverage/
 *.tsbuildinfo
+uploads/
 
 # Logs
 *.log
@@ -32,3 +33,4 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
+.kilo
