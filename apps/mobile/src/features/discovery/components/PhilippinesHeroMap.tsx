@@ -1,7 +1,6 @@
 import type { IslandGroup } from '@saraya/contracts';
 import { Fragment, useState } from 'react';
 import {
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -85,7 +84,6 @@ export function PhilippinesHeroMap({
             style={[
               styles.imageLayer,
               region.layerPosition,
-              pressedRegion === region.name && styles.activeShadow,
             ]}
             testID={`map-layer-${region.name.toLowerCase()}`}
           >
@@ -197,28 +195,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     aspectRatio: 377 / 661,
-    ...Platform.select({
-      web: { boxShadow: '0 3px 4px rgba(0, 0, 0, 0.06)' },
-      default: {
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 2,
-      },
-    }),
-  },
-  activeShadow: {
-    ...Platform.select({
-      web: { boxShadow: '0 7px 10px rgba(0, 0, 0, 0.3)' },
-      default: {
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 7 },
-        elevation: 8,
-      },
-    }),
-    transform: [{ translateY: -2 }, { scale: 1.01 }],
   },
   image: {
     width: '100%',

@@ -116,38 +116,44 @@ describe('PhilippinesHeroMap', () => {
     });
   });
 
-  it('raises only the active image layer while its region is pressed', async () => {
+  it('keeps the island image layers shadow-free and fixed while pressed', async () => {
     await render(<PhilippinesHeroMap enabled={allEnabled} onSelect={jest.fn()} />);
 
     const luzonButton = screen.getByRole('button', { name: 'Luzon region' });
     const luzonLayer = screen.getByTestId('map-layer-luzon', { includeHiddenElements: true });
     const visayasLayer = screen.getByTestId('map-layer-visayas', { includeHiddenElements: true });
 
+    expect(StyleSheet.flatten(luzonLayer.props.style)).toMatchObject({
+      left: '6.5%',
+      top: '0.3%',
+    });
+    expect(StyleSheet.flatten(luzonLayer.props.style)).not.toHaveProperty('boxShadow');
+    expect(StyleSheet.flatten(luzonLayer.props.style)).not.toHaveProperty('elevation');
+
     fireEvent(luzonButton, 'onPressIn');
 
     await waitFor(() => expect(luzonLayer).toHaveStyle({
-      elevation: 8,
       left: '6.5%',
       top: '0.3%',
     }));
-    expect(visayasLayer).toHaveStyle({ elevation: 2 });
+    expect(StyleSheet.flatten(luzonLayer.props.style)).not.toHaveProperty('boxShadow');
+    expect(StyleSheet.flatten(luzonLayer.props.style)).not.toHaveProperty('elevation');
+    expect(StyleSheet.flatten(luzonLayer.props.style)).not.toHaveProperty('transform');
+    expect(StyleSheet.flatten(visayasLayer.props.style)).not.toHaveProperty('boxShadow');
+    expect(StyleSheet.flatten(visayasLayer.props.style)).not.toHaveProperty('elevation');
 
     fireEvent(luzonButton, 'onPressOut');
     await waitFor(() => expect(luzonLayer).toHaveStyle({
-      elevation: 2,
       left: '6.5%',
       top: '0.3%',
     }));
   });
 
-  it('raises Mindanao from its northern segment without changing layer position', async () => {
+  it('keeps Mindanao shadow-free and fixed when its northern segment is pressed', async () => {
     await render(<PhilippinesHeroMap enabled={allEnabled} onSelect={jest.fn()} />);
 
     const northernMindanao = screen.getByTestId('map-region-mindanao-zone-0');
     const mindanaoLayer = screen.getByTestId('map-layer-mindanao', {
-      includeHiddenElements: true,
-    });
-    const visayasLayer = screen.getByTestId('map-layer-visayas', {
       includeHiddenElements: true,
     });
 
@@ -155,17 +161,17 @@ describe('PhilippinesHeroMap', () => {
 
     await waitFor(() =>
       expect(mindanaoLayer).toHaveStyle({
-        elevation: 8,
         left: '12%',
         top: '4.5%',
       }),
     );
-    expect(visayasLayer).toHaveStyle({ elevation: 2 });
+    expect(StyleSheet.flatten(mindanaoLayer.props.style)).not.toHaveProperty('boxShadow');
+    expect(StyleSheet.flatten(mindanaoLayer.props.style)).not.toHaveProperty('elevation');
+    expect(StyleSheet.flatten(mindanaoLayer.props.style)).not.toHaveProperty('transform');
 
     fireEvent(northernMindanao, 'onPressOut');
     await waitFor(() =>
       expect(mindanaoLayer).toHaveStyle({
-        elevation: 2,
         left: '12%',
         top: '4.5%',
       }),
