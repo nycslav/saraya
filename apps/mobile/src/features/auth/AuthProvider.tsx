@@ -32,26 +32,6 @@ export type SaveProfileInput = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const developmentPreviewUser: UserProfile = {
-  id: 'development-profile-preview',
-  email: 'preview@saraya.local',
-  displayName: 'Saraya Traveler',
-  avatarUrl: null,
-  homeRegion: 'Bicol Region',
-  travelStyle: 'Culture and nature',
-  budget: 'Mid-range',
-  interests: ['Local culture', 'Nature', 'Food'],
-  preferredRegions: ['Bicol Region', 'Central Visayas'],
-  onboardingComplete: true,
-};
-
-export function isDevelopmentAuthBypassEnabled(
-  isDevelopment = __DEV__,
-  configuredValue = process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS,
-) {
-  return isDevelopment && configuredValue === 'true';
-}
-
 async function synchronizeRevenueCatUser(userId: string) {
   try {
     await identifyRevenueCatUser(userId);
@@ -66,11 +46,9 @@ async function synchronizeRevenueCatUser(userId: string) {
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [restoring, setRestoring] = useState(true);
-  const [isDevelopmentPreview, setIsDevelopmentPreview] = useState(false);
 
   useEffect(() => {
     let active = true;
-    const previewEnabled = isDevelopmentAuthBypassEnabled();
     void authGateway.restore()
       .then(async (session) => {
         if (session) {
@@ -79,15 +57,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
           await resetRevenueCatUser().catch(() => undefined);
         }
         if (active) {
-          setUser(session?.user ?? (previewEnabled ? developmentPreviewUser : null));
-          setIsDevelopmentPreview(!session && previewEnabled);
+          setUser(session?.user ?? null);
         }
       })
       .catch(async () => {
         await resetRevenueCatUser().catch(() => undefined);
         if (active) {
-          setUser(previewEnabled ? developmentPreviewUser : null);
-          setIsDevelopmentPreview(previewEnabled);
+          setUser(null);
         }
       })
       .finally(() => {
@@ -98,7 +74,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   useEffect(() => sessionStore.onCleared(() => {
     setUser(null);
-    setIsDevelopmentPreview(false);
   }), []);
 
   const loginWithGoogle = useCallback(async () => {
@@ -107,32 +82,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const session = await authGateway.loginWithGoogle(idToken);
     await synchronizeRevenueCatUser(session.user.id);
     setUser(session.user);
-    setIsDevelopmentPreview(false);
     return session.user;
   }, []);
 
   const logout = useCallback(async () => {
-    if (isDevelopmentPreview) {
-      await resetRevenueCatUser().catch(() => undefined);
-    } else {
-      await Promise.allSettled([
-        authGateway.logout(),
-        signOutFromGoogle(),
-        resetRevenueCatUser(),
-      ]);
-    }
+    await Promise.allSettled([
+      authGateway.logout(),
+      signOutFromGoogle(),
+      resetRevenueCatUser(),
+    ]);
     setUser(null);
-    setIsDevelopmentPreview(false);
-  }, [isDevelopmentPreview]);
+  }, []);
 
   const saveProfile = useCallback(async ({ displayName, photo }: SaveProfileInput) => {
     if (!user) throw new Error('Sign in to edit your profile.');
-
-    if (isDevelopmentPreview) {
-      const updated = { ...user, displayName: displayName.trim(), avatarUrl: photo?.uri ?? user.avatarUrl };
-      setUser(updated);
-      return updated;
-    }
 
     const avatarUrl = photo
       ? await authGateway.uploadProfilePhoto(photo.uri, photo.mimeType, photo.fileName)
@@ -140,14 +103,14 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const updated = await authGateway.updateProfile({ displayName, ...(avatarUrl ? { avatarUrl } : {}) });
     setUser(updated);
     return updated;
-  }, [isDevelopmentPreview, user]);
+  }, [user]);
 
   const reauthenticate = useCallback(async () => {
-    if (!user || isDevelopmentPreview) throw new Error('Sign in with Google to manage account data.');
+    if (!user) throw new Error('Sign in with Google to manage account data.');
     const idToken = await getGoogleIdToken();
     if (!idToken) throw new Error('Google confirmation was cancelled.');
     return authGateway.reauthenticateAccount(idToken);
-  }, [isDevelopmentPreview, user]);
+  }, [user]);
 
   const exportAccount = useCallback(async () => {
     const { accountActionToken } = await reauthenticate();
@@ -174,13 +137,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await authGateway.deleteAccount(accountActionToken);
     await Promise.allSettled([sessionStore.clear(), signOutFromGoogle(), resetRevenueCatUser()]);
     setUser(null);
-    setIsDevelopmentPreview(false);
   }, [reauthenticate]);
 
   const value = useMemo(() => ({
-    user, restoring, isDevelopmentPreview, loginWithGoogle, logout, saveProfile,
+    user, restoring, isDevelopmentPreview: false, loginWithGoogle, logout, saveProfile,
     exportAccount, deleteAccount,
-  }), [deleteAccount, exportAccount, isDevelopmentPreview, loginWithGoogle, logout, restoring, saveProfile, user]);
+  }), [deleteAccount, exportAccount, loginWithGoogle, logout, restoring, saveProfile, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
