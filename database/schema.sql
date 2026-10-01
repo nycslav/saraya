@@ -361,13 +361,25 @@ CREATE TABLE generation_top_up_transactions (
   user_id text NOT NULL,
   product_id text NOT NULL,
   credits_granted integer NOT NULL CHECK (credits_granted > 0),
+  credits_remaining integer NOT NULL CHECK (
+    credits_remaining >= 0 AND credits_remaining <= credits_granted
+  ),
   source_event_id text,
   purchased_at timestamptz,
+  refunded_at timestamptz,
+  refund_event_id text,
+  credits_reversed integer NOT NULL DEFAULT 0 CHECK (
+    credits_reversed >= 0 AND credits_reversed <= credits_granted
+  ),
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE INDEX generation_top_up_transactions_user_idx
   ON generation_top_up_transactions (user_id);
+
+CREATE UNIQUE INDEX generation_top_up_transactions_refund_event_idx
+  ON generation_top_up_transactions (refund_event_id)
+  WHERE refund_event_id IS NOT NULL;
 
 CREATE TABLE generation_quota_reservations (
   id text PRIMARY KEY,

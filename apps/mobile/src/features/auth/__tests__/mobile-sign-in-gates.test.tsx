@@ -281,6 +281,7 @@ describe('mobile sign-in gates', () => {
     await render(<JourneyScreen />);
 
     expect(await screen.findByText('Your Journey starts when you save')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Record a visit' })).toBeTruthy();
     expect(mockJourneyTimeline).not.toHaveBeenCalled();
     expect(mockJourneyStatistics).not.toHaveBeenCalled();
     expect(mockPush).not.toHaveBeenCalled();
@@ -294,5 +295,6 @@ describe('mobile sign-in gates', () => {
       expect(mockJourneyTimeline).toHaveBeenCalledTimes(1);
       expect(mockJourneyStatistics).toHaveBeenCalledTimes(1);
     });
+    expect(screen.getByRole('button', { name: 'Record a visit' })).toBeTruthy();
   });
 });

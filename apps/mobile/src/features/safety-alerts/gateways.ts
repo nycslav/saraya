@@ -10,7 +10,7 @@ import type {
 import { createApiClient } from '@saraya/api-client';
 
 import { getApiBaseUrl } from '@/core/config';
-import { sessionStore } from '@/features/auth/sessionStore';
+import { createAuthenticatedApiClient } from '@/features/auth/authenticated-api';
 
 import { findDemoAlert, getDemoWeather, listDemoAlerts } from './data/demoSafety';
 
@@ -75,7 +75,7 @@ export interface SafetySubscriptionGateway {
 
 export class ApiSafetySubscriptionGateway implements SafetySubscriptionGateway {
   private get client() {
-    return createApiClient(getApiBaseUrl(), async () => (await sessionStore.read())?.accessToken ?? null);
+    return createAuthenticatedApiClient();
   }
   get(input: SafetyAlertSubscriptionInput) { return this.client.safety.getSubscription(input); }
   subscribe(input: SafetyAlertSubscriptionInput) { return this.client.safety.subscribe(input); }

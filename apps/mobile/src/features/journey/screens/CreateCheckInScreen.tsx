@@ -95,7 +95,7 @@ export function CreateCheckInScreen() {
   return (
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.header}>
-        <Pressable accessibilityLabel="Go back" onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/journey')} style={styles.iconButton}>
+        <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/journey')} style={styles.iconButton}>
           <ArrowLeft color={colors.navy} size={23} />
         </Pressable>
         <View style={styles.headerCopy}><Text style={styles.title}>Record a visit</Text><Text style={styles.subtitle}>Add a memory to your Journey.</Text></View>
@@ -104,7 +104,7 @@ export function CreateCheckInScreen() {
       <View style={styles.group}>
         <Text style={styles.label}>Destination</Text>
         {selected ? (
-          <Pressable onPress={() => setDestinationId('')} style={styles.selectedDestination}>
+          <Pressable accessibilityLabel={`Change destination from ${selected.name}`} accessibilityRole="button" onPress={() => setDestinationId('')} style={styles.selectedDestination}>
             <View style={styles.selectedCheck}><Check color={colors.white} size={16} /></View>
             <View><Text style={styles.optionTitle}>{selected.name}</Text><Text style={styles.optionMeta}>{selected.province} · {selected.category}</Text></View>
           </Pressable>
@@ -112,7 +112,7 @@ export function CreateCheckInScreen() {
           <>
             <SearchField onChangeText={setSearch} placeholder="Search destinations" value={search} />
             <View style={styles.options}>{options.map((destination) => (
-              <Pressable key={destination.id} onPress={() => setDestinationId(destination.id)} style={styles.option}>
+              <Pressable accessibilityLabel={destination.name} accessibilityRole="radio" accessibilityState={{ checked: false }} key={destination.id} onPress={() => setDestinationId(destination.id)} style={styles.option}>
                 <View style={styles.optionCopy}><Text style={styles.optionTitle}>{destination.name}</Text><Text style={styles.optionMeta}>{destination.province} · {destination.category}</Text></View>
                 <View style={styles.radio} />
               </Pressable>

@@ -2,10 +2,7 @@ import type {
   CreateFestivalReminder,
   FestivalReminder,
 } from '@saraya/contracts';
-import { createApiClient } from '@saraya/api-client';
-
-import { getApiBaseUrl } from '@/core/config';
-import { sessionStore } from '@/features/auth/sessionStore';
+import { createAuthenticatedApiClient } from '@/features/auth/authenticated-api';
 
 export interface FestivalReminderGateway {
   create(festivalId: string, input?: CreateFestivalReminder): Promise<FestivalReminder>;
@@ -15,10 +12,7 @@ export interface FestivalReminderGateway {
 }
 
 function client() {
-  return createApiClient(
-    getApiBaseUrl(),
-    async () => (await sessionStore.read())?.accessToken ?? null,
-  );
+  return createAuthenticatedApiClient();
 }
 
 export class ApiFestivalReminderGateway implements FestivalReminderGateway {

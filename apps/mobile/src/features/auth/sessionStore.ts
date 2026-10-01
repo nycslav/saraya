@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 
 const accessTokenKey = 'saraya.access-token';
 const refreshTokenKey = 'saraya.refresh-token';
+const clearedListeners = new Set<() => void>();
 
 export const sessionStore = {
   async read() {
@@ -24,9 +25,20 @@ export const sessionStore = {
 
   async clear() {
     if (Platform.OS === 'web') return;
-    await Promise.all([
-      SecureStore.deleteItemAsync(accessTokenKey),
-      SecureStore.deleteItemAsync(refreshTokenKey),
-    ]);
+    try {
+      await Promise.all([
+        SecureStore.deleteItemAsync(accessTokenKey),
+        SecureStore.deleteItemAsync(refreshTokenKey),
+      ]);
+    } finally {
+      clearedListeners.forEach((listener) => listener());
+    }
+  },
+
+  onCleared(listener: () => void) {
+    clearedListeners.add(listener);
+    return () => {
+      clearedListeners.delete(listener);
+    };
   },
 };

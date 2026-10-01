@@ -6,13 +6,16 @@ import {
   type JourneyEntry,
   type JourneyStatistics,
 } from '@saraya/contracts';
-import { ApiClientError, createApiClient } from '@saraya/api-client';
+import { ApiClientError } from '@saraya/api-client';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 
 import { getApiBaseUrl } from '@/core/config';
 import { destinationGateway } from '@/features/discovery/gateways';
-import { sessionStore } from '@/features/auth/sessionStore';
+import {
+  createAuthenticatedApiClient,
+  runAuthenticatedRequest,
+} from '@/features/auth/authenticated-api';
 
 export interface JourneyGateway {
   timeline(): Promise<JourneyEntry[]>;
@@ -97,10 +100,7 @@ class MockJourneyGateway implements JourneyGateway {
 
 export class ApiJourneyGateway implements JourneyGateway {
   private readonly baseUrl = getApiBaseUrl().replace(/\/$/, '');
-  private readonly client = createApiClient(
-    this.baseUrl,
-    async () => (await sessionStore.read())?.accessToken ?? null,
-  );
+  private readonly client = createAuthenticatedApiClient();
 
   timeline() { return this.client.checkIns.timeline(); }
   statistics() { return this.client.checkIns.statistics(); }
@@ -110,14 +110,14 @@ export class ApiJourneyGateway implements JourneyGateway {
   async uploadPhoto(uri: string, mimeType?: string | null, fileName?: string | null) {
     const normalizedMimeType = mimeType === 'image/jpg' ? 'image/jpeg' : (mimeType ?? 'image/jpeg');
     if (Platform.OS !== 'web') {
-      const accessToken = (await sessionStore.read())?.accessToken;
-      const response = await FileSystem.uploadAsync(`${this.baseUrl}/check-ins/photos`, uri, {
-        fieldName: 'photo',
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        httpMethod: 'POST',
-        mimeType: normalizedMimeType,
-        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-      });
+      const response = await runAuthenticatedRequest((accessToken) =>
+        FileSystem.uploadAsync(`${this.baseUrl}/check-ins/photos`, uri, {
+          fieldName: 'photo',
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          httpMethod: 'POST',
+          mimeType: normalizedMimeType,
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        }));
       const payload = parseUploadResponse(response.body);
       if (response.status < 200 || response.status >= 300) {
         throw new ApiClientError(readUploadError(payload, response.status), response.status);

@@ -96,6 +96,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => sessionStore.onCleared(() => {
+    setUser(null);
+    setIsDevelopmentPreview(false);
+  }), []);
+
   const loginWithGoogle = useCallback(async () => {
     const idToken = await getGoogleIdToken();
     if (!idToken) return null;

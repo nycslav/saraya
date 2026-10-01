@@ -11,6 +11,7 @@ import { Platform } from 'react-native';
 
 import { getApiBaseUrl } from '@/core/config';
 
+import { createAuthenticatedApiClient, runAuthenticatedRequest } from './authenticated-api';
 import { sessionStore } from './sessionStore';
 
 export interface AuthGateway {
@@ -25,9 +26,7 @@ export interface AuthGateway {
   deleteAccount(accountActionToken: string): Promise<void>;
 }
 
-function client() {
-  return createApiClient(getApiBaseUrl(), async () => (await sessionStore.read())?.accessToken ?? null);
-}
+const publicClient = () => createApiClient(getApiBaseUrl());
 
 async function persist(session: AuthSession) {
   await sessionStore.write(session.accessToken, session.refreshToken);
@@ -40,7 +39,7 @@ export class ApiAuthGateway implements AuthGateway {
     if (!stored) return null;
 
     try {
-      return await persist(await client().auth.refresh(stored.refreshToken));
+      return await persist(await publicClient().auth.refresh(stored.refreshToken));
     } catch {
       await sessionStore.clear();
       return null;
@@ -48,34 +47,34 @@ export class ApiAuthGateway implements AuthGateway {
   }
 
   async loginWithGoogle(idToken: string) {
-    return persist(await client().auth.google({ idToken }));
+    return persist(await publicClient().auth.google({ idToken }));
   }
 
   async logout() {
     const stored = await sessionStore.read();
     try {
-      if (stored) await client().auth.logout(stored.refreshToken);
+      if (stored) await createAuthenticatedApiClient().auth.logout(stored.refreshToken);
     } finally {
       await sessionStore.clear();
     }
   }
 
   updateProfile(input: UpdateProfileInput) {
-    return client().auth.updateProfile(input);
+    return createAuthenticatedApiClient().auth.updateProfile(input);
   }
 
   async uploadProfilePhoto(uri: string, mimeType?: string | null, fileName?: string | null) {
     const baseUrl = getApiBaseUrl().replace(/\/$/, '');
     const normalizedMimeType = mimeType === 'image/jpg' ? 'image/jpeg' : (mimeType ?? 'image/jpeg');
     if (Platform.OS !== 'web') {
-      const accessToken = (await sessionStore.read())?.accessToken;
-      const response = await FileSystem.uploadAsync(`${baseUrl}/auth/profile/photo`, uri, {
-        fieldName: 'photo',
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
-        httpMethod: 'POST',
-        mimeType: normalizedMimeType,
-        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-      });
+      const response = await runAuthenticatedRequest((accessToken) =>
+        FileSystem.uploadAsync(`${baseUrl}/auth/profile/photo`, uri, {
+          fieldName: 'photo',
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          httpMethod: 'POST',
+          mimeType: normalizedMimeType,
+          uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        }));
       const payload = parseUploadResponse(response.body);
       if (response.status < 200 || response.status >= 300) {
         throw new ApiClientError(readUploadError(payload, response.status), response.status);
@@ -86,34 +85,32 @@ export class ApiAuthGateway implements AuthGateway {
     const blob = await fetch(uri).then((response) => response.blob());
     const form = new FormData();
     form.append('photo', blob, fileName ?? `profile-${Date.now()}.jpg`);
-    return (await client().auth.uploadProfilePhoto(form)).photoUrl;
+    return (await createAuthenticatedApiClient().auth.uploadProfilePhoto(form)).photoUrl;
   }
 
   reauthenticateAccount(idToken: string) {
-    return client().auth.reauthenticateAccount({ idToken });
+    return createAuthenticatedApiClient().auth.reauthenticateAccount({ idToken });
   }
 
   exportAccountData(accountActionToken: string) {
-    return client().auth.exportAccountData(accountActionToken);
+    return createAuthenticatedApiClient().auth.exportAccountData(accountActionToken);
   }
 
   async downloadAccountData(accountActionToken: string, fileUri: string) {
-    const accessToken = (await sessionStore.read())?.accessToken;
-    const response = await FileSystem.downloadAsync(
-      `${getApiBaseUrl().replace(/\/$/, '')}/account/export`,
-      fileUri,
+    const response = await runAuthenticatedRequest((accessToken) => FileSystem.downloadAsync(
+      `${getApiBaseUrl().replace(/\/$/, '')}/account/export`, fileUri,
       { headers: {
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         'x-account-action-token': accountActionToken,
       } },
-    );
+    ));
     if (response.status < 200 || response.status >= 300) {
       throw new ApiClientError('Your data export could not be downloaded.', response.status);
     }
   }
 
   deleteAccount(accountActionToken: string) {
-    return client().auth.deleteAccount({ accountActionToken, confirmation: 'DELETE' });
+    return createAuthenticatedApiClient().auth.deleteAccount({ accountActionToken, confirmation: 'DELETE' });
   }
 }
 

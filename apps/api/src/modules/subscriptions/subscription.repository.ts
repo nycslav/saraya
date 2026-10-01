@@ -86,6 +86,12 @@ type StoredReservation = GenerationReservation & {
   status: 'reserved' | 'consumed' | 'released';
 };
 
+type TopUpTransaction = {
+  userId: string;
+  creditsRemaining: number;
+  refunded: boolean;
+};
+
 export class GenerationQuotaExhaustedError extends Error {
   constructor() {
     super('No itinerary generation credits remain.');
@@ -99,7 +105,7 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
   private readonly customerUsers = new Map<string, string>();
   private readonly entitlements = new Map<string, Entitlement>();
   private readonly accounts = new Map<string, Account>();
-  private readonly topUpTransactions = new Set<string>();
+  private readonly topUpTransactions = new Map<string, TopUpTransaction>();
   private readonly events = new Map<string, StoredEvent>();
   private readonly reservations = new Map<string, StoredReservation>();
   private queue: Promise<unknown> = Promise.resolve();
@@ -213,7 +219,17 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
         throw new GenerationReservationNotFoundError('Generation reservation is not active.');
       }
       const account = this.account(reservation.userId);
-      if (reservation.source === 'top-up') account.topUpBalance -= 1;
+      if (reservation.source === 'top-up') {
+        if (account.topUpBalance <= 0) throw new GenerationQuotaExhaustedError();
+        account.topUpBalance -= 1;
+        const transaction = [...this.topUpTransactions.values()].find(
+          (candidate) =>
+            candidate.userId === reservation.userId &&
+            !candidate.refunded &&
+            candidate.creditsRemaining > 0,
+        );
+        if (transaction) transaction.creditsRemaining -= 1;
+      }
       else if (reservation.access === 'premium') {
         if (reservation.periodStart === currentPeriodStart(now)) {
           this.resetPremiumPeriod(account, reservation.periodStart);
@@ -260,6 +276,12 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
       event.transaction_id
     ) {
       this.creditTopUp(userId, event.transaction_id, TOP_UP_SIZE);
+      return 'processed';
+    }
+    if (event.product_id === configuration.topUpProductId && event.type === 'CANCELLATION') {
+      const transactionId = event.transaction_id ?? event.original_transaction_id;
+      if (!transactionId) return 'ignored';
+      this.refundTopUp(userId, transactionId);
       return 'processed';
     }
     const affectsPremium =
@@ -324,9 +346,32 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
 
   private creditTopUp(userId: string, transactionId: string, credits: number) {
     if (this.topUpTransactions.has(transactionId)) return false;
-    this.topUpTransactions.add(transactionId);
+    this.topUpTransactions.set(transactionId, {
+      userId,
+      creditsRemaining: credits,
+      refunded: false,
+    });
     this.account(userId).topUpBalance += credits;
     return true;
+  }
+
+  private refundTopUp(userId: string, transactionId: string) {
+    const transaction = this.topUpTransactions.get(transactionId);
+    if (!transaction) {
+      this.topUpTransactions.set(transactionId, {
+        userId,
+        creditsRemaining: 0,
+        refunded: true,
+      });
+      return 0;
+    }
+    if (transaction.refunded) return 0;
+    const account = this.account(transaction.userId);
+    const reversed = Math.min(transaction.creditsRemaining, account.topUpBalance);
+    account.topUpBalance = Math.max(0, account.topUpBalance - reversed);
+    transaction.creditsRemaining = 0;
+    transaction.refunded = true;
+    return reversed;
   }
 
   private account(userId: string) {

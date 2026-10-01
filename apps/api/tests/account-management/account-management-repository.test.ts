@@ -65,7 +65,7 @@ describe('AccountManagementRepository', () => {
     expect(mockRelease).toHaveBeenCalledTimes(1);
   });
 
-  it('does not commit account deletion when uploaded photos cannot be removed', async () => {
+  it('commits account deletion before photo cleanup and remains successful if cleanup fails', async () => {
     mockQuery.mockImplementation(async (sql: string) => {
       if (sql.includes('SELECT avatar_url AS photo_url')) {
         return { rows: [{ photo_url: '/uploads/check-ins/avatar.jpg' }] };
@@ -74,11 +74,20 @@ describe('AccountManagementRepository', () => {
       return { rows: [], rowCount: 1 };
     });
 
+    const deletePhotos = jest.fn(async () => { throw new Error('storage unavailable'); });
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
     await expect(new AccountManagementRepository().deleteAccount(
       'user-1',
-      async () => { throw new Error('storage unavailable'); },
-    )).rejects.toThrow('storage unavailable');
+      deletePhotos,
+    )).resolves.toEqual(['/uploads/check-ins/avatar.jpg']);
 
-    expect(mockQuery.mock.calls.at(-1)?.[0]).toBe('ROLLBACK');
+    expect(mockQuery.mock.calls.at(-1)?.[0]).toBe('COMMIT');
+    expect(deletePhotos).toHaveBeenCalledWith(['/uploads/check-ins/avatar.jpg']);
+    expect(consoleError).toHaveBeenCalledWith(
+      'Account deleted, but external photo cleanup failed.',
+      expect.any(Error),
+    );
+    consoleError.mockRestore();
   });
 });

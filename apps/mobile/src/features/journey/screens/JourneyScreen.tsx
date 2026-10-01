@@ -47,8 +47,12 @@ export function JourneyScreen() {
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.header}>
         <View style={styles.headerCopy}><Text style={styles.title}>My Journey</Text><Text style={styles.subtitle}>Your Philippines Adventure so far.</Text></View>
-        <Pressable accessibilityLabel="Record a visit" onPress={() => router.push('/check-ins/create' as never)} style={styles.addButton}><Plus color={colors.white} size={25} /></Pressable>
       </View>
+      <Button
+        icon={Plus}
+        label="Record a visit"
+        onPress={() => router.push('/check-ins/create' as never)}
+      />
       {!restoring && !user ? (
         <StatusPanel
           message="You can prepare a travel memory now. Sign in only when you press Save to My Journey."
@@ -72,13 +76,12 @@ export function JourneyScreen() {
             <Stat value={statistics.achievementsUnlocked} label="badges" tone="coral" />
             <Stat value={statistics.totalVisits} label="visits" tone="yellow" />
           </View>
-          <SectionTitle title="Travel timeline" action={<Pressable onPress={() => router.push('/achievements' as never)}><Text style={styles.link}>View badges</Text></Pressable>} />
+          <SectionTitle title="Travel timeline" action={<Pressable accessibilityRole="button" onPress={() => router.push('/achievements' as never)}><Text style={styles.link}>View badges</Text></Pressable>} />
           {entries.length === 0 ? (
             <View style={styles.empty}>
               <MapPin color={colors.blue} size={40} />
               <Text style={styles.emptyTitle}>Your first story starts here</Text>
               <Text style={styles.emptyBody}>Record a destination you visited, then add a photo and note from the day.</Text>
-              <Button icon={Plus} label="Record a visit" onPress={() => router.push('/check-ins/create' as never)} />
             </View>
           ) : entries.map((entry, index) => <TimelineEntry entry={entry} key={entry.id} last={index === entries.length - 1} />)}
           {entries.length > 0 ? <Button icon={Award} label="See all achievements" onPress={() => router.push('/achievements' as never)} variant="quiet" /> : null}
@@ -124,7 +127,6 @@ function TimelineEntry({ entry, last }: { entry: JourneyEntry; last: boolean }) 
 const styles = StyleSheet.create({
   screen: { paddingTop: spacing.lg }, header: { minHeight: 64, flexDirection: 'row', alignItems: 'center', gap: spacing.md }, headerCopy: { flex: 1 },
   title: { color: colors.navy, fontFamily: type.black, fontSize: 28 }, subtitle: { color: colors.muted, fontFamily: type.medium, fontSize: 13 },
-  addButton: { width: 46, height: 46, borderRadius: 23, backgroundColor: colors.blue, alignItems: 'center', justifyContent: 'center' },
   mapPanel: { height: 142, borderRadius: 8, backgroundColor: colors.blueSoft, padding: spacing.lg, overflow: 'hidden' }, mapEyebrow: { color: colors.blue, fontFamily: type.black, fontSize: 10 },
   routeLine: { position: 'absolute', top: 70, left: 42, right: 42, height: 3, backgroundColor: colors.blue, transform: [{ rotate: '-4deg' }] },
   mapDot: { position: 'absolute', width: 14, height: 14, borderRadius: 7, backgroundColor: colors.coral, borderWidth: 3, borderColor: colors.white },

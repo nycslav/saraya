@@ -92,6 +92,91 @@ describe('InMemorySubscriptionRepository', () => {
     expect((await repository.getState('user-1', now)).quota.topUpRemaining).toBe(10);
   });
 
+  it('reverses an unused top-up once and prevents synchronization from re-crediting it', async () => {
+    const repository = new InMemorySubscriptionRepository();
+    await repository.associateCustomer('user-1', 'rc-user-1');
+    const topUp = event({
+      id: 'top-up-purchase',
+      product_id: subscriptionConfiguration.topUpProductId,
+      entitlement_ids: [],
+      transaction_id: 'top-up-refunded',
+      original_transaction_id: 'top-up-refunded',
+    });
+    await repository.processWebhook(topUp, subscriptionConfiguration);
+    const cancellation = {
+      ...topUp,
+      id: 'top-up-cancellation',
+      type: 'CANCELLATION',
+      transaction_id: undefined,
+    };
+
+    await expect(repository.processWebhook(cancellation, subscriptionConfiguration))
+      .resolves.toBe('processed');
+    await expect(repository.processWebhook(
+      { ...cancellation, id: 'duplicate-cancellation' },
+      subscriptionConfiguration,
+    )).resolves.toBe('processed');
+    expect((await repository.getState('user-1', now)).quota.topUpRemaining).toBe(0);
+
+    await repository.synchronizeCustomer('user-1', 'rc-user-1', {
+      premiumActive: false,
+      premiumProductId: null,
+      premiumOriginalTransactionId: null,
+      premiumExpiresAt: null,
+      topUps: [{
+        transactionId: 'top-up-refunded',
+        productId: subscriptionConfiguration.topUpProductId,
+        purchasedAt: now,
+      }],
+    }, now);
+    expect((await repository.getState('user-1', now)).quota.topUpRemaining).toBe(0);
+  });
+
+  it('refunds only the unused portion of a partially or fully consumed top-up', async () => {
+    const partial = new InMemorySubscriptionRepository();
+    await partial.associateCustomer('user-1', 'rc-user-1');
+    await partial.processWebhook(event({
+      id: 'partial-purchase',
+      product_id: subscriptionConfiguration.topUpProductId,
+      entitlement_ids: [],
+      transaction_id: 'partial-transaction',
+    }), subscriptionConfiguration);
+    for (let index = 0; index < 7; index += 1) {
+      const reservation = await partial.reserveGeneration('user-1', `partial-${index}`, now);
+      await partial.consumeReservation(reservation.id, now);
+    }
+    expect((await partial.getState('user-1', now)).quota.topUpRemaining).toBe(6);
+    await partial.processWebhook(event({
+      id: 'partial-refund',
+      type: 'CANCELLATION',
+      product_id: subscriptionConfiguration.topUpProductId,
+      entitlement_ids: [],
+      transaction_id: 'partial-transaction',
+    }), subscriptionConfiguration);
+    expect((await partial.getState('user-1', now)).quota.topUpRemaining).toBe(0);
+
+    const consumed = new InMemorySubscriptionRepository();
+    await consumed.associateCustomer('user-1', 'rc-user-1');
+    await consumed.processWebhook(event({
+      id: 'consumed-purchase',
+      product_id: subscriptionConfiguration.topUpProductId,
+      entitlement_ids: [],
+      transaction_id: 'consumed-transaction',
+    }), subscriptionConfiguration);
+    for (let index = 0; index < 13; index += 1) {
+      const reservation = await consumed.reserveGeneration('user-1', `consumed-${index}`, now);
+      await consumed.consumeReservation(reservation.id, now);
+    }
+    await consumed.processWebhook(event({
+      id: 'consumed-refund',
+      type: 'CANCELLATION',
+      product_id: subscriptionConfiguration.topUpProductId,
+      entitlement_ids: [],
+      transaction_id: 'consumed-transaction',
+    }), subscriptionConfiguration);
+    expect((await consumed.getState('user-1', now)).quota.topUpRemaining).toBe(0);
+  });
+
   it('uses included Premium allowance before persistent purchased credits and resets monthly', async () => {
     const repository = new InMemorySubscriptionRepository();
     await repository.associateCustomer('user-1', 'rc-user-1');

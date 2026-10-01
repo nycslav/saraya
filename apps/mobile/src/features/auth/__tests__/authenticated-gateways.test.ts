@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 
 import { ApiBucketListGateway } from '@/features/bucket-list/gateways';
 import { ApiJourneyGateway } from '@/features/journey/gateways';
+import { refreshAccessToken } from '../authenticated-api';
 import { ApiAuthGateway } from '../gateway';
 import { sessionStore } from '../sessionStore';
 
@@ -10,6 +11,7 @@ jest.mock('../sessionStore', () => ({
     read: jest.fn(),
     write: jest.fn(),
     clear: jest.fn(),
+    onCleared: jest.fn(() => jest.fn()),
   },
 }));
 
@@ -28,6 +30,7 @@ describe('authenticated personal-data gateways', () => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_BASE_URL = 'https://api.saraya.test';
     readSession.mockResolvedValue({ accessToken: 'saraya-access-token', refreshToken: 'refresh' });
+    clearSession.mockResolvedValue(undefined);
     globalThis.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -72,6 +75,71 @@ describe('authenticated personal-data gateways', () => {
         headers: { Authorization: 'Bearer saraya-access-token' },
       }),
     );
+  });
+
+  it('shares one rotating refresh across simultaneous expired-token requests', async () => {
+    globalThis.fetch = jest.fn(async (input, init) => {
+      const url = String(input);
+      const authorization = (init?.headers as Record<string, string> | undefined)?.Authorization;
+      if (url.endsWith('/auth/refresh')) {
+        await Promise.resolve();
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            accessToken: 'fresh-access-token',
+            refreshToken: 'rotated-refresh-token',
+            user: {
+              id: 'user-1', email: 'traveler@example.com', displayName: 'Traveler',
+              avatarUrl: null, homeRegion: null, travelStyle: null, budget: null,
+              interests: [], preferredRegions: [], onboardingComplete: true,
+            },
+          }),
+        } as Response;
+      }
+      if (authorization === 'Bearer fresh-access-token') {
+        return { ok: true, status: 200, json: async () => [] } as Response;
+      }
+      return { ok: false, status: 401, json: async () => ({ message: 'Expired' }) } as Response;
+    }) as jest.Mock;
+
+    await Promise.all([
+      new ApiBucketListGateway().list(),
+      new ApiJourneyGateway().timeline(),
+    ]);
+
+    const refreshCalls = (globalThis.fetch as jest.Mock).mock.calls.filter(
+      ([url]) => String(url).endsWith('/auth/refresh'),
+    );
+    expect(refreshCalls).toHaveLength(1);
+    expect(writeSession).toHaveBeenCalledWith('fresh-access-token', 'rotated-refresh-token');
+  });
+
+  it('clears the session when token rotation fails', async () => {
+    globalThis.fetch = jest.fn(async (input) => {
+      const url = String(input);
+      return {
+        ok: false,
+        status: 401,
+        json: async () => ({ message: url.endsWith('/auth/refresh') ? 'Invalid refresh' : 'Expired' }),
+      } as Response;
+    }) as jest.Mock;
+
+    await expect(new ApiBucketListGateway().list()).rejects.toMatchObject({ status: 401 });
+    expect(clearSession).toHaveBeenCalledTimes(1);
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('reuses an already-rotated access token for a late stale 401', async () => {
+    readSession.mockResolvedValue({
+      accessToken: 'already-rotated-access-token',
+      refreshToken: 'already-rotated-refresh-token',
+    });
+    globalThis.fetch = jest.fn();
+
+    await expect(refreshAccessToken('expired-access-token'))
+      .resolves.toBe('already-rotated-access-token');
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it('adds the Saraya access token to profile photo uploads', async () => {
