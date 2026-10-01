@@ -2,10 +2,7 @@ import type {
   DestinationConditions,
   DestinationSafetySubscription,
 } from '@saraya/contracts';
-import { createApiClient } from '@saraya/api-client';
-
-import { getApiBaseUrl } from '@/core/config';
-import { sessionStore } from '@/features/auth/sessionStore';
+import { createAuthenticatedApiClient } from '@/features/auth/authenticated-api';
 
 export interface DestinationConditionsGateway {
   getConditions(destinationId: string): Promise<DestinationConditions>;
@@ -15,10 +12,7 @@ export interface DestinationConditionsGateway {
 }
 
 function client() {
-  return createApiClient(
-    getApiBaseUrl(),
-    async () => (await sessionStore.read())?.accessToken ?? null,
-  );
+  return createAuthenticatedApiClient();
 }
 
 export class ApiDestinationConditionsGateway implements DestinationConditionsGateway {

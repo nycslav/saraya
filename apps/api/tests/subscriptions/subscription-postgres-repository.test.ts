@@ -77,4 +77,51 @@ describe('PostgresSubscriptionRepository', () => {
       expect.anything(),
     );
   });
+
+  it('marks a top-up cancellation refunded and subtracts only remaining credits', async () => {
+    mockQuery.mockImplementation(async (sql: string) => {
+      if (sql.includes('INSERT INTO revenuecat_webhook_events')) {
+        return { rows: [{ event_id: 'refund-event' }], rowCount: 1 };
+      }
+      if (sql.includes('FROM revenuecat_customers')) {
+        return { rows: [{ revenuecat_customer_id: 'customer-1', user_id: 'user-1' }], rowCount: 1 };
+      }
+      if (sql.includes('FROM generation_top_up_transactions WHERE transaction_id')) {
+        return {
+          rows: [{ user_id: 'user-1', credits_remaining: 6, refunded_at: null }],
+          rowCount: 1,
+        };
+      }
+      if (sql.includes('FROM generation_quota_accounts WHERE user_id')) {
+        return {
+          rows: [{ free_used: 3, premium_period_start: null, premium_used: 0, top_up_balance: 6 }],
+          rowCount: 1,
+        };
+      }
+      return { rows: [], rowCount: 1 };
+    });
+
+    await expect(new PostgresSubscriptionRepository().processWebhook({
+      id: 'refund-event',
+      type: 'CANCELLATION',
+      event_timestamp_ms: 1_797_000_000_000,
+      app_user_id: 'customer-1',
+      aliases: [],
+      transferred_from: [],
+      transferred_to: [],
+      product_id: subscriptionConfiguration.topUpProductId,
+      entitlement_ids: [],
+      transaction_id: 'transaction-1',
+      environment: 'SANDBOX',
+    }, subscriptionConfiguration)).resolves.toBe('processed');
+
+    expect(mockQuery).toHaveBeenCalledWith(
+      expect.stringContaining('credits_reversed = $3'),
+      ['transaction-1', 'refund-event', 6],
+    );
+    expect(mockQuery).toHaveBeenCalledWith(
+      expect.stringContaining('top_up_balance = GREATEST(0, top_up_balance - $2)'),
+      ['user-1', 6],
+    );
+  });
 });

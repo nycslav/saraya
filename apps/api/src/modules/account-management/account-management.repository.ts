@@ -38,7 +38,8 @@ export class AccountManagementRepository {
         FROM subscription_entitlements WHERE user_id = $1`, [userId]),
       pool.query(`SELECT free_used, premium_period_start, premium_used, top_up_balance, created_at, updated_at
         FROM generation_quota_accounts WHERE user_id = $1`, [userId]),
-      pool.query(`SELECT product_id, credits_granted, purchased_at, created_at
+      pool.query(`SELECT product_id, credits_granted, credits_remaining, purchased_at,
+          refunded_at, credits_reversed, created_at
         FROM generation_top_up_transactions WHERE user_id = $1 ORDER BY created_at DESC`, [userId]),
       pool.query(`SELECT platform, is_active, created_at, updated_at, last_seen_at
         FROM device_tokens WHERE user_id = $1 ORDER BY created_at DESC`, [userId]),
@@ -71,6 +72,7 @@ export class AccountManagementRepository {
     deletePhotos: (photoUrls: string[]) => Promise<void> = async () => undefined,
   ) {
     const client = await getPool().connect();
+    let photoUrls: string[] = [];
     try {
       await client.query('BEGIN');
       const photos = await client.query<{ photo_url: string }>(
@@ -95,16 +97,20 @@ export class AccountManagementRepository {
       );
       const deleted = await client.query('DELETE FROM users WHERE id = $1 RETURNING id', [userId]);
       if (!deleted.rowCount) throw new Error('Account not found.');
-      const photoUrls = photos.rows.map(({ photo_url }) => photo_url);
-      await deletePhotos(photoUrls);
+      photoUrls = photos.rows.map(({ photo_url }) => photo_url);
       await client.query('COMMIT');
-      return photoUrls;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
     }
+    try {
+      await deletePhotos(photoUrls);
+    } catch (error) {
+      console.error('Account deleted, but external photo cleanup failed.', error);
+    }
+    return photoUrls;
   }
 
   private async deleteFrom(client: PoolClient, table: string, userId: string) {

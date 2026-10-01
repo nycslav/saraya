@@ -47,7 +47,14 @@ export function JourneyScreen() {
     <Screen contentContainerStyle={styles.screen}>
       <View style={styles.header}>
         <View style={styles.headerCopy}><Text style={styles.title}>My Journey</Text><Text style={styles.subtitle}>Your Philippines Adventure so far.</Text></View>
-        <Pressable accessibilityLabel="Record a visit" onPress={() => router.push('/check-ins/create' as never)} style={styles.addButton}><Plus color={colors.white} size={25} /></Pressable>
+        <Pressable
+          accessibilityLabel="Record a visit"
+          accessibilityRole="button"
+          onPress={() => router.push('/check-ins/create' as never)}
+          style={styles.addButton}
+        >
+          <Plus color={colors.white} size={25} />
+        </Pressable>
       </View>
       {!restoring && !user ? (
         <StatusPanel
@@ -72,13 +79,12 @@ export function JourneyScreen() {
             <Stat value={statistics.achievementsUnlocked} label="badges" tone="coral" />
             <Stat value={statistics.totalVisits} label="visits" tone="yellow" />
           </View>
-          <SectionTitle title="Travel timeline" action={<Pressable onPress={() => router.push('/achievements' as never)}><Text style={styles.link}>View badges</Text></Pressable>} />
+          <SectionTitle title="Travel timeline" action={<Pressable accessibilityRole="button" onPress={() => router.push('/achievements' as never)}><Text style={styles.link}>View badges</Text></Pressable>} />
           {entries.length === 0 ? (
             <View style={styles.empty}>
               <MapPin color={colors.blue} size={40} />
               <Text style={styles.emptyTitle}>Your first story starts here</Text>
               <Text style={styles.emptyBody}>Record a destination you visited, then add a photo and note from the day.</Text>
-              <Button icon={Plus} label="Record a visit" onPress={() => router.push('/check-ins/create' as never)} />
             </View>
           ) : entries.map((entry, index) => <TimelineEntry entry={entry} key={entry.id} last={index === entries.length - 1} />)}
           {entries.length > 0 ? <Button icon={Award} label="See all achievements" onPress={() => router.push('/achievements' as never)} variant="quiet" /> : null}

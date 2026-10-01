@@ -74,7 +74,46 @@ export class ApiClientError extends Error {
   }
 }
 
-export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<string | null>) {
+export type ApiClientAuthentication = {
+  getAccessToken: () => Promise<string | null>;
+  refreshAccessToken?: (rejectedAccessToken: string | null) => Promise<string | null>;
+};
+
+export function createApiClient(
+  baseUrl: string,
+  authentication?: (() => Promise<string | null>) | ApiClientAuthentication,
+) {
+  const getAccessToken = typeof authentication === 'function'
+    ? authentication
+    : authentication?.getAccessToken;
+  const refreshAccessToken = typeof authentication === 'function'
+    ? undefined
+    : authentication?.refreshAccessToken;
+  const apiBaseUrl = baseUrl.replace(/\/$/, '');
+
+  const authenticatedFetch = async (
+    path: string,
+    init: RequestInit | undefined,
+    defaultHeaders: Record<string, string>,
+  ) => {
+    const send = async (token: string | null | undefined) => fetch(`${apiBaseUrl}${path}`, {
+      ...init,
+      headers: {
+        ...defaultHeaders,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...init?.headers,
+      },
+    });
+
+    const accessToken = await getAccessToken?.();
+    let response = await send(accessToken);
+    if (response.status === 401 && refreshAccessToken) {
+      const refreshedToken = await refreshAccessToken(accessToken ?? null);
+      if (refreshedToken) response = await send(refreshedToken);
+    }
+    return response;
+  };
+
   const festivalParams = (input: FestivalQuery) => {
     const query = festivalQuerySchema.parse(input);
     const params = new URLSearchParams();
@@ -92,57 +131,33 @@ export function createApiClient(baseUrl: string, getAccessToken?: () => Promise<
     return params;
   };
   const request = async (path: string, init?: RequestInit) => {
-    const token = await getAccessToken?.();
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
-      ...init,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...init?.headers,
-      },
+    const response = await authenticatedFetch(path, init, {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     });
     if (!response.ok) throw new ApiClientError(await readErrorMessage(response), response.status);
     return response.status === 204 ? null : (response.json() as Promise<unknown>);
   };
 
   const upload = async (path: string, body: FormData) => {
-    const token = await getAccessToken?.();
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
+    const response = await authenticatedFetch(path, {
       method: 'POST',
       body,
-      headers: {
-        Accept: 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
+    }, { Accept: 'application/json' });
     if (!response.ok) throw new ApiClientError(await readErrorMessage(response), response.status);
     return response.json() as Promise<unknown>;
   };
 
   const requestWithoutResponse = async (path: string, init?: RequestInit) => {
-    const token = await getAccessToken?.();
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
-      ...init,
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...init?.headers,
-      },
+    const response = await authenticatedFetch(path, init, {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     });
     if (!response.ok) throw new ApiClientError('Saraya API request failed.', response.status);
   };
 
   const requestBinary = async (path: string, init?: RequestInit) => {
-    const token = await getAccessToken?.();
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
-      ...init,
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...init?.headers,
-      },
-    });
+    const response = await authenticatedFetch(path, init, {});
     if (!response.ok) throw new ApiClientError(await readErrorMessage(response), response.status);
     return response.blob();
   };

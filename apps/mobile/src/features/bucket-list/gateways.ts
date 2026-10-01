@@ -5,10 +5,7 @@ import {
   type CreateBucketListItemInput,
   type UpdateBucketListItemInput,
 } from '@saraya/contracts';
-import { createApiClient } from '@saraya/api-client';
-
-import { getApiBaseUrl } from '@/core/config';
-import { sessionStore } from '@/features/auth/sessionStore';
+import { createAuthenticatedApiClient } from '@/features/auth/authenticated-api';
 
 export interface BucketListGateway {
   list(): Promise<BucketListItem[]>;
@@ -76,10 +73,7 @@ export class MockBucketListGateway implements BucketListGateway {
 }
 
 export class ApiBucketListGateway implements BucketListGateway {
-  private readonly client = createApiClient(
-    getApiBaseUrl(),
-    async () => (await sessionStore.read())?.accessToken ?? null,
-  );
+  private readonly client = createAuthenticatedApiClient();
 
   list() {
     return this.client.bucketList.list();

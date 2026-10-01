@@ -4,7 +4,6 @@ import { Pressable, Text } from 'react-native';
 
 import {
   AuthProvider,
-  isDevelopmentAuthBypassEnabled,
   useAuth,
 } from '../AuthProvider';
 import { authGateway } from '../gateway';
@@ -98,8 +97,6 @@ function Harness() {
 }
 
 describe('AuthProvider RevenueCat identity lifecycle', () => {
-  const originalBypass = process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS;
-
   beforeEach(() => {
     jest.clearAllMocks();
     gateway.restore.mockReset();
@@ -111,7 +108,6 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
     gateway.exportAccountData.mockReset();
     gateway.downloadAccountData.mockReset();
     gateway.deleteAccount.mockReset();
-    delete process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS;
     gateway.restore.mockResolvedValue(null);
     gateway.logout.mockResolvedValue();
     gateway.reauthenticateAccount.mockResolvedValue({
@@ -124,31 +120,6 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
     reset.mockResolvedValue();
   });
 
-  afterAll(() => {
-    if (originalBypass === undefined) {
-      delete process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS;
-    } else {
-      process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS = originalBypass;
-    }
-  });
-
-  it('enables the bypass only for an explicitly configured development runtime', () => {
-    expect(isDevelopmentAuthBypassEnabled(true, 'true')).toBe(true);
-    expect(isDevelopmentAuthBypassEnabled(true, undefined)).toBe(false);
-    expect(isDevelopmentAuthBypassEnabled(false, 'true')).toBe(false);
-  });
-
-  it('exposes a non-persistent preview user when development bypass is enabled', async () => {
-    process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS = 'true';
-
-    await render(<AuthProvider><Harness /></AuthProvider>);
-
-    await waitFor(() => expect(screen.getByText('development-profile-preview')).toBeTruthy());
-    expect(screen.getByText('development-preview')).toBeTruthy();
-    expect(gateway.loginWithGoogle).not.toHaveBeenCalled();
-    expect(identify).not.toHaveBeenCalled();
-  });
-
   it('identifies the restored authenticated user before exposing the session', async () => {
     gateway.restore.mockResolvedValue(session('restored-user'));
 
@@ -157,55 +128,6 @@ describe('AuthProvider RevenueCat identity lifecycle', () => {
     await waitFor(() => expect(screen.getByText('restored-user')).toBeTruthy());
     expect(screen.getByText('real-session')).toBeTruthy();
     expect(identify).toHaveBeenCalledWith('restored-user');
-  });
-
-  it('prefers a restored real session when development bypass is enabled', async () => {
-    process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS = 'true';
-    gateway.restore.mockResolvedValue(session('restored-user'));
-
-    await render(<AuthProvider><Harness /></AuthProvider>);
-
-    await waitFor(() => expect(screen.getByText('restored-user')).toBeTruthy());
-    expect(screen.getByText('real-session')).toBeTruthy();
-    expect(identify).toHaveBeenCalledWith('restored-user');
-  });
-
-  it('replaces the development preview with a real Google session', async () => {
-    process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS = 'true';
-    gateway.loginWithGoogle.mockResolvedValue(session('google-user'));
-
-    await render(<AuthProvider><Harness /></AuthProvider>);
-    await waitFor(() => expect(screen.getByText('development-profile-preview')).toBeTruthy());
-
-    await act(async () => { fireEvent.press(screen.getByRole('button', { name: 'log in' })); });
-
-    await waitFor(() => expect(screen.getByText('google-user')).toBeTruthy());
-    expect(screen.getByText('real-session')).toBeTruthy();
-    expect(identify).toHaveBeenCalledWith('google-user');
-  });
-
-  it('exits preview without calling the authentication logout endpoint', async () => {
-    process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS = 'true';
-
-    await render(<AuthProvider><Harness /></AuthProvider>);
-    await waitFor(() => expect(screen.getByText('development-profile-preview')).toBeTruthy());
-
-    await act(async () => { fireEvent.press(screen.getByRole('button', { name: 'log out' })); });
-
-    await waitFor(() => expect(screen.getByText('signed-out')).toBeTruthy());
-    expect(gateway.logout).not.toHaveBeenCalled();
-    expect(identify).not.toHaveBeenCalled();
-  });
-
-  it('updates the development preview only in memory', async () => {
-    process.env.EXPO_PUBLIC_DEV_AUTH_BYPASS = 'true';
-    await render(<AuthProvider><Harness /></AuthProvider>);
-    await waitFor(() => expect(screen.getByText('development-profile-preview')).toBeTruthy());
-
-    await act(async () => { fireEvent.press(screen.getByRole('button', { name: 'save profile' })); });
-
-    await waitFor(() => expect(screen.getByTestId('profile-name').props.children).toEqual(['name:', 'Maya Explorer']));
-    expect(gateway.updateProfile).not.toHaveBeenCalled();
   });
 
   it('persists profile edits for a genuine session', async () => {

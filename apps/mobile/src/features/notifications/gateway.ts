@@ -1,10 +1,8 @@
 import type { NotificationPreferences, UpdateNotificationPreferences } from '@saraya/contracts';
-import { createApiClient } from '@saraya/api-client';
 import { Platform } from 'react-native';
 
-import { getApiBaseUrl } from '@/core/config';
 import { getExpoPushToken, requestNotificationPermission } from '@/core/notifications/expo-notifications';
-import { sessionStore } from '@/features/auth/sessionStore';
+import { createAuthenticatedApiClient } from '@/features/auth/authenticated-api';
 
 export interface NotificationGateway {
   getPreferences(): Promise<NotificationPreferences>;
@@ -12,7 +10,7 @@ export interface NotificationGateway {
   enable(changes: UpdateNotificationPreferences): Promise<NotificationPreferences>;
   registerCurrentToken(pushToken: string): Promise<void>;
 }
-function client() { return createApiClient(getApiBaseUrl(), async () => (await sessionStore.read())?.accessToken ?? null); }
+function client() { return createAuthenticatedApiClient(); }
 
 export class ApiNotificationGateway implements NotificationGateway {
   getPreferences() { return client().notifications.getPreferences(); }

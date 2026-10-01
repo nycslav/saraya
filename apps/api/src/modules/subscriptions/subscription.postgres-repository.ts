@@ -173,6 +173,19 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
         );
         status = 'processed';
       } else if (
+        event.type === 'CANCELLATION' &&
+        event.product_id === configuration.topUpProductId &&
+        (event.transaction_id || event.original_transaction_id)
+      ) {
+        await this.refundTopUp(
+          client,
+          userId,
+          event.transaction_id ?? event.original_transaction_id!,
+          event.product_id,
+          event.id,
+        );
+        status = 'processed';
+      } else if (
         event.product_id === configuration.lifetimeProductId ||
         event.entitlement_ids.includes(configuration.entitlementId)
       ) {
@@ -230,10 +243,23 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
       }
       await this.lockAccount(client, reservation.user_id);
       if (reservation.source === 'top-up') {
-        await client.query(
+        const consumed = await client.query(
           `UPDATE generation_quota_accounts
            SET top_up_balance = top_up_balance - 1, updated_at = now()
-           WHERE user_id = $1 AND top_up_balance > 0`,
+           WHERE user_id = $1 AND top_up_balance > 0
+           RETURNING user_id`,
+          [reservation.user_id],
+        );
+        if (consumed.rowCount === 0) throw new GenerationQuotaExhaustedError();
+        await client.query(
+          `UPDATE generation_top_up_transactions
+           SET credits_remaining = credits_remaining - 1
+           WHERE transaction_id = (
+             SELECT transaction_id FROM generation_top_up_transactions
+             WHERE user_id = $1 AND refunded_at IS NULL AND credits_remaining > 0
+             ORDER BY purchased_at ASC NULLS LAST, created_at ASC
+             FOR UPDATE SKIP LOCKED LIMIT 1
+           )`,
           [reservation.user_id],
         );
       } else if (reservation.access === 'premium') {
@@ -357,8 +383,9 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
   ) {
     const inserted = await client.query(
       `INSERT INTO generation_top_up_transactions (
-         transaction_id, user_id, product_id, credits_granted, source_event_id, purchased_at
-       ) VALUES ($1, $2, $3, $4, $5, $6)
+         transaction_id, user_id, product_id, credits_granted, credits_remaining,
+         source_event_id, purchased_at
+       ) VALUES ($1, $2, $3, $4, $4, $5, $6)
        ON CONFLICT (transaction_id) DO NOTHING RETURNING transaction_id`,
       [transactionId, userId, productId, TOP_UP_SIZE, eventId, purchasedAt],
     );
@@ -372,6 +399,53 @@ export class PostgresSubscriptionRepository implements SubscriptionRepository {
       [userId, TOP_UP_SIZE],
     );
     return true;
+  }
+
+  private async refundTopUp(
+    client: PoolClient,
+    userId: string,
+    transactionId: string,
+    productId: string,
+    eventId: string,
+  ) {
+    const existing = await client.query<{
+      user_id: string;
+      credits_remaining: number;
+      refunded_at: Date | null;
+    } & QueryResultRow>(
+      `SELECT user_id, credits_remaining, refunded_at
+       FROM generation_top_up_transactions WHERE transaction_id = $1 FOR UPDATE`,
+      [transactionId],
+    );
+    const transaction = existing.rows[0];
+    if (!transaction) {
+      await client.query(
+        `INSERT INTO generation_top_up_transactions (
+           transaction_id, user_id, product_id, credits_granted, credits_remaining,
+           source_event_id, refunded_at, refund_event_id, credits_reversed
+         ) VALUES ($1, $2, $3, $4, 0, NULL, now(), $5, 0)
+         ON CONFLICT (transaction_id) DO NOTHING`,
+        [transactionId, userId, productId, TOP_UP_SIZE, eventId],
+      );
+      return 0;
+    }
+    if (transaction.refunded_at) return 0;
+    const account = await this.lockAccount(client, transaction.user_id);
+    const reversed = Math.min(transaction.credits_remaining, account.top_up_balance);
+    await client.query(
+      `UPDATE generation_top_up_transactions
+       SET credits_remaining = 0, refunded_at = now(), refund_event_id = $2,
+         credits_reversed = $3
+       WHERE transaction_id = $1 AND refunded_at IS NULL`,
+      [transactionId, eventId, reversed],
+    );
+    await client.query(
+      `UPDATE generation_quota_accounts
+       SET top_up_balance = GREATEST(0, top_up_balance - $2), updated_at = now()
+       WHERE user_id = $1`,
+      [transaction.user_id, reversed],
+    );
+    return reversed;
   }
 
   private async applyEntitlement(

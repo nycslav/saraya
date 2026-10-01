@@ -1,16 +1,11 @@
-import { createApiClient } from '@saraya/api-client';
 import type { GenerationConsumption, PremiumAccess } from '@saraya/contracts';
 
-import { getApiBaseUrl } from '@/core/config';
-import { sessionStore } from '@/features/auth/sessionStore';
+import { createAuthenticatedApiClient } from '@/features/auth/authenticated-api';
 
 import type { GenerationQuotaGateway } from './generation-quota.gateway';
 
 function client() {
-  return createApiClient(
-    getApiBaseUrl(),
-    async () => (await sessionStore.read())?.accessToken ?? null,
-  );
+  return createAuthenticatedApiClient();
 }
 
 export class ApiGenerationQuotaGateway implements GenerationQuotaGateway {
