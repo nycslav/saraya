@@ -57,3 +57,7 @@ install it with `npm ci`.
 - [Demo script](docs/demo-script.md)
 - [Contributing](CONTRIBUTING.md)
 
+## License
+
+Saraya is available under the [MIT License](LICENSE).
+
