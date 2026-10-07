@@ -12,12 +12,11 @@ The team must agree on these contracts before parallel feature development:
 
 Use plural resource names consistently, such as `/check-ins`, `/destinations`, and `/festivals`.
 
-## Planned monetization and quota contract
+## Implemented monetization and quota contract
 
-This contract cannot be implemented until authentication, account persistence, and the itinerary
-generation service are available. The eventual API must expose an authenticated quota snapshot and
-make itinerary generation the atomic quota boundary. A mobile request must never independently
-decrement a server counter.
+The authenticated subscription and itinerary services expose a server-authoritative quota snapshot
+and make itinerary generation the atomic quota boundary. The mobile client never independently
+decrements a server counter.
 
 Required behavior:
 
@@ -27,15 +26,14 @@ Required behavior:
 - Consume included quota before purchased credits.
 - Enforce a unique RevenueCat/store transaction ID for every top-up credit.
 - Treat webhook retries as idempotent and return the same balance across devices.
-- Reject generation before calling OpenAI when no eligible credit exists.
+- Reject generation before calling a configured AI provider when no eligible credit exists.
 
-The provider-neutral schemas are exported from `@saraya/contracts/monetization`. Exact endpoint
-names and response envelopes should be finalized jointly with the authentication and itinerary API.
+The provider-neutral schemas are exported from `@saraya/contracts/monetization`.
 
 ## Current destination API
 
-The Member 2 Shipaton backend currently exposes the first discovery vertical slice. Successful
-responses use the shared runtime schemas from `packages/contracts`; errors use an `error` object
+The API exposes the implemented discovery and travel features. Successful responses use the shared
+runtime schemas from `packages/contracts`; errors use an `error` object
 with stable `code` and `message` fields.
 
 ### `GET /health`
@@ -203,8 +201,8 @@ Returns a saved itinerary with its ordered days and stops. Unknown IDs return `4
 
 ## Bucket List API
 
-Bucket-list routes currently use the backend-controlled `demo-user` identity until the shared JWT
-middleware is available. Clients cannot provide or override the user ID.
+Bucket-list routes use the authenticated application identity boundary, and clients cannot provide
+or override a user ID.
 
 ### `GET /bucket-list`
 
@@ -228,8 +226,8 @@ Deletes the current user's item and returns `204`. Unknown items return `404`.
 
 ## Journey and Achievement API
 
-Journey routes use the backend-controlled `demo-user` identity until shared JWT middleware is
-available. Check-ins are manual travel records and do not accept or validate device GPS data.
+Journey routes use the authenticated application identity boundary. Check-ins are manual travel
+records, giving travelers control over when a visit is recorded and what memories are attached.
 
 ### `POST /check-ins`
 

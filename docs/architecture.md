@@ -14,7 +14,10 @@ External providers are accessed through backend adapters. Provider secrets and p
 
 Background jobs (festival reminders, weather polling, and authoritative CAP warning ingestion) are thin entry points in `src/jobs/` that delegate to existing feature services. A provider-neutral `JobScheduler` abstraction decouples job registration from the coordination backend: `NoopJobScheduler` runs in-process; `RedisJobScheduler` delegates to a Redis worker when `SCHEDULER_BACKEND=redis` is configured. Redis is an optional infrastructure dependency — when unavailable, the noop scheduler keeps jobs running in-process.
 
-The required MVP is implemented before offline mode, AI itineraries, hidden gems, or WebSocket live alerts.
+The implemented product includes API-backed AI itinerary generation, RevenueCat Test Store
+purchases, festival calendar/reminder flows, and safety/weather lookup flows. These capabilities
+share typed contracts and provider adapters so the mobile experience remains consistent across
+fixture, development, and hosted environments.
 
 ## Festival data flow
 
